@@ -14,7 +14,7 @@
 	import Power from 'lucide-svelte/icons/power';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Link from 'lucide-svelte/icons/link';
-	import type { Engine } from '$lib/types';
+	import type { Engine } from '$lib/types/index.js';
 
 	let engines: Engine[] = $state([]);
 	let loading = $state(true);
@@ -25,7 +25,7 @@
 	let formData = $state({
 		id: '',
 		model: '',
-		power_nominal: 0,
+		planned_power_kw: 0,
 		location: ''
 	});
 
@@ -37,7 +37,13 @@
 	];
 
 	const connections = [
-		{ id: '1', name: 'PLC Siemens S7-1500', type: 'Modbus TCP', status: 'connected', ip: '192.168.1.10' },
+		{
+			id: '1',
+			name: 'PLC Siemens S7-1500',
+			type: 'Modbus TCP',
+			status: 'connected',
+			ip: '192.168.1.10'
+		},
 		{ id: '2', name: 'OPC UA Server', type: 'OPC UA', status: 'connected', ip: '192.168.1.20' },
 		{ id: '3', name: 'SCADA Gateway', type: 'MQTT', status: 'disconnected', ip: '192.168.1.30' }
 	];
@@ -58,7 +64,7 @@
 	});
 
 	function openAddModal() {
-		formData = { id: '', model: '', power_nominal: 0, location: '' };
+		formData = { id: '', model: '', planned_power_kw: 0, location: '' };
 		editingEngine = null;
 		showAddModal = true;
 	}
@@ -67,7 +73,7 @@
 		formData = {
 			id: engine.id,
 			model: engine.model,
-			power_nominal: engine.power_nominal,
+			planned_power_kw: engine.planned_power_kw,
 			location: ''
 		};
 		editingEngine = engine;
@@ -87,7 +93,7 @@
 				engines[idx] = {
 					...engines[idx],
 					model: formData.model,
-					power_nominal: formData.power_nominal
+					planned_power_kw: formData.planned_power_kw
 				};
 			}
 		} else {
@@ -95,8 +101,8 @@
 			const newEngine: Engine = {
 				id: formData.id.toLowerCase().replace(/\s+/g, '-'),
 				model: formData.model,
-				status: 'stopped',
-				power_nominal: formData.power_nominal,
+				status: 'ok',
+				planned_power_kw: formData.planned_power_kw,
 				total_hours: 0
 			};
 			engines = [...engines, newEngine];
@@ -112,20 +118,19 @@
 
 	function getStatusBadge(status: string) {
 		const map: Record<string, 'success' | 'warning' | 'danger' | 'secondary'> = {
-			running: 'success',
-			idle: 'warning',
-			stopped: 'danger',
-			maintenance: 'secondary'
+			ok: 'success',
+			warning: 'warning',
+			error: 'danger'
 		};
 		return map[status] || 'secondary';
 	}
 
 	function getRoleBadge(role: string) {
 		const map: Record<string, 'danger' | 'warning' | 'info' | 'secondary'> = {
-			'Администратор': 'danger',
-			'Оператор': 'warning',
-			'Техник': 'info',
-			'Наблюдатель': 'secondary'
+			Администратор: 'danger',
+			Оператор: 'warning',
+			Техник: 'info',
+			Наблюдатель: 'secondary'
 		};
 		return map[role] || 'secondary';
 	}
@@ -197,7 +202,7 @@
 
 		<div class="grid gap-4">
 			{#if loading}
-				{#each Array(4) as _}
+				{#each { length: 4 } as _item, i (i)}
 					<Card class="animate-pulse">
 						<div class="h-20"></div>
 					</Card>
@@ -210,7 +215,7 @@
 								<div
 									class={cn(
 										'flex h-12 w-12 items-center justify-center rounded-lg',
-										engine.status === 'running'
+										engine.status === 'ok'
 											? 'bg-emerald-500/20 text-emerald-400'
 											: 'bg-slate-700 text-slate-400'
 									)}
@@ -225,7 +230,8 @@
 										</Badge>
 									</div>
 									<p class="text-sm text-slate-400">
-										{engine.model} • {engine.power_nominal} кВт • {engine.total_hours.toLocaleString()} ч
+										{engine.model} • {engine.planned_power_kw} кВт • {engine.total_hours.toLocaleString()}
+										ч
 									</p>
 								</div>
 							</div>
@@ -236,7 +242,12 @@
 								<Button variant="ghost" size="sm">
 									<Settings class="h-4 w-4" />
 								</Button>
-								<Button variant="ghost" size="sm" class="text-rose-400 hover:text-rose-300" onclick={() => deleteEngine(engine.id)}>
+								<Button
+									variant="ghost"
+									size="sm"
+									class="text-rose-400 hover:text-rose-300"
+									onclick={() => deleteEngine(engine.id)}
+								>
 									<Trash2 class="h-4 w-4" />
 								</Button>
 							</div>
@@ -260,19 +271,28 @@
 			<table class="w-full">
 				<thead class="border-b border-white/5 bg-slate-900/50">
 					<tr>
-						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Пользователь</th>
+						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
+							>Пользователь</th
+						>
 						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Роль</th>
 						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Статус</th>
-						<th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase">Действия</th>
+						<th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase"
+							>Действия</th
+						>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-white/5">
 					{#each users as user (user.id)}
-						<tr class="hover:bg-white/5 transition">
+						<tr class="transition hover:bg-white/5">
 							<td class="px-4 py-4">
 								<div class="flex items-center gap-3">
-									<div class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-medium text-white">
-										{user.name.split(' ').map(n => n[0]).join('')}
+									<div
+										class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-medium text-white"
+									>
+										{user.name
+											.split(' ')
+											.map((n) => n[0])
+											.join('')}
 									</div>
 									<div>
 										<div class="font-medium text-white">{user.name}</div>
@@ -395,10 +415,18 @@
 				{editingEngine ? 'Редактировать двигатель' : 'Добавить двигатель'}
 			</h2>
 
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmit();
+				}}
+				class="space-y-4"
+			>
 				{#if !editingEngine}
 					<div>
-						<label for="engine-id" class="mb-1 block text-sm font-medium text-slate-300">ID двигателя</label>
+						<label for="engine-id" class="mb-1 block text-sm font-medium text-slate-300"
+							>ID двигателя</label
+						>
 						<input
 							id="engine-id"
 							type="text"
@@ -411,7 +439,9 @@
 				{/if}
 
 				<div>
-					<label for="engine-model" class="mb-1 block text-sm font-medium text-slate-300">Модель</label>
+					<label for="engine-model" class="mb-1 block text-sm font-medium text-slate-300"
+						>Модель</label
+					>
 					<input
 						id="engine-model"
 						type="text"
@@ -423,11 +453,13 @@
 				</div>
 
 				<div>
-					<label for="engine-power" class="mb-1 block text-sm font-medium text-slate-300">Номинальная мощность (кВт)</label>
+					<label for="engine-power" class="mb-1 block text-sm font-medium text-slate-300"
+						>Номинальная мощность (кВт)</label
+					>
 					<input
 						id="engine-power"
 						type="number"
-						bind:value={formData.power_nominal}
+						bind:value={formData.planned_power_kw}
 						placeholder="3350"
 						class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 						required

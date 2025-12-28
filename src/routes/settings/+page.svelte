@@ -3,7 +3,6 @@
 	import { Card, Button } from '$lib/components/ui/index.js';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Bell from 'lucide-svelte/icons/bell';
-	import Globe from 'lucide-svelte/icons/globe';
 	import Monitor from 'lucide-svelte/icons/monitor';
 	import Save from 'lucide-svelte/icons/save';
 
@@ -26,7 +25,9 @@
 			<Settings class="h-7 w-7 text-cyan-400" />
 			{$_('nav.settings') || 'Settings'}
 		</h1>
-		<p class="mt-1 text-sm text-slate-400">Manage your application preferences and configurations.</p>
+		<p class="mt-1 text-sm text-slate-400">
+			Manage your application preferences and configurations.
+		</p>
 	</div>
 
 	<div class="grid gap-6">
@@ -50,7 +51,8 @@
 					</div>
 					<button
 						type="button"
-						class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 {emailNotifications
+						aria-label="Toggle email notifications"
+						class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-hidden {emailNotifications
 							? 'bg-cyan-500'
 							: 'bg-slate-700'}"
 						onclick={() => (emailNotifications = !emailNotifications)}
@@ -70,7 +72,8 @@
 					</div>
 					<button
 						type="button"
-						class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 {smsNotifications
+						aria-label="Toggle SMS notifications"
+						class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-hidden {smsNotifications
 							? 'bg-cyan-500'
 							: 'bg-slate-700'}"
 						onclick={() => (smsNotifications = !smsNotifications)}
@@ -90,7 +93,8 @@
 					</div>
 					<button
 						type="button"
-						class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 {pushNotifications
+						aria-label="Toggle push notifications"
+						class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-hidden {pushNotifications
 							? 'bg-cyan-500'
 							: 'bg-slate-700'}"
 						onclick={() => (pushNotifications = !pushNotifications)}
@@ -155,7 +159,9 @@
 	</div>
 
 	<!-- Save Action -->
-	<div class="flex items-center justify-end gap-4 rounded-xl border border-white/5 bg-slate-900/50 p-4">
+	<div
+		class="flex items-center justify-end gap-4 rounded-xl border border-white/5 bg-slate-900/50 p-4"
+	>
 		<span class="text-sm text-slate-500">Last saved: Just now</span>
 		<Button onclick={saveSettings} class="gap-2">
 			<Save class="h-4 w-4" />

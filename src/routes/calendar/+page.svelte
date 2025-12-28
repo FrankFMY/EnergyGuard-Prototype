@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { Card, Badge } from '$lib/components/ui/index.js';
+	import { Card } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
-	import Wrench from 'lucide-svelte/icons/wrench';
-	import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
 	import Clock from 'lucide-svelte/icons/clock';
 
 	// Mock scheduled events
@@ -179,7 +177,7 @@
 
 			<!-- Day Headers -->
 			<div class="grid grid-cols-7 border-b border-white/5 bg-slate-900/30">
-				{#each dayNames as day}
+				{#each dayNames as day (day)}
 					<div class="p-3 text-center text-xs font-medium text-slate-500">
 						{day}
 					</div>
@@ -188,7 +186,7 @@
 
 			<!-- Calendar Grid -->
 			<div class="grid grid-cols-7">
-				{#each calendarDays as day, i}
+				{#each calendarDays as day, i (i)}
 					{@const dayEvents = getEventsForDay(day)}
 					<div
 						class={cn(
@@ -207,7 +205,7 @@
 								{day}
 							</div>
 							<div class="space-y-1">
-								{#each dayEvents.slice(0, 2) as event}
+								{#each dayEvents.slice(0, 2) as event (event.id)}
 									<div
 										class="truncate rounded px-1.5 py-0.5 text-xs text-white {getEventColor(
 											event.type
@@ -258,7 +256,7 @@
 					Upcoming
 				</h3>
 				<div class="space-y-3">
-					{#each events.filter((e) => e.date >= new Date()).slice(0, 4) as event}
+					{#each events.filter((e) => e.date >= new Date()).slice(0, 4) as event (event.id)}
 						<div class="rounded-lg bg-slate-800/50 p-3">
 							<div class="mb-1 flex items-center gap-2">
 								<div class="h-2 w-2 rounded-full {getEventColor(event.type)}"></div>

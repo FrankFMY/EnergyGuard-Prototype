@@ -148,7 +148,7 @@
 		<Card>
 			<h3 class="mb-4 text-sm font-semibold text-white">Add Widgets</h3>
 			<div class="flex flex-wrap gap-2">
-				{#each availableWidgets as widget}
+				{#each availableWidgets as widget (widget.type)}
 					{@const Icon = getWidgetIcon(widget.type)}
 					<button
 						type="button"

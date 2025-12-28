@@ -1,7 +1,6 @@
 /// <reference lib="webworker" />
 
 const CACHE_NAME = 'kastor-iot-v1';
-const OFFLINE_URL = '/offline';
 
 // Assets to cache immediately on install
 const PRECACHE_ASSETS = [

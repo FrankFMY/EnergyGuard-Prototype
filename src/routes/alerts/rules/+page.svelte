@@ -158,7 +158,7 @@
 	<!-- Rules List -->
 	<div class="space-y-4">
 		{#if loading}
-			{#each Array(3) as _}
+			{#each { length: 3 } as _item, i (i)}
 				<Card class="animate-pulse">
 					<div class="h-20"></div>
 				</Card>
@@ -386,8 +386,8 @@
 			</select>
 		</div>
 
-		<div>
-			<label class="mb-2 block text-sm font-medium text-slate-300">Notification Channels</label>
+		<fieldset>
+			<legend class="mb-2 block text-sm font-medium text-slate-300">Notification Channels</legend>
 			<div class="flex flex-wrap gap-4">
 				<label class="flex cursor-pointer items-center gap-2">
 					<input
@@ -417,7 +417,7 @@
 					<span class="text-sm text-slate-300">Push</span>
 				</label>
 			</div>
-		</div>
+		</fieldset>
 
 		<div class="flex justify-end gap-3 border-t border-white/5 pt-4">
 			<Button

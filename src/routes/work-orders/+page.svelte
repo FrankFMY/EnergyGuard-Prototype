@@ -220,7 +220,7 @@
 	<!-- Work Orders List -->
 	<div class="space-y-4">
 		{#if loading}
-			{#each Array(3) as _}
+			{#each { length: 3 } as _item, i (i)}
 				<Card class="animate-pulse">
 					<div class="h-24"></div>
 				</Card>
@@ -286,7 +286,7 @@
 
 							{#if wo.parts_required.length > 0}
 								<div class="mt-3 flex flex-wrap gap-2">
-									{#each wo.parts_required as part}
+									{#each wo.parts_required as part, j (j)}
 										<span class="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
 											{part}
 										</span>

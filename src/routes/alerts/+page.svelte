@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { _ } from 'svelte-i18n';
 	import { base } from '$app/paths';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
@@ -214,7 +213,7 @@
 	<!-- Alerts List -->
 	<div class="space-y-3">
 		{#if loading}
-			{#each Array(3) as _}
+			{#each { length: 3 } as _item, i (i)}
 				<Card class="animate-pulse">
 					<div class="flex gap-4">
 						<div class="h-10 w-10 rounded-lg bg-slate-800"></div>

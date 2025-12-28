@@ -69,7 +69,7 @@
 	</div>
 
 	<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-		{#each reports as report}
+		{#each reports as report (report.id)}
 			{@const Icon = report.icon}
 			<Card class="flex flex-col justify-between transition hover:bg-white/5">
 				<div>

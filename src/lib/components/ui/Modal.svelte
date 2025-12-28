@@ -24,27 +24,30 @@
 			onclose();
 		}
 	}
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) {
-			onclose();
-		}
-	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 {#if open}
+	<!-- Backdrop -->
+	<button
+		type="button"
+		class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+		onclick={onclose}
+		aria-label="Close modal"
+		tabindex="-1"
+	></button>
+	<!-- Dialog -->
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-		onclick={handleBackdropClick}
+		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="modal-title"
+		tabindex="-1"
 	>
 		<div
 			class={cn(
-				'w-full rounded-xl border border-white/10 bg-slate-900 shadow-2xl',
+				'pointer-events-auto w-full rounded-xl border border-white/10 bg-slate-900 shadow-2xl',
 				sizes[size]
 			)}
 		>

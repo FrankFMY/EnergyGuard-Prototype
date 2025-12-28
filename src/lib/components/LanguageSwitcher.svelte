@@ -32,7 +32,7 @@
 		<div
 			class="absolute top-full right-0 z-50 mt-1 w-32 overflow-hidden rounded-lg border border-white/10 bg-slate-900 shadow-xl"
 		>
-			{#each languages as lang}
+			{#each languages as lang (lang.code)}
 				<button
 					onclick={() => handleSelect(lang.code)}
 					class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-white/5"

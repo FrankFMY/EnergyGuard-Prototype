@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { base } from '$app/paths';
-	import { Card, Badge, Button } from '$lib/components/ui/index.js';
+	import { Card } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import BarChart from 'lucide-svelte/icons/bar-chart-3';
 	import Plus from 'lucide-svelte/icons/plus';
@@ -14,12 +14,15 @@
 
 	let engines: EngineWithMetrics[] = $state([]);
 	let selectedEngines: string[] = $state(['gpu-1', 'gpu-2']);
-	let loading = $state(true);
 	let chartContainer = $state<HTMLDivElement>();
-	let chartInstance: any;
+	type EChartsInstance = {
+		dispose: () => void;
+		resize: () => void;
+		setOption: (option: unknown) => void;
+	};
+	let chartInstance: EChartsInstance | null = null;
 
 	async function loadData() {
-		loading = true;
 		try {
 			const res = await fetch(`${base}/api/status`);
 			if (res.ok) {
@@ -27,8 +30,8 @@
 				engines = data.engines;
 				updateChart();
 			}
-		} finally {
-			loading = false;
+		} catch (e) {
+			console.error('Failed to load data', e);
 		}
 	}
 
@@ -42,7 +45,7 @@
 
 		const selected = engines.filter((e) => selectedEngines.includes(e.id));
 
-		chartInstance.setOption({
+		chartInstance?.setOption({
 			tooltip: {
 				trigger: 'axis',
 				axisPointer: { type: 'shadow' },
@@ -134,7 +137,7 @@
 	<Card class="p-4">
 		<div class="mb-3 text-sm text-slate-400">Select engines to compare (max 4):</div>
 		<div class="flex flex-wrap gap-2">
-			{#each engines as engine}
+			{#each engines as engine (engine.id)}
 				<button
 					type="button"
 					class={cn(
@@ -169,7 +172,7 @@
 				<thead class="border-b border-white/5 bg-slate-800/50">
 					<tr>
 						<th class="p-4 font-semibold text-slate-300">Metric</th>
-						{#each selectedEngineData as engine}
+						{#each selectedEngineData as engine (engine.id)}
 							<th class="p-4 font-semibold text-slate-300">{engine.id.toUpperCase()}</th>
 						{/each}
 						<th class="p-4 font-semibold text-slate-400">Fleet Avg</th>
@@ -183,7 +186,7 @@
 								Power Output
 							</div>
 						</td>
-						{#each selectedEngineData as engine}
+						{#each selectedEngineData as engine (engine.id)}
 							<td class="p-4 font-mono text-white">{engine.power_kw.toFixed(0)} kW</td>
 						{/each}
 						<td class="p-4 font-mono text-slate-400">{fleetAverage.power.toFixed(0)} kW</td>
@@ -195,7 +198,7 @@
 								Exhaust Temp
 							</div>
 						</td>
-						{#each selectedEngineData as engine}
+						{#each selectedEngineData as engine (engine.id)}
 							<td class="p-4 font-mono {engine.temp > 500 ? 'text-rose-400' : 'text-white'}">
 								{engine.temp.toFixed(0)}°C
 							</td>
@@ -209,7 +212,7 @@
 								Vibration
 							</div>
 						</td>
-						{#each selectedEngineData as engine}
+						{#each selectedEngineData as engine (engine.id)}
 							<td class="p-4 font-mono {engine.vibration > 8 ? 'text-amber-400' : 'text-white'}">
 								{engine.vibration.toFixed(1)} mm/s
 							</td>
@@ -223,7 +226,7 @@
 								Profitability
 							</div>
 						</td>
-						{#each selectedEngineData as engine}
+						{#each selectedEngineData as engine (engine.id)}
 							<td
 								class="p-4 font-mono {engine.profit_rate > 0
 									? 'text-emerald-400'
@@ -245,7 +248,7 @@
 	<Card>
 		<h3 class="mb-4 text-lg font-semibold text-white">Efficiency Ranking</h3>
 		<div class="space-y-3">
-			{#each [...engines].sort((a, b) => b.profit_rate - a.profit_rate) as engine, i}
+			{#each [...engines].sort((a, b) => b.profit_rate - a.profit_rate) as engine, i (engine.id)}
 				<div class="flex items-center gap-4 rounded-lg bg-slate-800/50 p-3">
 					<div
 						class={cn(

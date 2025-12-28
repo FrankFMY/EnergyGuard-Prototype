@@ -69,7 +69,7 @@
 		</div>
 
 		<div class="flex flex-1 flex-col gap-2">
-			{#each navItems as item}
+			{#each navItems as item (item.href)}
 				{@const Icon = item.icon}
 				<a
 					href={item.href}

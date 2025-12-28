@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
-	import { cn } from '$lib/utils.js';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
-	import TrendingDown from 'lucide-svelte/icons/trending-down';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import Clock from 'lucide-svelte/icons/clock';
 	import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
@@ -13,9 +11,6 @@
 	import Zap from 'lucide-svelte/icons/zap';
 	import Calendar from 'lucide-svelte/icons/calendar';
 	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
-	import ArrowDownRight from 'lucide-svelte/icons/arrow-down-right';
-	import type { ECharts } from 'echarts';
-
 	// Business metrics
 	const metrics = {
 		totalSavings: 2847500, // ₽ saved this year
@@ -46,20 +41,27 @@
 		{ reason: 'Плановое ТО', hours: 24, cost: 1080000, prevented: 0, color: '#10b981' }
 	];
 
+	type EChartsInstance = {
+		dispose: () => void;
+		resize: () => void;
+		setOption: (option: unknown) => void;
+	};
+
 	let savingsChartEl = $state<HTMLDivElement>();
 	let downtimeChartEl = $state<HTMLDivElement>();
 	let roiChartEl = $state<HTMLDivElement>();
-	let savingsChart: ECharts | null = null;
-	let downtimeChart: ECharts | null = null;
-	let roiChart: ECharts | null = null;
+	let savingsChart: EChartsInstance | null = null;
+	let downtimeChart: EChartsInstance | null = null;
+	let roiChart: EChartsInstance | null = null;
 
 	onMount(async () => {
 		const echarts = await import('echarts');
 
 		// Savings trend chart
 		if (savingsChartEl) {
-			savingsChart = echarts.init(savingsChartEl);
-			savingsChart.setOption({
+			const chart = echarts.init(savingsChartEl);
+			savingsChart = chart;
+			chart.setOption({
 				tooltip: {
 					trigger: 'axis',
 					backgroundColor: 'rgba(15, 23, 42, 0.95)',
@@ -113,8 +115,9 @@
 
 		// Downtime pie chart
 		if (downtimeChartEl) {
-			downtimeChart = echarts.init(downtimeChartEl);
-			downtimeChart.setOption({
+			const chart = echarts.init(downtimeChartEl);
+			downtimeChart = chart;
+			chart.setOption({
 				tooltip: {
 					trigger: 'item',
 					backgroundColor: 'rgba(15, 23, 42, 0.95)',
@@ -141,8 +144,9 @@
 
 		// ROI gauge
 		if (roiChartEl) {
-			roiChart = echarts.init(roiChartEl);
-			roiChart.setOption({
+			const chart = echarts.init(roiChartEl);
+			roiChart = chart;
+			chart.setOption({
 				series: [
 					{
 						type: 'gauge',
@@ -334,7 +338,7 @@
 			<div class="grid grid-cols-2 gap-4">
 				<div class="h-48" bind:this={downtimeChartEl}></div>
 				<div class="space-y-3">
-					{#each downtimeAnalysis as item}
+					{#each downtimeAnalysis as item (item.reason)}
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-2">
 								<div class="h-3 w-3 rounded" style="background-color: {item.color}"></div>

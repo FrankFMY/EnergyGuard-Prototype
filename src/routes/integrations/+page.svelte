@@ -8,7 +8,6 @@
 	import Cloud from 'lucide-svelte/icons/cloud';
 	import Cpu from 'lucide-svelte/icons/cpu';
 	import CheckCircle from 'lucide-svelte/icons/check-circle';
-	import XCircle from 'lucide-svelte/icons/x-circle';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Play from 'lucide-svelte/icons/play';
 	import RefreshCw from 'lucide-svelte/icons/refresh-cw';
@@ -111,7 +110,9 @@
 				<Cable class="h-7 w-7 text-cyan-400" />
 				Интеграции
 			</h1>
-			<p class="mt-1 text-sm text-slate-400">Подключения к оборудованию, базам данных и внешним системам</p>
+			<p class="mt-1 text-sm text-slate-400">
+				Подключения к оборудованию, базам данных и внешним системам
+			</p>
 		</div>
 		<Button class="gap-2">
 			<RefreshCw class="h-4 w-4" />
@@ -141,7 +142,7 @@
 
 	<div class="grid gap-6 lg:grid-cols-3">
 		<!-- Integrations List -->
-		<div class="lg:col-span-2 space-y-4">
+		<div class="space-y-4 lg:col-span-2">
 			<h2 class="flex items-center gap-2 text-lg font-semibold text-white">
 				<Server class="h-5 w-5 text-cyan-400" />
 				Источники данных
@@ -204,15 +205,17 @@
 				<div class="border-b border-white/5 bg-slate-900/50 px-4 py-2">
 					<span class="flex items-center gap-2 text-xs text-slate-400">
 						<span class="relative flex h-2 w-2">
-							<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+							<span
+								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+							></span>
 							<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
 						</span>
 						Live Feed
 					</span>
 				</div>
-				<div class="max-h-80 overflow-y-auto divide-y divide-white/5">
-					{#each recentData as data}
-						<div class="px-4 py-3 hover:bg-white/5 transition">
+				<div class="max-h-80 divide-y divide-white/5 overflow-y-auto">
+					{#each recentData as data (data.tag)}
+						<div class="px-4 py-3 transition hover:bg-white/5">
 							<div class="flex items-center justify-between">
 								<span class="font-mono text-xs text-cyan-400">{data.tag}</span>
 								<span class="text-xs text-slate-500">{data.timestamp}</span>
@@ -240,17 +243,25 @@
 				<thead>
 					<tr class="border-b border-white/5">
 						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Метод</th>
-						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Endpoint</th>
-						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Описание</th>
+						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase"
+							>Endpoint</th
+						>
+						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase"
+							>Описание</th
+						>
 						<th class="px-4 py-2 text-right text-xs font-medium text-slate-400 uppercase"></th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-white/5">
-					{#each apiEndpoints as endpoint}
-						<tr class="hover:bg-white/5 transition">
+					{#each apiEndpoints as endpoint (endpoint.path)}
+						<tr class="transition hover:bg-white/5">
 							<td class="px-4 py-3">
 								<Badge
-									variant={endpoint.method === 'GET' ? 'success' : endpoint.method === 'POST' ? 'info' : 'warning'}
+									variant={endpoint.method === 'GET'
+										? 'success'
+										: endpoint.method === 'POST'
+											? 'info'
+											: 'warning'}
 								>
 									{endpoint.method}
 								</Badge>
@@ -296,8 +307,8 @@
 			<div class="text-sm text-slate-300">
 				<p class="mb-2 font-medium">Совместимое оборудование</p>
 				<p class="text-slate-400">
-					<strong class="text-white">ПЛК:</strong> Siemens S7-300/400/1200/1500, Allen-Bradley ControlLogix/CompactLogix, 
-					Schneider Electric M340/M580, ОВЕН ПЛК, Delta DVP<br />
+					<strong class="text-white">ПЛК:</strong> Siemens S7-300/400/1200/1500, Allen-Bradley
+					ControlLogix/CompactLogix, Schneider Electric M340/M580, ОВЕН ПЛК, Delta DVP<br />
 					<strong class="text-white">SCADA:</strong> Wonderware, Ignition, WinCC, Genesis64<br />
 					<strong class="text-white">Газопоршневые:</strong> Jenbacher, MWM, Caterpillar, Wärtsilä, MTU
 				</p>

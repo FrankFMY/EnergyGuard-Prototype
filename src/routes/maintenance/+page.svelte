@@ -86,7 +86,7 @@
 		<!-- Loading Skeleton -->
 		<Card>
 			<div class="space-y-4">
-				{#each Array(4) as _, i}
+				{#each { length: 4 } as _item, i (i)}
 					<div class="flex items-center gap-4 rounded-lg bg-slate-800/50 p-4">
 						<div class="h-12 w-12 animate-pulse rounded-lg bg-slate-700"></div>
 						<div class="flex-1 space-y-2">
@@ -205,7 +205,7 @@
 					{#if !$isLoading}{$_('maintenance.sparePartsInventory')}{:else}Spare Parts Inventory{/if}
 				</h3>
 				<div class="space-y-3">
-					{#each spareParts as part}
+					{#each spareParts as part (part.name)}
 						<div class="flex items-center justify-between rounded-lg bg-slate-800/50 px-4 py-3">
 							<span class="text-slate-300">{part.name}</span>
 							<div class="flex items-center gap-2">

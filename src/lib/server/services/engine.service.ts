@@ -19,13 +19,15 @@ interface TelemetryRow {
  * Get all engines from database
  */
 export async function getAllEngines(): Promise<Engine[]> {
-	const result = await db.select({
-		id: engines.id,
-		model: engines.model,
-		status: engines.status,
-		total_hours: engines.total_hours
-	}).from(engines);
-	
+	const result = await db
+		.select({
+			id: engines.id,
+			model: engines.model,
+			status: engines.status,
+			total_hours: engines.total_hours
+		})
+		.from(engines);
+
 	return result.map((e) => ({
 		...e,
 		planned_power_kw: 1200 // Default - column doesn't exist in DB yet
@@ -143,10 +145,7 @@ export function calculateDashboardSummary(engineData: EngineWithMetrics[]): Dash
  * Get full dashboard data
  */
 export async function getDashboardData() {
-	const [engineData, eventData] = await Promise.all([
-		getEnginesWithMetrics(),
-		getLatestEvents(10)
-	]);
+	const [engineData, eventData] = await Promise.all([getEnginesWithMetrics(), getLatestEvents(10)]);
 	const summary = calculateDashboardSummary(engineData);
 
 	return {

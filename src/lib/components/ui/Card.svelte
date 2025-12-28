@@ -19,18 +19,29 @@
 	};
 </script>
 
-<div
-	class={cn(
-		'rounded-xl border p-6',
-		variants[variant],
-		hover && 'transition-all hover:-translate-y-1 hover:bg-white/5',
-		onclick && 'cursor-pointer',
-		className
-	)}
-	role={onclick ? 'button' : undefined}
-	tabindex={onclick ? 0 : undefined}
-	{onclick}
-	onkeydown={(e) => e.key === 'Enter' && onclick?.(e as unknown as MouseEvent)}
->
-	{@render children()}
-</div>
+{#if onclick}
+	<button
+		type="button"
+		class={cn(
+			'w-full rounded-xl border p-6 text-left',
+			variants[variant],
+			hover && 'transition-all hover:-translate-y-1 hover:bg-white/5',
+			'cursor-pointer',
+			className
+		)}
+		{onclick}
+	>
+		{@render children()}
+	</button>
+{:else}
+	<div
+		class={cn(
+			'rounded-xl border p-6',
+			variants[variant],
+			hover && 'transition-all hover:-translate-y-1 hover:bg-white/5',
+			className
+		)}
+	>
+		{@render children()}
+	</div>
+{/if}

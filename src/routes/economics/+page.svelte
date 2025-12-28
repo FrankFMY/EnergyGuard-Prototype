@@ -2,7 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { _, isLoading } from 'svelte-i18n';
 	import { Card, Badge } from '$lib/components/ui/index.js';
-	import { cn } from '$lib/utils.js';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
 	import Fuel from 'lucide-svelte/icons/fuel';
 	import Wrench from 'lucide-svelte/icons/wrench';
@@ -25,10 +24,16 @@
 	// Chart containers
 	let pieChartEl = $state<HTMLDivElement>();
 	let barChartEl = $state<HTMLDivElement>();
-	let pieChartInstance: any;
-	let barChartInstance: any;
+	type EChartsInstance = {
+		dispose: () => void;
+		resize: () => void;
+		setOption: (option: unknown) => void;
+	};
+	let pieChartInstance: EChartsInstance | null = null;
+	let barChartInstance: EChartsInstance | null = null;
 
-	const costConfig: Record<string, { label: string; color: string; icon: any }> = {
+	type IconComponent = typeof import('lucide-svelte/icons/fuel').default;
+	const costConfig: Record<string, { label: string; color: string; icon: IconComponent }> = {
 		gas: { label: 'Газ', color: '#f97316', icon: Fuel },
 		depreciation: { label: 'Амортизация', color: '#3b82f6', icon: Building },
 		spare_parts: { label: 'ЗИП', color: '#10b981', icon: Wrench },
@@ -47,13 +52,15 @@
 			const echarts = await import('echarts');
 
 			if (pieChartEl && costBreakdown) {
-				pieChartInstance = echarts.init(pieChartEl);
-				initPieChart(pieChartInstance, costBreakdown);
+				const chart = echarts.init(pieChartEl);
+				pieChartInstance = chart;
+				initPieChart(chart, costBreakdown);
 			}
 
 			if (barChartEl && monthlyTrend.length > 0) {
-				barChartInstance = echarts.init(barChartEl);
-				initBarChart(barChartInstance, monthlyTrend);
+				const chart = echarts.init(barChartEl);
+				barChartInstance = chart;
+				initBarChart(chart, monthlyTrend);
 			}
 
 			window.addEventListener('resize', handleResize);
@@ -75,7 +82,7 @@
 		barChartInstance?.resize();
 	}
 
-	function initPieChart(instance: any, data: CostBreakdown) {
+	function initPieChart(instance: EChartsInstance, data: CostBreakdown) {
 		const chartData = Object.entries(costConfig).map(([key, config]) => ({
 			value: data[key as keyof CostBreakdown],
 			name: config.label,
@@ -123,7 +130,7 @@
 		});
 	}
 
-	function initBarChart(instance: any, data: MonthlyTrend[]) {
+	function initBarChart(instance: EChartsInstance, data: MonthlyTrend[]) {
 		instance.setOption({
 			tooltip: {
 				trigger: 'axis',
@@ -276,7 +283,7 @@
 
 					<!-- Legend -->
 					<div class="space-y-3">
-						{#each Object.entries(costConfig) as [key, config]}
+						{#each Object.entries(costConfig) as [key, config] (key)}
 							{@const val = costBreakdown[key as keyof CostBreakdown]}
 							{@const Icon = config.icon}
 							{#if typeof val === 'number'}
@@ -307,7 +314,7 @@
 				<h3 class="mb-6 text-lg font-semibold text-white">Детализация затрат</h3>
 
 				<div class="space-y-4">
-					{#each Object.entries(costConfig) as [key, config]}
+					{#each Object.entries(costConfig) as [key, config] (key)}
 						{@const val = costBreakdown[key as keyof CostBreakdown]}
 						{@const Icon = config.icon}
 						{#if typeof val === 'number'}

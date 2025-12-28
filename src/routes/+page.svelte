@@ -123,7 +123,7 @@
 	<!-- Loading skeleton -->
 	<div class="space-y-6">
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-			{#each Array(4) as _}
+			{#each { length: 4 } as _item, i (i)}
 				<Card>
 					<Skeleton height="1rem" width="60%" />
 					<Skeleton height="2.5rem" width="80%" class="mt-2" />
@@ -133,7 +133,7 @@
 		</div>
 		<Skeleton height="1.5rem" width="200px" />
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{#each Array(6) as _}
+			{#each { length: 6 } as _item, i (i)}
 				<Card>
 					<Skeleton height="8rem" />
 				</Card>

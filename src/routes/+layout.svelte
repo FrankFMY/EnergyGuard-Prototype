@@ -7,7 +7,6 @@
 	import Zap from 'lucide-svelte/icons/zap';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Wrench from 'lucide-svelte/icons/wrench';
-	import TrendingUp from 'lucide-svelte/icons/trending-up';
 	import BarChart3 from 'lucide-svelte/icons/bar-chart-3';
 	import Bell from 'lucide-svelte/icons/bell';
 	import Settings from 'lucide-svelte/icons/settings';
@@ -66,7 +65,7 @@
 
 				<!-- Desktop Navigation -->
 				<div class="hidden gap-1 md:flex">
-					{#each navItems as item}
+					{#each navItems as item (item.href)}
 						{@const Icon = item.icon}
 						<a
 							href={item.href}

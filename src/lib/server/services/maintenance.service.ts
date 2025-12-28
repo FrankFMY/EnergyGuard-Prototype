@@ -69,7 +69,9 @@ export async function getAllMaintenanceForecasts(): Promise<MaintenanceForecast[
 
 	return engines
 		.map((engine: Engine) => calculateMaintenanceForecast(engine))
-		.sort((a: MaintenanceForecast, b: MaintenanceForecast) => a.hours_remaining - b.hours_remaining);
+		.sort(
+			(a: MaintenanceForecast, b: MaintenanceForecast) => a.hours_remaining - b.hours_remaining
+		);
 }
 
 /**

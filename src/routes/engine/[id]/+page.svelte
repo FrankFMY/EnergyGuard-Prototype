@@ -53,7 +53,7 @@
 	let historyChartContainer = $state<HTMLDivElement>();
 	let historyChartInstance: unknown;
 	let historyRange = $state('1h');
-	let historyLoading = $state(false);
+	let _historyLoading = $state(false);
 	let historyData: ChartDataPoint[] = $state([]);
 
 	async function updateData() {
@@ -148,7 +148,7 @@
 	async function loadHistoryData() {
 		if (activeTab !== 'history' || !historyChartContainer) return;
 
-		historyLoading = true;
+		_historyLoading = true;
 		try {
 			const res = await fetch(`${base}/api/history/${engineId}?range=${historyRange}`);
 			if (!res.ok) return;
@@ -224,7 +224,7 @@
 		} catch (e) {
 			console.error(e);
 		} finally {
-			historyLoading = false;
+			_historyLoading = false;
 		}
 	}
 
@@ -335,7 +335,7 @@
 
 		<!-- Tabs -->
 		<div class="flex gap-1 rounded-lg bg-slate-900/50 p-1">
-			{#each tabs as tab}
+			{#each tabs as tab (tab.id)}
 				{@const TabIcon = tab.icon}
 				<button
 					type="button"
@@ -490,7 +490,7 @@
 				<h3 class="text-lg font-semibold text-white">History</h3>
 				<div class="flex items-center gap-4">
 					<div class="flex gap-2">
-						{#each ['1h', '24h', '7d'] as r}
+						{#each ['1h', '24h', '7d'] as r (r)}
 							<button
 								type="button"
 								class={cn(

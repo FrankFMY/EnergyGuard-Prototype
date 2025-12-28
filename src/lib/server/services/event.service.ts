@@ -47,7 +47,11 @@ export async function getEventsForEngine(
 export async function getCriticalEvents(hours: number = 24): Promise<EventDisplay[]> {
 	const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
 
-	const result = await db.select().from(events).where(gte(events.time, cutoffTime)).orderBy(desc(events.time));
+	const result = await db
+		.select()
+		.from(events)
+		.where(gte(events.time, cutoffTime))
+		.orderBy(desc(events.time));
 
 	return result
 		.filter((e) => e.level === 'warning' || e.level === 'error')
