@@ -1,59 +1,57 @@
-# Svelte library
+# KASTOR IoT
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+**Minimum Viable Product (MVP) dashboard for an Industrial IoT application.**
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+This project visualizes financial losses and equipment status for a gas power plant. It simulates engine data (Jenbacher J420/J624) via MQTT and visualizes it using SvelteKit, TailwindCSS, and ECharts.
 
-## Creating a project
+## 🚀 Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+-   **Real-time Dashboard**: Live monitoring of engine power, efficiency, and financial losses.
+-   **Engine Details**: Interactive charts (ECharts) showing correlation between Exhaust Temp and Active Power.
+-   **Maintenance Forecast**: Predictive maintenance schedule based on engine running hours.
+-   **Simulation**: Built-in Bun script to simulate MQTT telemetry for 6 engines, including "overheat" scenarios.
+-   **Tech Stack**: Bun, SvelteKit, TimescaleDB, Drizzle ORM, EMQX (MQTT), Docker.
 
-```sh
-# create a new project in the current directory
-npx sv create
+## 🛠️ Setup & Run
 
-# create a new project in my-app
-npx sv create my-app
+### Prerequisites
+-   [Bun](https://bun.sh/) (v1.1+)
+-   [Docker](https://www.docker.com/) & Docker Compose
+
+### 1. Infrastructure
+Start the database (TimescaleDB) and MQTT broker (EMQX):
+```bash
+bun run db:start
+# or
+docker compose up -d
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+### 2. Database Migration
+Apply the schema to the database:
+```bash
+bun run db:migrate
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
-
-## Building
-
-To build your library:
-
-```sh
-npm pack
+### 3. Simulation
+Start the device simulator in a separate terminal to generate live data:
+```bash
+bun run scripts/mock-device.ts
 ```
 
-To create a production version of your showcase app:
-
-```sh
-npm run build
+### 4. Frontend
+Start the SvelteKit development server:
+```bash
+bun run dev
 ```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-You can preview the production build with `npm run preview`.
+## 👤 Author
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+**Прянишников Артём Алексеевич**
 
-## Publishing
+-   📧 Email: [Pryanishnikovartem@gmail.com](mailto:Pryanishnikovartem@gmail.com)
+-   ✈️ Telegram: [@FrankFMY](https://t.me/FrankFMY)
+-   🐙 GitHub: [FrankFMY](https://github.com/FrankFMY)
 
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```sh
-npm publish
-```
-# kastor-iot
+---
+Built with ❤️ using SvelteKit & Bun.

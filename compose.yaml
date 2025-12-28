@@ -1,0 +1,27 @@
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    restart: always
+    ports:
+      - 5444:5432
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: local
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  emqx:
+    image: emqx/emqx:5.3.0
+    restart: always
+    ports:
+      - 1883:1883
+      - 8083:8083
+      - 8883:8883
+      - 8081:8081
+    environment:
+      EMQX_ALLOW_ANONYMOUS: 'true'
+      EMQX_LOADED_PLUGINS: 'emqx_retained,emqx_rule_engine,emqx_bridge_mqtt'
+
+volumes:
+  pgdata:
