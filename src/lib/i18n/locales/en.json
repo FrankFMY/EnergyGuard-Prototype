@@ -10,7 +10,8 @@
 		"maintenance": "Maintenance",
 		"economics": "Economics",
 		"settings": "Settings",
-		"reports": "Reports"
+		"reports": "Reports",
+		"alerts": "Alerts"
 	},
 	"dashboard": {
 		"title": "Dashboard",

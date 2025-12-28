@@ -10,7 +10,8 @@
 		"maintenance": "Техобслуживание",
 		"economics": "Экономика",
 		"settings": "Настройки",
-		"reports": "Отчеты"
+		"reports": "Отчеты",
+		"alerts": "Алерты"
 	},
 	"common": {
 		"loading": "Загрузка...",

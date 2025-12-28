@@ -14,6 +14,8 @@
 	import Wrench from 'lucide-svelte/icons/wrench';
 	import Brain from 'lucide-svelte/icons/brain';
 	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
+	import Download from 'lucide-svelte/icons/download';
+	import { Button } from '$lib/components/ui/index.js';
 
 	interface ChartDataPoint {
 		time: string;
@@ -52,6 +54,7 @@
 	let historyChartInstance: unknown;
 	let historyRange = $state('1h');
 	let historyLoading = $state(false);
+	let historyData: ChartDataPoint[] = $state([]);
 
 	async function updateData() {
 		try {
@@ -150,6 +153,7 @@
 			const res = await fetch(`${base}/api/history/${engineId}?range=${historyRange}`);
 			if (!res.ok) return;
 			const history: ChartDataPoint[] = await res.json();
+			historyData = history;
 
 			if (!historyChartInstance) {
 				const echarts = await import('echarts');
@@ -269,6 +273,29 @@
 		if (temp > 600) return 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse';
 		if (temp > 500) return 'bg-amber-500';
 		return 'bg-emerald-500/20';
+	}
+
+	function exportToCSV() {
+		if (historyData.length === 0) return;
+
+		const headers = ['Time', 'Power (kW)', 'Exhaust Temp (°C)'];
+		const rows = historyData.map((d) => [
+			new Date(d.time).toISOString(),
+			d.power.toString(),
+			d.temp.toString()
+		]);
+
+		const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		link.setAttribute('href', url);
+		link.setAttribute('download', `${engineId}_telemetry_${historyRange}.csv`);
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
 	}
 
 	// Watch for tab and range changes to load history
@@ -459,26 +486,38 @@
 		</div>
 	{:else if activeTab === 'history'}
 		<Card>
-			<div class="mb-6 flex items-center justify-between">
+			<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
 				<h3 class="text-lg font-semibold text-white">History</h3>
-				<div class="flex gap-2">
-					{#each ['1h', '24h', '7d'] as r}
-						<button
-							type="button"
-							class={cn(
-								'rounded px-3 py-1 text-xs font-medium transition',
-								historyRange === r
-									? 'bg-cyan-500 text-white'
-									: 'bg-slate-800 text-slate-400 hover:text-white'
-							)}
-							onclick={() => {
-								historyRange = r;
-								loadHistoryData();
-							}}
-						>
-							{r}
-						</button>
-					{/each}
+				<div class="flex items-center gap-4">
+					<div class="flex gap-2">
+						{#each ['1h', '24h', '7d'] as r}
+							<button
+								type="button"
+								class={cn(
+									'rounded px-3 py-1 text-xs font-medium transition',
+									historyRange === r
+										? 'bg-cyan-500 text-white'
+										: 'bg-slate-800 text-slate-400 hover:text-white'
+								)}
+								onclick={() => {
+									historyRange = r;
+									loadHistoryData();
+								}}
+							>
+								{r}
+							</button>
+						{/each}
+					</div>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={exportToCSV}
+						disabled={historyData.length === 0}
+						class="gap-2"
+					>
+						<Download class="h-4 w-4" />
+						Export CSV
+					</Button>
 				</div>
 			</div>
 			<div class="h-[500px] w-full" bind:this={historyChartContainer}></div>
@@ -494,14 +533,142 @@
 			</div>
 		</Card>
 	{:else if activeTab === 'diagnostics'}
-		<Card>
-			<div class="flex h-64 items-center justify-center text-slate-500">
-				<div class="text-center">
-					<Brain class="mx-auto mb-2 h-12 w-12 opacity-20" />
-					<p>AI Диагностика</p>
-					<p class="text-xs text-slate-600">Прогнозы и рекомендации</p>
+		<div class="grid gap-6 lg:grid-cols-2">
+			<!-- RUL Prediction -->
+			<Card>
+				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+					<Brain class="h-5 w-5 text-cyan-400" />
+					Remaining Useful Life (RUL)
+				</h3>
+
+				<div class="mb-6 rounded-lg bg-slate-800/50 p-4">
+					<div class="mb-2 text-sm text-slate-400">Predicted Time to Next Service</div>
+					<div class="flex items-baseline gap-2">
+						<span class="text-4xl font-bold text-emerald-400">847</span>
+						<span class="text-lg text-slate-400">hours</span>
+					</div>
+					<div class="mt-2 text-xs text-slate-500">Confidence Interval: 780 - 920 hours (95%)</div>
 				</div>
-			</div>
-		</Card>
+
+				<div class="space-y-4">
+					<div>
+						<div class="mb-2 flex items-center justify-between text-sm">
+							<span class="text-slate-400">Spark Plugs</span>
+							<span class="font-mono text-emerald-400">92%</span>
+						</div>
+						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
+							<div class="h-full w-[92%] bg-emerald-500"></div>
+						</div>
+					</div>
+					<div>
+						<div class="mb-2 flex items-center justify-between text-sm">
+							<span class="text-slate-400">Oil Quality</span>
+							<span class="font-mono text-emerald-400">85%</span>
+						</div>
+						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
+							<div class="h-full w-[85%] bg-emerald-500"></div>
+						</div>
+					</div>
+					<div>
+						<div class="mb-2 flex items-center justify-between text-sm">
+							<span class="text-slate-400">Air Filter</span>
+							<span class="font-mono text-amber-400">67%</span>
+						</div>
+						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
+							<div class="h-full w-[67%] bg-amber-500"></div>
+						</div>
+					</div>
+					<div>
+						<div class="mb-2 flex items-center justify-between text-sm">
+							<span class="text-slate-400">Coolant System</span>
+							<span class="font-mono text-emerald-400">78%</span>
+						</div>
+						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
+							<div class="h-full w-[78%] bg-emerald-500"></div>
+						</div>
+					</div>
+				</div>
+			</Card>
+
+			<!-- Failure Probability -->
+			<Card>
+				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+					<TriangleAlert class="h-5 w-5 text-amber-400" />
+					Failure Probability (7 days)
+				</h3>
+
+				<div class="mb-6 grid grid-cols-2 gap-4">
+					<div class="rounded-lg bg-emerald-500/10 p-4 text-center">
+						<div class="text-3xl font-bold text-emerald-400">2.3%</div>
+						<div class="text-xs text-slate-400">Overall Risk</div>
+					</div>
+					<div class="rounded-lg bg-amber-500/10 p-4 text-center">
+						<div class="text-3xl font-bold text-amber-400">8.1%</div>
+						<div class="text-xs text-slate-400">Overheating Risk</div>
+					</div>
+				</div>
+
+				<div class="space-y-3">
+					<h4 class="text-sm font-medium text-slate-300">Risk Factors</h4>
+					<div class="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+						<div class="flex items-start gap-3">
+							<div class="mt-0.5 h-2 w-2 rounded-full bg-amber-500"></div>
+							<div>
+								<div class="text-sm font-medium text-amber-400">Elevated Exhaust Temperature</div>
+								<div class="text-xs text-slate-400">
+									Average temp 12°C above baseline. Monitor cylinder 12.
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="rounded-lg border border-slate-700 bg-slate-800/50 p-3">
+						<div class="flex items-start gap-3">
+							<div class="mt-0.5 h-2 w-2 rounded-full bg-slate-500"></div>
+							<div>
+								<div class="text-sm font-medium text-slate-300">Vibration Pattern Normal</div>
+								<div class="text-xs text-slate-400">
+									No anomalies detected in vibration spectrum analysis.
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</Card>
+
+			<!-- AI Recommendations -->
+			<Card class="lg:col-span-2">
+				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+					<Brain class="h-5 w-5 text-cyan-400" />
+					AI Recommendations
+				</h3>
+
+				<div class="grid gap-4 md:grid-cols-3">
+					<div class="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4">
+						<Badge variant="info" class="mb-2">Suggested</Badge>
+						<h4 class="mb-1 font-medium text-white">Schedule Air Filter Check</h4>
+						<p class="text-sm text-slate-400">
+							Air filter efficiency dropping. Recommend inspection within 200 operating hours.
+						</p>
+						<div class="mt-3 text-xs text-slate-500">Estimated cost: 15,000 ₽</div>
+					</div>
+					<div class="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+						<Badge variant="warning" class="mb-2">Monitor</Badge>
+						<h4 class="mb-1 font-medium text-white">Cylinder 12 Temperature</h4>
+						<p class="text-sm text-slate-400">
+							Consistently running 5-10°C above other cylinders. May indicate injector issue.
+						</p>
+						<div class="mt-3 text-xs text-slate-500">Potential savings: 50,000 ₽</div>
+					</div>
+					<div class="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+						<Badge variant="success" class="mb-2">Optimal</Badge>
+						<h4 class="mb-1 font-medium text-white">Fuel Efficiency</h4>
+						<p class="text-sm text-slate-400">
+							Engine operating at 98.5% of optimal fuel efficiency. No action required.
+						</p>
+						<div class="mt-3 text-xs text-slate-500">Savings this month: 25,000 ₽</div>
+					</div>
+				</div>
+			</Card>
+		</div>
 	{/if}
 </div>

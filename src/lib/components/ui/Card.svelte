@@ -5,10 +5,11 @@
 		class?: string;
 		variant?: 'default' | 'glass' | 'danger' | 'success';
 		hover?: boolean;
+		onclick?: (e: MouseEvent) => void;
 		children: import('svelte').Snippet;
 	}
 
-	const { class: className, variant = 'glass', hover = false, children }: Props = $props();
+	const { class: className, variant = 'glass', hover = false, onclick, children }: Props = $props();
 
 	const variants = {
 		default: 'bg-slate-900 border-slate-800',
@@ -23,8 +24,13 @@
 		'rounded-xl border p-6',
 		variants[variant],
 		hover && 'transition-all hover:-translate-y-1 hover:bg-white/5',
+		onclick && 'cursor-pointer',
 		className
 	)}
+	role={onclick ? 'button' : undefined}
+	tabindex={onclick ? 0 : undefined}
+	{onclick}
+	onkeydown={(e) => e.key === 'Enter' && onclick?.(e as unknown as MouseEvent)}
 >
 	{@render children()}
 </div>

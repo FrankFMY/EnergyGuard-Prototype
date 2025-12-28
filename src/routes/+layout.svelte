@@ -3,14 +3,17 @@
 	import '$lib/i18n/index.js';
 	import { base } from '$app/paths';
 	import { _, isLoading } from 'svelte-i18n';
+	import { onMount } from 'svelte';
 	import Zap from 'lucide-svelte/icons/zap';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Wrench from 'lucide-svelte/icons/wrench';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
 	import FileText from 'lucide-svelte/icons/file-text';
+	import Bell from 'lucide-svelte/icons/bell';
 	import Settings from 'lucide-svelte/icons/settings';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
+	import CommandPalette from '$lib/components/CommandPalette.svelte';
 
 	const { children } = $props();
 
@@ -18,8 +21,18 @@
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
 		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
 		{ href: `${base}/economics`, label: 'nav.economics', icon: TrendingUp },
+		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
 		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
 	];
+
+	// Register service worker for PWA
+	onMount(() => {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js').catch((err) => {
+				console.warn('Service worker registration failed:', err);
+			});
+		}
+	});
 </script>
 
 {#if $isLoading}
@@ -94,5 +107,7 @@
 		<main class="mx-auto max-w-7xl p-4 md:p-6 lg:p-8">
 			{@render children()}
 		</main>
+
+		<CommandPalette />
 	</div>
 {/if}
