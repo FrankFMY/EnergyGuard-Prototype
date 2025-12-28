@@ -12,7 +12,7 @@
 		<div class="flex items-center gap-6">
 			<a
 				href="{base}/"
-				class="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-xl font-bold text-transparent"
+				class="bg-linear-to-r from-blue-600 to-cyan-500 bg-clip-text text-xl font-bold text-transparent"
 				>KASTOR IoT</a
 			>
 			<div class="flex gap-4 text-sm font-medium text-slate-600 dark:text-slate-300">
