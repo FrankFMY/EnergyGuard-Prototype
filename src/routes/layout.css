@@ -14,10 +14,78 @@ body {
 	text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
 }
 
+.neon-text-red {
+	text-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+}
+
 .neon-border-cyan {
 	box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
 }
 
 .glass-card {
 	@apply border border-white/5 bg-slate-900/60 backdrop-blur-md;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply rounded-full bg-slate-700;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-slate-600;
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in {
+	animation: fade-in 0.3s ease-out;
+}
+
+/* Number ticker smooth transitions */
+.tabular-nums {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Chart container fixes */
+.echarts-container {
+	width: 100%;
+	height: 100%;
+	min-height: 300px;
+}
+
+/* Mobile menu overlay */
+.mobile-nav-overlay {
+	@apply fixed inset-0 z-40 bg-black/60 backdrop-blur-sm;
+}
+
+/* Status indicator glow */
+.status-glow-ok {
+	box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.status-glow-warning {
+	box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.status-glow-error {
+	box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
 }

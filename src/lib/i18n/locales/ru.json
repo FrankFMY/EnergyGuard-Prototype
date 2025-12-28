@@ -1,0 +1,133 @@
+{
+	"app": {
+		"name": "KASTOR",
+		"tagline": "IoT",
+		"systemOnline": "Система онлайн",
+		"systemOffline": "Система офлайн"
+	},
+	"nav": {
+		"dashboard": "Панель управления",
+		"maintenance": "Техобслуживание",
+		"economics": "Экономика",
+		"settings": "Настройки"
+	},
+	"common": {
+		"loading": "Загрузка...",
+		"error": "Ошибка",
+		"retry": "Повторить",
+		"save": "Сохранить",
+		"cancel": "Отмена",
+		"close": "Закрыть",
+		"yes": "Да",
+		"no": "Нет",
+		"kw": "кВт",
+		"celsius": "°C"
+	},
+	"dashboard": {
+		"title": "Панель управления",
+		"totalOutput": "Общая выработка",
+		"plantEfficiency": "Эффективность станции",
+		"financialLoss": "Финансовые потери",
+		"liveFleetStatus": "Статус парка в реальном времени",
+		"liveEvents": "Журнал событий",
+		"noEvents": "Событий пока нет",
+		"ofTarget": "от плана",
+		"potentialMonthly": "Потенциально за месяц",
+		"fleetStatus": "В работе: {online} из {total}",
+		"fleetStatus.title": "Статус парка",
+		"fleetStatus.online": "онлайн"
+	},
+	"engine": {
+		"load": "Нагрузка",
+		"profitability": "Рентабельность",
+		"temp": "Температура",
+		"vibration": "Вибрация",
+		"details": "Детали двигателя",
+		"backToFleet": "← Назад к списку",
+		"realTimeMetrics": "Метрики в реальном времени",
+		"matchesBaseline": "Работа соответствует базовым параметрам",
+		"powerOutput": "Выходная мощность",
+		"exhaustTemp": "Температура выхлопа",
+		"efficiency": "Эффективность",
+		"aiDiagnostic": "AI Диагностика",
+		"criticalOverheat": "Критический перегрев",
+		"optimalOperation": "Оптимальная работа",
+		"performanceCorrelation": "Корреляция производительности",
+		"cylinderTemps": "Температуры цилиндров",
+		"topView": "Вид сверху",
+		"normal": "Норма",
+		"warning": "Предупреждение",
+		"critical": "Критический"
+	},
+	"maintenance": {
+		"title": "Прогноз техобслуживания",
+		"nextService": "Следующее ТО",
+		"timeRemaining": "Осталось времени",
+		"totalHours": "Наработка",
+		"estimatedCost": "Оценочная стоимость",
+		"partsAvailable": "ЗИП в наличии",
+		"partsUnavailable": "ЗИП отсутствует",
+		"urgency": {
+			"low": "Низкая",
+			"medium": "Средняя",
+			"high": "Высокая",
+			"critical": "Критическая"
+		},
+		"serviceType": {
+			"minor": "Малое ТО",
+			"major": "Большое ТО",
+			"overhaul": "Капремонт"
+		},
+		"sparePartsInventory": "Склад запчастей",
+		"budgetForecast": "Бюджет на месяц"
+	},
+	"economics": {
+		"title": "Экономика энергии",
+		"costStructure": "Структура себестоимости",
+		"costPerKwh": "Себестоимость кВт·ч",
+		"gasShare": "Газ",
+		"depreciation": "Амортизация",
+		"spareParts": "ЗИП",
+		"labor": "ФОТ",
+		"other": "Прочее",
+		"monthlyTrend": "Динамика затрат"
+	},
+	"status": {
+		"ok": "Работа",
+		"warning": "Предупреждение",
+		"error": "Авария"
+	},
+	"units": {
+		"kw": "кВт",
+		"mw": "МВт",
+		"kwh": "кВт·ч",
+		"celsius": "°C",
+		"mms": "мм/с",
+		"m3": "м³",
+		"rub": "₽",
+		"rubPerHour": "₽/ч",
+		"hours": "ч",
+		"days": "дн"
+	},
+	"time": {
+		"hours": "{count} ч",
+		"days": "{count} дн",
+		"hoursLeft": "осталось {hours} ч ({days} дн)"
+	},
+	"oee": {
+		"title": "OEE Метрики",
+		"generation": "Генерация",
+		"planned": "План",
+		"actual": "Факт",
+		"specificConsumption": "Удельный расход",
+		"m3PerKwh": "м³/кВт·ч",
+		"planCompletion": "Выполнение плана",
+		"gasSavings": "Экономия газа"
+	},
+	"downtime": {
+		"title": "Простои",
+		"totalLosses": "Общие потери",
+		"completed": "Завершен",
+		"ongoing": "В процессе"
+	}
+}

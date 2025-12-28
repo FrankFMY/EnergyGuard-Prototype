@@ -88,7 +88,9 @@
 		"mqtt": "^5.14.1",
 		"postgres": "^3.4.7",
 		"svelte-echarts": "^1.0.0",
+		"svelte-i18n": "^4.0.1",
 		"svelte-motion": "^0.12.2",
-		"tailwind-merge": "^3.4.0"
+		"tailwind-merge": "^3.4.0",
+		"zod": "^4.2.1"
 	}
 }

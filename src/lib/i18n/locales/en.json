@@ -1,0 +1,112 @@
+{
+	"app": {
+		"name": "KASTOR",
+		"tagline": "IoT",
+		"systemOnline": "System Online",
+		"systemOffline": "System Offline"
+	},
+	"nav": {
+		"dashboard": "Dashboard",
+		"maintenance": "Maintenance",
+		"economics": "Economics",
+		"settings": "Settings"
+	},
+	"dashboard": {
+		"title": "Dashboard",
+		"totalOutput": "Total Output",
+		"plantEfficiency": "Plant Efficiency",
+		"financialLoss": "Financial Loss Rate",
+		"liveFleetStatus": "Live Fleet Status",
+		"liveEvents": "Live Events",
+		"noEvents": "No events logged yet",
+		"ofTarget": "of Target",
+		"potentialMonthly": "Potential Monthly",
+		"fleetStatus": "Online: {online} of {total}"
+	},
+	"engine": {
+		"load": "Load",
+		"profitability": "Profitability",
+		"temp": "Temp",
+		"vibration": "Vibration",
+		"details": "Engine Details",
+		"backToFleet": "← Back to Fleet",
+		"realtimeMetrics": "Real-time Metrics",
+		"powerOutput": "Power Output",
+		"exhaustTemp": "Exhaust Temp",
+		"efficiency": "Efficiency",
+		"aiDiagnostic": "AI Diagnostic",
+		"criticalOverheat": "Critical Overheat",
+		"optimalOperation": "Optimal Operation",
+		"performanceCorrelation": "Performance Correlation",
+		"cylinderTemps": "Cylinder Temps",
+		"topView": "Top View",
+		"normal": "Normal",
+		"warning": "Warning",
+		"critical": "Critical"
+	},
+	"maintenance": {
+		"title": "Maintenance Forecast",
+		"nextService": "Next Service",
+		"timeRemaining": "Time Remaining",
+		"totalHours": "Total Hours",
+		"estimatedCost": "Estimated Cost",
+		"partsAvailable": "Parts Available",
+		"partsUnavailable": "Parts Unavailable",
+		"urgency": {
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High",
+			"critical": "Critical"
+		},
+		"serviceType": {
+			"minor": "Minor Service",
+			"major": "Major Service",
+			"overhaul": "Overhaul"
+		},
+		"sparePartsInventory": "Spare Parts Inventory",
+		"budgetForecast": "Monthly Budget"
+	},
+	"economics": {
+		"title": "Energy Economics",
+		"costStructure": "Cost Structure",
+		"costPerKwh": "Cost per kWh",
+		"gasShare": "Gas",
+		"depreciation": "Depreciation",
+		"spareParts": "Spare Parts",
+		"labor": "Labor",
+		"other": "Other",
+		"monthlyTrend": "Cost Trend"
+	},
+	"status": {
+		"ok": "Running",
+		"warning": "Warning",
+		"error": "Error"
+	},
+	"units": {
+		"kw": "kW",
+		"mw": "MW",
+		"kwh": "kWh",
+		"celsius": "°C",
+		"mms": "mm/s",
+		"m3": "m³",
+		"rub": "RUB",
+		"rubPerHour": "R/h",
+		"hours": "h",
+		"days": "d"
+	},
+	"time": {
+		"hours": "{count}h",
+		"days": "{count}d",
+		"hoursLeft": "{hours}h ({days} days) remaining"
+	},
+	"common": {
+		"loading": "Loading...",
+		"error": "Error",
+		"retry": "Retry",
+		"save": "Save",
+		"cancel": "Cancel",
+		"close": "Close",
+		"yes": "Yes",
+		"no": "No"
+	}
+}
