@@ -11,7 +11,10 @@
 		"economics": "Economics",
 		"settings": "Settings",
 		"reports": "Reports",
-		"alerts": "Alerts"
+		"alerts": "Alerts",
+		"analytics": "Analytics",
+		"admin": "Admin",
+		"integrations": "Integrations"
 	},
 	"dashboard": {
 		"title": "Dashboard",

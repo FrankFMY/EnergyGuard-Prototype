@@ -11,7 +11,10 @@
 		"economics": "Экономика",
 		"settings": "Настройки",
 		"reports": "Отчеты",
-		"alerts": "Алерты"
+		"alerts": "Алерты",
+		"analytics": "Аналитика",
+		"admin": "Администрирование",
+		"integrations": "Интеграции"
 	},
 	"common": {
 		"loading": "Загрузка...",

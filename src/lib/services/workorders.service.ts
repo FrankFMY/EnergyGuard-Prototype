@@ -114,3 +114,36 @@ export async function updateWorkOrderStatus(
 	}
 	return false;
 }
+
+export interface CreateWorkOrderInput {
+	title: string;
+	description: string;
+	engine_id: string | null;
+	priority: 'low' | 'medium' | 'high' | 'critical';
+	assigned_to: string | null;
+	due_date: string | null;
+	estimated_hours: number | null;
+	parts_required: string[];
+}
+
+export async function createWorkOrder(input: CreateWorkOrderInput): Promise<WorkOrder> {
+	await new Promise((r) => setTimeout(r, 300));
+
+	const newWorkOrder: WorkOrder = {
+		id: `wo-${String(mockWorkOrders.length + 1).padStart(3, '0')}`,
+		title: input.title,
+		description: input.description,
+		engine_id: input.engine_id,
+		status: 'open',
+		priority: input.priority,
+		assigned_to: input.assigned_to,
+		created_at: new Date().toISOString(),
+		due_date: input.due_date,
+		completed_at: null,
+		estimated_hours: input.estimated_hours,
+		parts_required: input.parts_required
+	};
+
+	mockWorkOrders.unshift(newWorkOrder);
+	return newWorkOrder;
+}

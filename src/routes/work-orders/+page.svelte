@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
-	import { Card, Badge, Button } from '$lib/components/ui/index.js';
+	import { Card, Badge, Button, Modal } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
 	import Plus from 'lucide-svelte/icons/plus';
@@ -15,14 +15,65 @@
 	import {
 		getWorkOrders,
 		getWorkOrderStats,
-		updateWorkOrderStatus
+		updateWorkOrderStatus,
+		createWorkOrder
 	} from '$lib/services/workorders.service.js';
-	import type { WorkOrder, WorkOrderStatus } from '$lib/types/workorder.js';
+	import type { WorkOrder, WorkOrderStatus, WorkOrderPriority } from '$lib/types/workorder.js';
 
 	let workOrders: WorkOrder[] = $state([]);
 	let stats = $state({ total: 0, open: 0, in_progress: 0, completed: 0, critical: 0 });
 	let loading = $state(true);
 	let statusFilter = $state<WorkOrderStatus | ''>('');
+	let showCreateModal = $state(false);
+
+	// Form state
+	let newWorkOrder = $state({
+		title: '',
+		description: '',
+		engine_id: '',
+		priority: 'medium' as WorkOrderPriority,
+		assigned_to: '',
+		due_date: '',
+		estimated_hours: 0,
+		parts_required: ''
+	});
+
+	function resetForm() {
+		newWorkOrder = {
+			title: '',
+			description: '',
+			engine_id: '',
+			priority: 'medium',
+			assigned_to: '',
+			due_date: '',
+			estimated_hours: 0,
+			parts_required: ''
+		};
+	}
+
+	async function handleCreateWorkOrder() {
+		const partsArray = newWorkOrder.parts_required
+			? newWorkOrder.parts_required
+					.split(',')
+					.map((p) => p.trim())
+					.filter(Boolean)
+			: [];
+
+		await createWorkOrder({
+			title: newWorkOrder.title,
+			description: newWorkOrder.description,
+			engine_id: newWorkOrder.engine_id || null,
+			priority: newWorkOrder.priority,
+			assigned_to: newWorkOrder.assigned_to || null,
+			due_date: newWorkOrder.due_date || null,
+			estimated_hours: newWorkOrder.estimated_hours || null,
+			parts_required: partsArray
+		});
+
+		showCreateModal = false;
+		resetForm();
+		await loadData();
+	}
 
 	async function loadData() {
 		loading = true;
@@ -94,7 +145,7 @@
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">Manage maintenance tasks and assignments</p>
 		</div>
-		<Button class="gap-2" disabled>
+		<Button class="gap-2" onclick={() => (showCreateModal = true)}>
 			<Plus class="h-4 w-4" />
 			New Work Order
 		</Button>
@@ -277,3 +328,148 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Create Work Order Modal -->
+<Modal
+	open={showCreateModal}
+	title="New Work Order"
+	onclose={() => (showCreateModal = false)}
+	size="lg"
+>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleCreateWorkOrder();
+		}}
+		class="space-y-4"
+	>
+		<div>
+			<label for="wo-title" class="mb-1 block text-sm font-medium text-slate-300">Title *</label>
+			<input
+				id="wo-title"
+				type="text"
+				bind:value={newWorkOrder.title}
+				placeholder="Enter work order title"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
+
+		<div>
+			<label for="wo-description" class="mb-1 block text-sm font-medium text-slate-300"
+				>Description *</label
+			>
+			<textarea
+				id="wo-description"
+				bind:value={newWorkOrder.description}
+				placeholder="Describe the work to be done"
+				rows="3"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			></textarea>
+		</div>
+
+		<div class="grid grid-cols-2 gap-4">
+			<div>
+				<label for="wo-engine" class="mb-1 block text-sm font-medium text-slate-300">Engine</label>
+				<select
+					id="wo-engine"
+					bind:value={newWorkOrder.engine_id}
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+				>
+					<option value="">Not assigned</option>
+					<option value="gpu-1">GPU-1</option>
+					<option value="gpu-2">GPU-2</option>
+					<option value="gpu-3">GPU-3</option>
+					<option value="gpu-4">GPU-4</option>
+				</select>
+			</div>
+
+			<div>
+				<label for="wo-priority" class="mb-1 block text-sm font-medium text-slate-300"
+					>Priority *</label
+				>
+				<select
+					id="wo-priority"
+					bind:value={newWorkOrder.priority}
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+					required
+				>
+					<option value="low">Low</option>
+					<option value="medium">Medium</option>
+					<option value="high">High</option>
+					<option value="critical">Critical</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-2 gap-4">
+			<div>
+				<label for="wo-assigned" class="mb-1 block text-sm font-medium text-slate-300"
+					>Assigned To</label
+				>
+				<input
+					id="wo-assigned"
+					type="text"
+					bind:value={newWorkOrder.assigned_to}
+					placeholder="Technician name"
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				/>
+			</div>
+
+			<div>
+				<label for="wo-due" class="mb-1 block text-sm font-medium text-slate-300">Due Date</label>
+				<input
+					id="wo-due"
+					type="date"
+					bind:value={newWorkOrder.due_date}
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+				/>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-2 gap-4">
+			<div>
+				<label for="wo-hours" class="mb-1 block text-sm font-medium text-slate-300"
+					>Estimated Hours</label
+				>
+				<input
+					id="wo-hours"
+					type="number"
+					bind:value={newWorkOrder.estimated_hours}
+					placeholder="0"
+					min="0"
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				/>
+			</div>
+
+			<div>
+				<label for="wo-parts" class="mb-1 block text-sm font-medium text-slate-300"
+					>Parts Required</label
+				>
+				<input
+					id="wo-parts"
+					type="text"
+					bind:value={newWorkOrder.parts_required}
+					placeholder="Oil filter, Spark plugs..."
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				/>
+				<p class="mt-1 text-xs text-slate-500">Separate with commas</p>
+			</div>
+		</div>
+
+		<div class="flex justify-end gap-3 border-t border-white/5 pt-4">
+			<Button
+				type="button"
+				variant="secondary"
+				onclick={() => {
+					showCreateModal = false;
+					resetForm();
+				}}
+			>
+				Cancel
+			</Button>
+			<Button type="submit">Create Work Order</Button>
+		</div>
+	</form>
+</Modal>

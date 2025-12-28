@@ -8,9 +8,10 @@
 	import Activity from 'lucide-svelte/icons/activity';
 	import Wrench from 'lucide-svelte/icons/wrench';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
-	import FileText from 'lucide-svelte/icons/file-text';
+	import BarChart3 from 'lucide-svelte/icons/bar-chart-3';
 	import Bell from 'lucide-svelte/icons/bell';
 	import Settings from 'lucide-svelte/icons/settings';
+	import Shield from 'lucide-svelte/icons/shield';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
@@ -20,9 +21,9 @@
 	const navItems = [
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
 		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-		{ href: `${base}/economics`, label: 'nav.economics', icon: TrendingUp },
+		{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
 		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
-		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
+		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield }
 	];
 
 	// Register service worker for PWA

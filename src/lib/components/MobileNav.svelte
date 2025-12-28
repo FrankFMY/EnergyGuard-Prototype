@@ -5,7 +5,11 @@
 	import X from 'lucide-svelte/icons/x';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Wrench from 'lucide-svelte/icons/wrench';
-	import TrendingUp from 'lucide-svelte/icons/trending-up';
+	import BarChart3 from 'lucide-svelte/icons/bar-chart-3';
+	import Bell from 'lucide-svelte/icons/bell';
+	import Shield from 'lucide-svelte/icons/shield';
+	import Cable from 'lucide-svelte/icons/cable';
+	import Settings from 'lucide-svelte/icons/settings';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 
 	let open = $state(false);
@@ -13,7 +17,11 @@
 	const navItems = [
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
 		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-		{ href: `${base}/economics`, label: 'nav.economics', icon: TrendingUp }
+		{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
+		{ href: `${base}/integrations`, label: 'nav.integrations', icon: Cable },
+		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield },
+		{ href: `${base}/settings`, label: 'nav.settings', icon: Settings }
 	];
 
 	function close() {

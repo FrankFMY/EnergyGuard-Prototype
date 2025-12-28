@@ -224,3 +224,38 @@ export async function toggleAlertRule(ruleId: string): Promise<boolean> {
 	}
 	return false;
 }
+
+export interface CreateAlertRuleInput {
+	name: string;
+	engine_id: string | null;
+	metric: string;
+	operator: 'gt' | 'lt' | 'gte' | 'lte' | 'eq';
+	threshold: number;
+	duration_seconds: number;
+	severity: AlertSeverity;
+	notify_email: boolean;
+	notify_sms: boolean;
+	notify_push: boolean;
+}
+
+export async function createAlertRule(input: CreateAlertRuleInput): Promise<AlertRule> {
+	await new Promise((r) => setTimeout(r, 300));
+
+	const newRule: AlertRule = {
+		id: `rule-${mockAlertRules.length + 1}`,
+		name: input.name,
+		engine_id: input.engine_id,
+		metric: input.metric,
+		operator: input.operator,
+		threshold: input.threshold,
+		duration_seconds: input.duration_seconds,
+		severity: input.severity,
+		enabled: true,
+		notify_email: input.notify_email,
+		notify_sms: input.notify_sms,
+		notify_push: input.notify_push
+	};
+
+	mockAlertRules.push(newRule);
+	return newRule;
+}

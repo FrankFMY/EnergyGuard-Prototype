@@ -26,15 +26,20 @@
 	let eventSource: EventSource | null = null;
 	let interval: ReturnType<typeof setInterval>;
 	let useSSE = $state(true);
+	let connectionStatus = $state<'connected' | 'polling' | 'disconnected'>('disconnected');
+	let lastUpdate = $state<Date | null>(null);
 
 	async function fetchData() {
 		try {
 			const res = await fetch(`${base}/api/status`);
 			if (res.ok) {
 				data = await res.json();
+				lastUpdate = new Date();
+				connectionStatus = 'polling';
 			}
 		} catch (e) {
 			console.error('Failed to fetch status', e);
+			connectionStatus = 'disconnected';
 		}
 	}
 
@@ -47,6 +52,8 @@
 			eventSource.onmessage = (event) => {
 				try {
 					data = JSON.parse(event.data);
+					lastUpdate = new Date();
+					connectionStatus = 'connected';
 				} catch (e) {
 					console.error('Failed to parse SSE data:', e);
 				}
@@ -249,10 +256,40 @@
 			</div>
 
 			<!-- Engine Grid -->
-			<h2 class="flex items-center gap-2 text-lg font-semibold text-white">
-				<div class="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></div>
-				{$_('dashboard.liveFleetStatus')}
-			</h2>
+			<div class="flex items-center justify-between">
+				<h2 class="flex items-center gap-2 text-lg font-semibold text-white">
+					<div class="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></div>
+					{$_('dashboard.liveFleetStatus')}
+				</h2>
+				<div class="flex items-center gap-2 text-xs">
+					{#if connectionStatus === 'connected'}
+						<span class="flex items-center gap-1.5 text-emerald-400">
+							<span class="relative flex h-2 w-2">
+								<span
+									class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+								></span>
+								<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+							</span>
+							Live SSE
+						</span>
+					{:else if connectionStatus === 'polling'}
+						<span class="flex items-center gap-1.5 text-amber-400">
+							<span class="h-2 w-2 rounded-full bg-amber-500"></span>
+							Polling
+						</span>
+					{:else}
+						<span class="flex items-center gap-1.5 text-rose-400">
+							<span class="h-2 w-2 rounded-full bg-rose-500"></span>
+							Disconnected
+						</span>
+					{/if}
+					{#if lastUpdate}
+						<span class="text-slate-500">
+							{lastUpdate.toLocaleTimeString()}
+						</span>
+					{/if}
+				</div>
+			</div>
 
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 				{#each data.engines as engine (engine.id)}
