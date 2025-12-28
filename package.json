@@ -82,9 +82,13 @@
 		"svelte"
 	],
 	"dependencies": {
+		"clsx": "^2.1.1",
 		"echarts": "^6.0.0",
+		"lucide-svelte": "^0.562.0",
 		"mqtt": "^5.14.1",
 		"postgres": "^3.4.7",
-		"svelte-echarts": "^1.0.0"
+		"svelte-echarts": "^1.0.0",
+		"svelte-motion": "^0.12.2",
+		"tailwind-merge": "^3.4.0"
 	}
 }

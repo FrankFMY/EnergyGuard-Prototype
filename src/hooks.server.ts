@@ -1,6 +1,6 @@
 import mqtt from 'mqtt';
 import { db } from '$lib/server/db/index.js';
-import { telemetry, engines } from '$lib/server/db/schema.js';
+import { telemetry, engines, events } from '$lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 
 let client: mqtt.MqttClient;
@@ -30,13 +30,8 @@ async function seedEngines() {
 }
 
 export async function handle({ event, resolve }) {
-	// Initialize MQTT on first request (or server start roughly)
-	// Note: SvelteKit hooks run on every request, but global state persists in Node/Bun.
-	// We check if client is defined to avoid re-connecting.
-
 	if (!client) {
 		console.log('Initializing MQTT Client...');
-		// Ensure engines exist
 		seedEngines().catch(console.error);
 
 		client = mqtt.connect('mqtt://localhost:1883');
@@ -44,37 +39,47 @@ export async function handle({ event, resolve }) {
 		client.on('connect', () => {
 			console.log('MQTT Client Connected');
 			client.subscribe('factory/telemetry');
+			client.subscribe('factory/events');
 		});
 
 		client.on('message', async (topic, message) => {
 			if (topic === 'factory/telemetry') {
 				try {
 					const payload = JSON.parse(message.toString());
-					// payload: { engine_id, timestamp, values: { power, temp, gas } }
+					// payload: { engine_id, timestamp, values: { power, temp, gas, vibration, gas_pressure } }
 
-					// Insert telemetry
 					await db.insert(telemetry).values({
 						time: new Date(payload.timestamp),
 						engine_id: payload.engine_id,
 						power_kw: payload.values.power,
 						temp_exhaust: payload.values.temp,
-						gas_consumption: payload.values.gas
+						gas_consumption: payload.values.gas,
+						vibration: payload.values.vibration,
+						gas_pressure: payload.values.gas_pressure
 					});
 
-					// Update engine status logic (Simple threshold)
+					// Simple status update based on thresholds
 					let status: 'ok' | 'warning' | 'error' = 'ok';
 					if (payload.values.temp > 530) status = 'error';
 					else if (payload.values.temp > 500) status = 'warning';
 
-					await db
-						.update(engines)
-						.set({
-							status: status
-							// simple increment logic for hours isn't accurate here, but we could update last seen
-						})
-						.where(eq(engines.id, payload.engine_id));
+					await db.update(engines).set({ status: status }).where(eq(engines.id, payload.engine_id));
 				} catch (e) {
-					console.error('Error processing MQTT message:', e);
+					console.error('Error processing telemetry:', e);
+				}
+			} else if (topic === 'factory/events') {
+				try {
+					const payload = JSON.parse(message.toString());
+					// payload: { level, message, engine_id, timestamp }
+
+					await db.insert(events).values({
+						time: new Date(payload.timestamp),
+						level: payload.level,
+						message: payload.message,
+						engine_id: payload.engine_id
+					});
+				} catch (e) {
+					console.error('Error processing event:', e);
 				}
 			}
 		});

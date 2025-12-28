@@ -16,5 +16,17 @@ export const telemetry = pgTable('telemetry', {
 		.notNull(),
 	power_kw: doublePrecision('power_kw').notNull(),
 	temp_exhaust: doublePrecision('temp_exhaust').notNull(),
-	gas_consumption: doublePrecision('gas_consumption').notNull()
+	gas_consumption: doublePrecision('gas_consumption').notNull(),
+	vibration: doublePrecision('vibration').default(0).notNull(),
+	gas_pressure: doublePrecision('gas_pressure').default(0).notNull()
+});
+
+export const events = pgTable('events', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	time: timestamp('time', { withTimezone: true }).defaultNow().notNull(),
+	level: text('level').notNull(), // 'info', 'warning', 'error'
+	message: text('message').notNull(),
+	engine_id: text('engine_id').references(() => engines.id)
 });
