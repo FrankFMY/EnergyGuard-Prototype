@@ -147,11 +147,42 @@
 	},
 	"analytics": {
 		"title": "Business Analytics",
-		"subtitle": "ROI and Performance Metrics",
+		"subtitle": "ROI and Economic Impact Analysis",
 		"totalSavings": "Total Savings",
 		"preventedDowntime": "Prevented Downtime",
+		"preventedFailures": "Prevented Failures",
+		"criticalFailures": "Critical Failures",
+		"predictedSavings": "Predicted Next Month",
+		"potentialSavings": "Potential Savings",
 		"roi": "Return on Investment",
-		"monthlySavings": "Monthly Savings"
+		"roiTitle": "Return on Investment",
+		"paybackPeriod": "Investment paid off in",
+		"months": "months",
+		"monthlySavings": "Monthly Savings",
+		"savingsTrend": "Monthly Savings Trend",
+		"downtimeAnalysis": "Downtime Analysis",
+		"costSavingsBreakdown": "Cost Savings Breakdown",
+		"preventDowntime": "Prevented Downtime",
+		"maintenanceOptimization": "Maintenance Optimization",
+		"efficiencyGain": "Efficiency Gains",
+		"fuelSavings": "Fuel Savings",
+		"totalForPeriod": "Total for Period",
+		"systemProfitable": "System is profitable and generating returns",
+		"monthlyProfit": "Monthly savings exceed operating costs by {ratio}x",
+		"downloadReport": "Download Report",
+		"vsLastYear": "vs last year",
+		"prevented": "prevented",
+		"reasons": {
+			"overheat": "Overheat",
+			"vibration": "Vibration",
+			"gasPressure": "Gas Pressure",
+			"scheduledMaintenance": "Scheduled Maintenance"
+		},
+		"categories": {
+			"preventedDowntime": "Prevented Downtime",
+			"maintenanceSavings": "Maintenance Savings",
+			"efficiency": "Efficiency"
+		}
 	},
 	"admin": {
 		"title": "Administration",
@@ -237,6 +268,61 @@
 		"lastWeek": "Last Week",
 		"lastMonth": "Last Month",
 		"last24h": "Last 24 hours"
+	},
+	"comparison": {
+		"title": "Engine Comparison",
+		"subtitle": "Compare performance metrics across engines",
+		"selectEngines": "Select engines to compare (max 4)",
+		"performanceComparison": "Performance Comparison",
+		"metricsTable": "Metrics Table",
+		"efficiencyRanking": "Efficiency Ranking",
+		"metric": "Metric",
+		"fleetAvg": "Fleet Avg",
+		"powerOutput": "Power Output",
+		"exhaustTemp": "Exhaust Temp",
+		"profitability": "Profitability"
+	},
+	"reports": {
+		"title": "Reports",
+		"subtitle": "Generate and view reports",
+		"generate": "Generate Report",
+		"download": "Download",
+		"preview": "Preview",
+		"types": {
+			"daily": "Daily",
+			"weekly": "Weekly",
+			"monthly": "Monthly",
+			"custom": "Custom Period"
+		},
+		"noReports": "No reports found"
+	},
+	"calendar": {
+		"title": "Maintenance Calendar",
+		"subtitle": "Plan and track maintenance schedules",
+		"today": "Today",
+		"month": "Month",
+		"week": "Week",
+		"day": "Day",
+		"addEvent": "Add Event",
+		"noEvents": "No scheduled events"
+	},
+	"settings": {
+		"title": "Settings",
+		"subtitle": "Configure system parameters",
+		"general": "General",
+		"notifications": "Notifications",
+		"appearance": "Appearance",
+		"language": "Language",
+		"timezone": "Timezone",
+		"units": "Units",
+		"emailNotifications": "Email Notifications",
+		"pushNotifications": "Push Notifications",
+		"smsNotifications": "SMS Notifications",
+		"theme": "Theme",
+		"dark": "Dark",
+		"light": "Light",
+		"system": "System",
+		"saved": "Settings saved"
 	},
 	"common": {
 		"loading": "Loading...",

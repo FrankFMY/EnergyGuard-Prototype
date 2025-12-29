@@ -39,20 +39,22 @@ export async function getWorkOrders(filters?: WorkOrderFilters): Promise<WorkOrd
 
 	const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-	const assignee = db.$with('assignee').as(
-		db.select({ id: users.id, name: users.name }).from(users)
-	);
+	const assignee = db
+		.$with('assignee')
+		.as(db.select({ id: users.id, name: users.name }).from(users));
 
-	const creator = db.$with('creator').as(
-		db.select({ id: users.id, name: users.name }).from(users)
-	);
+	const creator = db.$with('creator').as(db.select({ id: users.id, name: users.name }).from(users));
 
 	const result = await db
 		.with(assignee, creator)
 		.select({
 			workOrder: workOrders,
-			assignedToName: sql<string | null>`(select name from ${assignee} where id = ${workOrders.assignedTo})`,
-			createdByName: sql<string | null>`(select name from ${creator} where id = ${workOrders.createdBy})`
+			assignedToName: sql<
+				string | null
+			>`(select name from ${assignee} where id = ${workOrders.assignedTo})`,
+			createdByName: sql<
+				string | null
+			>`(select name from ${creator} where id = ${workOrders.createdBy})`
 		})
 		.from(workOrders)
 		.where(whereClause)
@@ -173,6 +175,9 @@ export async function assignWorkOrder(workOrderId: string, userId: string): Prom
  * Delete work order
  */
 export async function deleteWorkOrder(workOrderId: string): Promise<boolean> {
-	const result = await db.delete(workOrders).where(eq(workOrders.id, workOrderId)).returning({ id: workOrders.id });
+	const result = await db
+		.delete(workOrders)
+		.where(eq(workOrders.id, workOrderId))
+		.returning({ id: workOrders.id });
 	return result.length > 0;
 }

@@ -147,11 +147,42 @@
 	},
 	"analytics": {
 		"title": "Бизнес-аналитика",
-		"subtitle": "ROI и показатели эффективности",
+		"subtitle": "ROI и экономический эффект от внедрения системы",
 		"totalSavings": "Общая экономия",
 		"preventedDowntime": "Предотвращенные простои",
+		"preventedFailures": "Предотвращено аварий",
+		"criticalFailures": "Критических отказов",
+		"predictedSavings": "Прогноз на месяц",
+		"potentialSavings": "Потенциальная экономия",
 		"roi": "Возврат инвестиций",
-		"monthlySavings": "Экономия за месяц"
+		"roiTitle": "Return on Investment",
+		"paybackPeriod": "Инвестиции окупились за",
+		"months": "месяца",
+		"monthlySavings": "Экономия за месяц",
+		"savingsTrend": "Динамика экономии по месяцам",
+		"downtimeAnalysis": "Анализ простоев",
+		"costSavingsBreakdown": "Структура экономии",
+		"preventDowntime": "Предотвращение простоев",
+		"maintenanceOptimization": "Оптимизация ТО",
+		"efficiencyGain": "Повышение эффективности",
+		"fuelSavings": "Снижение расхода топлива",
+		"totalForPeriod": "Итого за период",
+		"systemProfitable": "Система окупилась и приносит прибыль",
+		"monthlyProfit": "Ежемесячная экономия превышает стоимость эксплуатации в {ratio} раза",
+		"downloadReport": "Скачать отчет",
+		"vsLastYear": "vs прошлый год",
+		"prevented": "предотвр.",
+		"reasons": {
+			"overheat": "Перегрев",
+			"vibration": "Вибрация",
+			"gasPressure": "Давление газа",
+			"scheduledMaintenance": "Плановое ТО"
+		},
+		"categories": {
+			"preventedDowntime": "Предотвращенные простои",
+			"maintenanceSavings": "Экономия на ТО",
+			"efficiency": "Эффективность"
+		}
 	},
 	"admin": {
 		"title": "Администрирование",
@@ -237,6 +268,61 @@
 		"lastWeek": "Прошлая неделя",
 		"lastMonth": "Прошлый месяц",
 		"last24h": "Последние 24 часа"
+	},
+	"comparison": {
+		"title": "Сравнение двигателей",
+		"subtitle": "Сравнение метрик производительности между двигателями",
+		"selectEngines": "Выберите двигатели для сравнения (макс 4)",
+		"performanceComparison": "Сравнение производительности",
+		"metricsTable": "Таблица метрик",
+		"efficiencyRanking": "Рейтинг эффективности",
+		"metric": "Метрика",
+		"fleetAvg": "Среднее по парку",
+		"powerOutput": "Выходная мощность",
+		"exhaustTemp": "Температура выхлопа",
+		"profitability": "Рентабельность"
+	},
+	"reports": {
+		"title": "Отчеты",
+		"subtitle": "Генерация и просмотр отчетов",
+		"generate": "Сгенерировать отчет",
+		"download": "Скачать",
+		"preview": "Просмотр",
+		"types": {
+			"daily": "Суточный",
+			"weekly": "Недельный",
+			"monthly": "Месячный",
+			"custom": "Произвольный период"
+		},
+		"noReports": "Отчеты не найдены"
+	},
+	"calendar": {
+		"title": "Календарь обслуживания",
+		"subtitle": "Планирование и отслеживание технического обслуживания",
+		"today": "Сегодня",
+		"month": "Месяц",
+		"week": "Неделя",
+		"day": "День",
+		"addEvent": "Добавить событие",
+		"noEvents": "Нет запланированных событий"
+	},
+	"settings": {
+		"title": "Настройки",
+		"subtitle": "Настройка системы и параметров",
+		"general": "Общие",
+		"notifications": "Уведомления",
+		"appearance": "Внешний вид",
+		"language": "Язык интерфейса",
+		"timezone": "Часовой пояс",
+		"units": "Единицы измерения",
+		"emailNotifications": "Email уведомления",
+		"pushNotifications": "Push уведомления",
+		"smsNotifications": "SMS уведомления",
+		"theme": "Тема",
+		"dark": "Темная",
+		"light": "Светлая",
+		"system": "Системная",
+		"saved": "Настройки сохранены"
 	},
 	"common": {
 		"loading": "Загрузка...",

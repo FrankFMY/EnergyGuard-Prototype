@@ -40,31 +40,35 @@ function formatForConsole(entry: LogEntry): string {
 	const timestamp = entry.timestamp.substring(11, 23); // HH:mm:ss.SSS
 	const level = entry.level.toUpperCase().padEnd(5);
 	const context = entry.context ? `[${entry.context}]` : '';
-	
+
 	let msg = `${timestamp} ${level} ${context} ${entry.message}`;
-	
+
 	if (entry.data && Object.keys(entry.data).length > 0) {
 		msg += ` ${JSON.stringify(entry.data)}`;
 	}
-	
+
 	if (entry.error) {
 		msg += `\n  Error: ${entry.error.message}`;
 		if (entry.error.stack && env.NODE_ENV !== 'production') {
 			msg += `\n${entry.error.stack}`;
 		}
 	}
-	
+
 	return msg;
 }
 
-function log(level: LogLevel, message: string, options?: {
-	context?: string;
-	data?: Record<string, unknown>;
-	error?: Error;
-	requestId?: string;
-	userId?: string;
-	duration?: number;
-}): void {
+function log(
+	level: LogLevel,
+	message: string,
+	options?: {
+		context?: string;
+		data?: Record<string, unknown>;
+		error?: Error;
+		requestId?: string;
+		userId?: string;
+		duration?: number;
+	}
+): void {
 	if (!shouldLog(level)) return;
 
 	const entry: LogEntry = {
@@ -109,17 +113,13 @@ function log(level: LogLevel, message: string, options?: {
  * Structured logger for KASTOR IoT
  */
 export const logger = {
-	debug: (message: string, options?: Parameters<typeof log>[2]) =>
-		log('debug', message, options),
-	
-	info: (message: string, options?: Parameters<typeof log>[2]) =>
-		log('info', message, options),
-	
-	warn: (message: string, options?: Parameters<typeof log>[2]) =>
-		log('warn', message, options),
-	
-	error: (message: string, options?: Parameters<typeof log>[2]) =>
-		log('error', message, options),
+	debug: (message: string, options?: Parameters<typeof log>[2]) => log('debug', message, options),
+
+	info: (message: string, options?: Parameters<typeof log>[2]) => log('info', message, options),
+
+	warn: (message: string, options?: Parameters<typeof log>[2]) => log('warn', message, options),
+
+	error: (message: string, options?: Parameters<typeof log>[2]) => log('error', message, options),
 
 	/**
 	 * Create a child logger with a specific context
@@ -127,13 +127,13 @@ export const logger = {
 	child: (context: string) => ({
 		debug: (message: string, options?: Omit<Parameters<typeof log>[2], 'context'>) =>
 			log('debug', message, { ...options, context }),
-		
+
 		info: (message: string, options?: Omit<Parameters<typeof log>[2], 'context'>) =>
 			log('info', message, { ...options, context }),
-		
+
 		warn: (message: string, options?: Omit<Parameters<typeof log>[2], 'context'>) =>
 			log('warn', message, { ...options, context }),
-		
+
 		error: (message: string, options?: Omit<Parameters<typeof log>[2], 'context'>) =>
 			log('error', message, { ...options, context })
 	}),
@@ -141,16 +141,24 @@ export const logger = {
 	/**
 	 * Log HTTP request
 	 */
-	request: (method: string, path: string, options?: {
-		status?: number;
-		duration?: number;
-		requestId?: string;
-		userId?: string;
-		userAgent?: string;
-	}) => {
-		const level: LogLevel = options?.status && options.status >= 500 ? 'error' :
-			options?.status && options.status >= 400 ? 'warn' : 'info';
-		
+	request: (
+		method: string,
+		path: string,
+		options?: {
+			status?: number;
+			duration?: number;
+			requestId?: string;
+			userId?: string;
+			userAgent?: string;
+		}
+	) => {
+		const level: LogLevel =
+			options?.status && options.status >= 500
+				? 'error'
+				: options?.status && options.status >= 400
+					? 'warn'
+					: 'info';
+
 		log(level, `${method} ${path}`, {
 			context: 'HTTP',
 			data: {

@@ -133,7 +133,9 @@ export async function getAuditLogsByResource(
 /**
  * Get recent audit logs
  */
-export async function getRecentAuditLogs(limit = 100): Promise<(AuditLogRecord & { userName?: string })[]> {
+export async function getRecentAuditLogs(
+	limit = 100
+): Promise<(AuditLogRecord & { userName?: string })[]> {
 	const result = await db
 		.select({
 			log: auditLogs,

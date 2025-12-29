@@ -187,13 +187,55 @@ export async function seedSpareParts() {
 	if (existing.length > 0) return;
 
 	const defaultParts = [
-		{ name: 'Масляный фильтр', part_number: 'JEN-OF-420', quantity: 12, min_quantity: 5, unit_cost: 3500 },
-		{ name: 'Воздушный фильтр', part_number: 'JEN-AF-420', quantity: 8, min_quantity: 4, unit_cost: 5200 },
-		{ name: 'Свеча зажигания', part_number: 'JEN-SP-420', quantity: 24, min_quantity: 20, unit_cost: 2800 },
-		{ name: 'Ремень ГРМ', part_number: 'JEN-TB-420', quantity: 2, min_quantity: 2, unit_cost: 15000 },
-		{ name: 'Прокладка ГБЦ', part_number: 'JEN-HG-420', quantity: 1, min_quantity: 2, unit_cost: 45000 },
-		{ name: 'Масло моторное (л)', part_number: 'OIL-10W40', quantity: 150, min_quantity: 100, unit_cost: 850 },
-		{ name: 'Антифриз (л)', part_number: 'COOL-G12', quantity: 40, min_quantity: 30, unit_cost: 450 }
+		{
+			name: 'Масляный фильтр',
+			part_number: 'JEN-OF-420',
+			quantity: 12,
+			min_quantity: 5,
+			unit_cost: 3500
+		},
+		{
+			name: 'Воздушный фильтр',
+			part_number: 'JEN-AF-420',
+			quantity: 8,
+			min_quantity: 4,
+			unit_cost: 5200
+		},
+		{
+			name: 'Свеча зажигания',
+			part_number: 'JEN-SP-420',
+			quantity: 24,
+			min_quantity: 20,
+			unit_cost: 2800
+		},
+		{
+			name: 'Ремень ГРМ',
+			part_number: 'JEN-TB-420',
+			quantity: 2,
+			min_quantity: 2,
+			unit_cost: 15000
+		},
+		{
+			name: 'Прокладка ГБЦ',
+			part_number: 'JEN-HG-420',
+			quantity: 1,
+			min_quantity: 2,
+			unit_cost: 45000
+		},
+		{
+			name: 'Масло моторное (л)',
+			part_number: 'OIL-10W40',
+			quantity: 150,
+			min_quantity: 100,
+			unit_cost: 850
+		},
+		{
+			name: 'Антифриз (л)',
+			part_number: 'COOL-G12',
+			quantity: 40,
+			min_quantity: 30,
+			unit_cost: 450
+		}
 	];
 
 	await db.insert(spareParts).values(defaultParts);

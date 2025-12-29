@@ -2,7 +2,6 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 import {
 	getWorkOrders,
-	getWorkOrderStats,
 	createWorkOrder,
 	type WorkOrderFilters,
 	type WorkOrderStatus,
@@ -33,9 +32,25 @@ export const GET: RequestHandler = async ({ url }) => {
 		filters.assignedTo = assignedTo;
 	}
 
-	const [workOrders, stats] = await Promise.all([getWorkOrders(filters), getWorkOrderStats()]);
+	const workOrders = await getWorkOrders(filters);
 
-	return json({ workOrders, stats });
+	// Transform to client format
+	const clientWorkOrders = workOrders.map((wo) => ({
+		id: wo.id,
+		title: wo.title,
+		description: wo.description,
+		engine_id: wo.engineId,
+		status: wo.status,
+		priority: wo.priority,
+		assigned_to: wo.assignedToName ?? null,
+		created_at: wo.createdAt?.toISOString(),
+		due_date: wo.dueDate?.toISOString() ?? null,
+		completed_at: wo.completedAt?.toISOString() ?? null,
+		estimated_hours: wo.estimatedHours,
+		parts_required: wo.partsRequired ?? []
+	}));
+
+	return json(clientWorkOrders);
 };
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -57,13 +72,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const workOrder = await createWorkOrder({
 		title: body.title,
 		description: body.description ?? null,
-		engineId: body.engineId ?? null,
+		engineId: body.engine_id ?? null,
 		priority: body.priority ?? 'medium',
-		assignedTo: body.assignedTo ?? null,
+		assignedTo: body.assigned_to ?? null,
 		createdBy: locals.user.id,
-		dueDate: body.dueDate ? new Date(body.dueDate) : null,
-		estimatedHours: body.estimatedHours ?? null,
-		partsRequired: body.partsRequired ?? []
+		dueDate: body.due_date ? new Date(body.due_date) : null,
+		estimatedHours: body.estimated_hours ?? null,
+		partsRequired: body.parts_required ?? []
 	});
 
 	await createAuditLog({
@@ -74,5 +89,22 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		details: { title: workOrder.title, priority: workOrder.priority }
 	});
 
-	return json(workOrder, { status: 201 });
+	// Transform to client format
+	return json(
+		{
+			id: workOrder.id,
+			title: workOrder.title,
+			description: workOrder.description,
+			engine_id: workOrder.engineId,
+			status: workOrder.status,
+			priority: workOrder.priority,
+			assigned_to: body.assigned_to ?? null,
+			created_at: workOrder.createdAt?.toISOString(),
+			due_date: workOrder.dueDate?.toISOString() ?? null,
+			completed_at: null,
+			estimated_hours: workOrder.estimatedHours,
+			parts_required: workOrder.partsRequired ?? []
+		},
+		{ status: 201 }
+	);
 };

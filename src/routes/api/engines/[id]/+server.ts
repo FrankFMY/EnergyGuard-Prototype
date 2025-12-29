@@ -26,7 +26,11 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 
 	const body = await request.json();
 
-	const updateData: Partial<{ model: string; status: 'ok' | 'warning' | 'error'; total_hours: number }> = {};
+	const updateData: Partial<{
+		model: string;
+		status: 'ok' | 'warning' | 'error';
+		total_hours: number;
+	}> = {};
 
 	if (body.model) updateData.model = body.model;
 	if (body.status && ['ok', 'warning', 'error'].includes(body.status)) {
@@ -70,7 +74,10 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		throw error(403, 'Only admins can delete engines');
 	}
 
-	const result = await db.delete(engines).where(eq(engines.id, params.id)).returning({ id: engines.id });
+	const result = await db
+		.delete(engines)
+		.where(eq(engines.id, params.id))
+		.returning({ id: engines.id });
 
 	if (result.length === 0) {
 		throw error(404, 'Engine not found');

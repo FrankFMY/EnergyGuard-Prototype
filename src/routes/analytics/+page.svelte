@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { _, isLoading } from 'svelte-i18n';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
@@ -11,34 +12,35 @@
 	import Zap from 'lucide-svelte/icons/zap';
 	import Calendar from 'lucide-svelte/icons/calendar';
 	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
+
 	// Business metrics
 	const metrics = {
-		totalSavings: 2847500, // ₽ saved this year
-		preventedDowntime: 127, // hours
-		avgDowntimeCost: 45000, // ₽ per hour
+		totalSavings: 2847500,
+		preventedDowntime: 127,
+		avgDowntimeCost: 45000,
 		predictedSavingsNextMonth: 380000,
-		oeeImprovement: 8.5, // percentage points
-		maintenanceCostReduction: 23, // percent
+		oeeImprovement: 8.5,
+		maintenanceCostReduction: 23,
 		alertsPreventedFailures: 14,
 		roiPercent: 340
 	};
 
 	// Monthly savings data
 	const monthlySavings = [
-		{ month: 'Июль', prevented: 180000, maintenance: 45000, efficiency: 32000 },
-		{ month: 'Авг', prevented: 225000, maintenance: 52000, efficiency: 41000 },
-		{ month: 'Сен', prevented: 270000, maintenance: 48000, efficiency: 38000 },
-		{ month: 'Окт', prevented: 315000, maintenance: 61000, efficiency: 45000 },
-		{ month: 'Ноя', prevented: 405000, maintenance: 58000, efficiency: 52000 },
-		{ month: 'Дек', prevented: 480000, maintenance: 72000, efficiency: 68000 }
+		{ month: 'Jul', prevented: 180000, maintenance: 45000, efficiency: 32000 },
+		{ month: 'Aug', prevented: 225000, maintenance: 52000, efficiency: 41000 },
+		{ month: 'Sep', prevented: 270000, maintenance: 48000, efficiency: 38000 },
+		{ month: 'Oct', prevented: 315000, maintenance: 61000, efficiency: 45000 },
+		{ month: 'Nov', prevented: 405000, maintenance: 58000, efficiency: 52000 },
+		{ month: 'Dec', prevented: 480000, maintenance: 72000, efficiency: 68000 }
 	];
 
 	// Downtime analysis
 	const downtimeAnalysis = [
-		{ reason: 'Перегрев', hours: 12, cost: 540000, prevented: 8, color: '#f43f5e' },
-		{ reason: 'Вибрация', hours: 8, cost: 360000, prevented: 5, color: '#f59e0b' },
-		{ reason: 'Давление газа', hours: 5, cost: 225000, prevented: 3, color: '#06b6d4' },
-		{ reason: 'Плановое ТО', hours: 24, cost: 1080000, prevented: 0, color: '#10b981' }
+		{ reasonKey: 'overheat', hours: 12, cost: 540000, prevented: 8, color: '#f43f5e' },
+		{ reasonKey: 'vibration', hours: 8, cost: 360000, prevented: 5, color: '#f59e0b' },
+		{ reasonKey: 'gasPressure', hours: 5, cost: 225000, prevented: 3, color: '#06b6d4' },
+		{ reasonKey: 'scheduledMaintenance', hours: 24, cost: 1080000, prevented: 0, color: '#10b981' }
 	];
 
 	type EChartsInstance = {
@@ -69,7 +71,11 @@
 					textStyle: { color: '#f8fafc' }
 				},
 				legend: {
-					data: ['Предотвращенные простои', 'Экономия на ТО', 'Эффективность'],
+					data: [
+						$_('analytics.categories.preventedDowntime'),
+						$_('analytics.categories.maintenanceSavings'),
+						$_('analytics.categories.efficiency')
+					],
 					textStyle: { color: '#94a3b8' },
 					bottom: 0
 				},
@@ -89,21 +95,21 @@
 				},
 				series: [
 					{
-						name: 'Предотвращенные простои',
+						name: $_('analytics.categories.preventedDowntime'),
 						type: 'bar',
 						stack: 'total',
 						data: monthlySavings.map((m) => m.prevented),
 						itemStyle: { color: '#10b981' }
 					},
 					{
-						name: 'Экономия на ТО',
+						name: $_('analytics.categories.maintenanceSavings'),
 						type: 'bar',
 						stack: 'total',
 						data: monthlySavings.map((m) => m.maintenance),
 						itemStyle: { color: '#06b6d4' }
 					},
 					{
-						name: 'Эффективность',
+						name: $_('analytics.categories.efficiency'),
 						type: 'bar',
 						stack: 'total',
 						data: monthlySavings.map((m) => m.efficiency),
@@ -123,7 +129,7 @@
 					backgroundColor: 'rgba(15, 23, 42, 0.95)',
 					borderColor: '#334155',
 					textStyle: { color: '#f8fafc' },
-					formatter: '{b}: {c} ч ({d}%)'
+					formatter: '{b}: {c} h ({d}%)'
 				},
 				series: [
 					{
@@ -133,7 +139,7 @@
 						itemStyle: { borderRadius: 4, borderColor: '#0f172a', borderWidth: 2 },
 						label: { show: false },
 						data: downtimeAnalysis.map((d) => ({
-							name: d.reason,
+							name: $_(`analytics.reasons.${d.reasonKey}`),
 							value: d.hours,
 							itemStyle: { color: d.color }
 						}))
@@ -230,9 +236,11 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<TrendingUp class="h-7 w-7 text-emerald-400" />
-				Бизнес-аналитика
+				{#if !$isLoading}{$_('analytics.title')}{:else}Business Analytics{/if}
 			</h1>
-			<p class="mt-1 text-sm text-slate-400">ROI и экономический эффект от внедрения системы</p>
+			<p class="mt-1 text-sm text-slate-400">
+				{#if !$isLoading}{$_('analytics.subtitle')}{:else}ROI and Economic Impact Analysis{/if}
+			</p>
 		</div>
 		<div class="flex items-center gap-2">
 			<Badge variant="success" class="gap-1">
@@ -253,14 +261,14 @@
 			<div class="relative">
 				<div class="mb-2 flex items-center gap-2 text-sm text-slate-400">
 					<PiggyBank class="h-4 w-4 text-emerald-400" />
-					Общая экономия
+					{#if !$isLoading}{$_('analytics.totalSavings')}{:else}Total Savings{/if}
 				</div>
 				<div class="text-2xl font-bold text-emerald-400">
 					{formatCurrency(metrics.totalSavings)}
 				</div>
 				<div class="mt-1 flex items-center gap-1 text-xs text-emerald-400/70">
 					<ArrowUpRight class="h-3 w-3" />
-					+23% vs прошлый год
+					+23% {#if !$isLoading}{$_('analytics.vsLastYear')}{:else}vs last year{/if}
 				</div>
 			</div>
 		</Card>
@@ -270,9 +278,12 @@
 			<div class="relative">
 				<div class="mb-2 flex items-center gap-2 text-sm text-slate-400">
 					<Clock class="h-4 w-4 text-cyan-400" />
-					Предотвращено простоев
+					{#if !$isLoading}{$_('analytics.preventedDowntime')}{:else}Prevented Downtime{/if}
 				</div>
-				<div class="text-2xl font-bold text-cyan-400">{metrics.preventedDowntime} ч</div>
+				<div class="text-2xl font-bold text-cyan-400">
+					{metrics.preventedDowntime}
+					{$_('units.hours')}
+				</div>
 				<div class="mt-1 text-xs text-slate-500">
 					≈ {formatCurrency(metrics.preventedDowntime * metrics.avgDowntimeCost)}
 				</div>
@@ -284,10 +295,12 @@
 			<div class="relative">
 				<div class="mb-2 flex items-center gap-2 text-sm text-slate-400">
 					<AlertTriangle class="h-4 w-4 text-amber-400" />
-					Предотвращено аварий
+					{#if !$isLoading}{$_('analytics.preventedFailures')}{:else}Prevented Failures{/if}
 				</div>
 				<div class="text-2xl font-bold text-amber-400">{metrics.alertsPreventedFailures}</div>
-				<div class="mt-1 text-xs text-slate-500">Критических отказов</div>
+				<div class="mt-1 text-xs text-slate-500">
+					{#if !$isLoading}{$_('analytics.criticalFailures')}{:else}Critical Failures{/if}
+				</div>
 			</div>
 		</Card>
 
@@ -296,12 +309,14 @@
 			<div class="relative">
 				<div class="mb-2 flex items-center gap-2 text-sm text-slate-400">
 					<Target class="h-4 w-4 text-purple-400" />
-					Прогноз на месяц
+					{#if !$isLoading}{$_('analytics.predictedSavings')}{:else}Predicted Next Month{/if}
 				</div>
 				<div class="text-2xl font-bold text-purple-400">
 					{formatCurrency(metrics.predictedSavingsNextMonth)}
 				</div>
-				<div class="mt-1 text-xs text-slate-500">Потенциальная экономия</div>
+				<div class="mt-1 text-xs text-slate-500">
+					{#if !$isLoading}{$_('analytics.potentialSavings')}{:else}Potential Savings{/if}
+				</div>
 			</div>
 		</Card>
 	</div>
@@ -311,18 +326,23 @@
 		<Card class="lg:col-span-2">
 			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 				<TrendingUp class="h-5 w-5 text-emerald-400" />
-				Динамика экономии по месяцам
+				{#if !$isLoading}{$_('analytics.savingsTrend')}{:else}Monthly Savings Trend{/if}
 			</h3>
 			<div class="h-72 w-full" bind:this={savingsChartEl}></div>
 		</Card>
 
 		<!-- ROI Gauge -->
 		<Card>
-			<h3 class="mb-2 text-center text-lg font-semibold text-white">Return on Investment</h3>
+			<h3 class="mb-2 text-center text-lg font-semibold text-white">
+				{#if !$isLoading}{$_('analytics.roiTitle')}{:else}Return on Investment{/if}
+			</h3>
 			<div class="h-52 w-full" bind:this={roiChartEl}></div>
 			<div class="mt-2 text-center">
 				<p class="text-sm text-slate-400">
-					Инвестиции окупились за <span class="font-bold text-emerald-400">3.5 месяца</span>
+					{#if !$isLoading}{$_('analytics.paybackPeriod')}{:else}Investment paid off in{/if}
+					<span class="font-bold text-emerald-400"
+						>3.5 {#if !$isLoading}{$_('analytics.months')}{:else}months{/if}</span
+					>
 				</p>
 			</div>
 		</Card>
@@ -333,21 +353,28 @@
 		<Card>
 			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 				<Clock class="h-5 w-5 text-cyan-400" />
-				Анализ простоев
+				{#if !$isLoading}{$_('analytics.downtimeAnalysis')}{:else}Downtime Analysis{/if}
 			</h3>
 			<div class="grid grid-cols-2 gap-4">
 				<div class="h-48" bind:this={downtimeChartEl}></div>
 				<div class="space-y-3">
-					{#each downtimeAnalysis as item (item.reason)}
+					{#each downtimeAnalysis as item (item.reasonKey)}
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-2">
 								<div class="h-3 w-3 rounded" style="background-color: {item.color}"></div>
-								<span class="text-sm text-slate-300">{item.reason}</span>
+								<span class="text-sm text-slate-300">
+									{#if !$isLoading}{$_(
+											`analytics.reasons.${item.reasonKey}`
+										)}{:else}{item.reasonKey}{/if}
+								</span>
 							</div>
 							<div class="text-right">
-								<div class="text-sm font-medium text-white">{item.hours}ч</div>
+								<div class="text-sm font-medium text-white">{item.hours}{$_('units.hours')}</div>
 								{#if item.prevented > 0}
-									<div class="text-xs text-emerald-400">-{item.prevented} предотвр.</div>
+									<div class="text-xs text-emerald-400">
+										-{item.prevented}
+										{#if !$isLoading}{$_('analytics.prevented')}{:else}prevented{/if}
+									</div>
 								{/if}
 							</div>
 						</div>
@@ -360,12 +387,14 @@
 		<Card>
 			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 				<DollarSign class="h-5 w-5 text-emerald-400" />
-				Структура экономии
+				{#if !$isLoading}{$_('analytics.costSavingsBreakdown')}{:else}Cost Savings Breakdown{/if}
 			</h3>
 			<div class="space-y-4">
 				<div>
 					<div class="mb-2 flex items-center justify-between text-sm">
-						<span class="text-slate-400">Предотвращение простоев</span>
+						<span class="text-slate-400">
+							{#if !$isLoading}{$_('analytics.preventDowntime')}{:else}Prevented Downtime{/if}
+						</span>
 						<span class="font-medium text-emerald-400">{formatCurrency(1875000)}</span>
 					</div>
 					<div class="h-3 overflow-hidden rounded-full bg-slate-800">
@@ -374,7 +403,10 @@
 				</div>
 				<div>
 					<div class="mb-2 flex items-center justify-between text-sm">
-						<span class="text-slate-400">Оптимизация ТО</span>
+						<span class="text-slate-400">
+							{#if !$isLoading}{$_('analytics.maintenanceOptimization')}{:else}Maintenance
+								Optimization{/if}
+						</span>
 						<span class="font-medium text-cyan-400">{formatCurrency(336000)}</span>
 					</div>
 					<div class="h-3 overflow-hidden rounded-full bg-slate-800">
@@ -383,7 +415,9 @@
 				</div>
 				<div>
 					<div class="mb-2 flex items-center justify-between text-sm">
-						<span class="text-slate-400">Повышение эффективности</span>
+						<span class="text-slate-400">
+							{#if !$isLoading}{$_('analytics.efficiencyGain')}{:else}Efficiency Gains{/if}
+						</span>
 						<span class="font-medium text-purple-400">{formatCurrency(276000)}</span>
 					</div>
 					<div class="h-3 overflow-hidden rounded-full bg-slate-800">
@@ -392,7 +426,9 @@
 				</div>
 				<div>
 					<div class="mb-2 flex items-center justify-between text-sm">
-						<span class="text-slate-400">Снижение расхода топлива</span>
+						<span class="text-slate-400">
+							{#if !$isLoading}{$_('analytics.fuelSavings')}{:else}Fuel Savings{/if}
+						</span>
 						<span class="font-medium text-amber-400">{formatCurrency(360500)}</span>
 					</div>
 					<div class="h-3 overflow-hidden rounded-full bg-slate-800">
@@ -403,7 +439,9 @@
 
 			<div class="mt-6 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
 				<div class="flex items-center justify-between">
-					<span class="font-medium text-white">Итого за период:</span>
+					<span class="font-medium text-white">
+						{#if !$isLoading}{$_('analytics.totalForPeriod')}{:else}Total for Period{/if}:
+					</span>
 					<span class="text-xl font-bold text-emerald-400"
 						>{formatCurrency(metrics.totalSavings)}</span
 					>
@@ -420,15 +458,20 @@
 					<CheckCircle class="h-6 w-6 text-emerald-400" />
 				</div>
 				<div>
-					<h3 class="font-semibold text-white">Система окупилась и приносит прибыль</h3>
+					<h3 class="font-semibold text-white">
+						{#if !$isLoading}{$_('analytics.systemProfitable')}{:else}System is profitable and
+							generating returns{/if}
+					</h3>
 					<p class="text-sm text-slate-400">
-						Ежемесячная экономия превышает стоимость эксплуатации в 4.2 раза
+						{#if !$isLoading}{$_('analytics.monthlyProfit', {
+								values: { ratio: '4.2' }
+							})}{:else}Monthly savings exceed operating costs by 4.2x{/if}
 					</p>
 				</div>
 			</div>
 			<Button class="gap-2">
 				<Zap class="h-4 w-4" />
-				Скачать отчет
+				{#if !$isLoading}{$_('analytics.downloadReport')}{:else}Download Report{/if}
 			</Button>
 		</div>
 	</Card>

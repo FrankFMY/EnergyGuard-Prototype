@@ -1,7 +1,12 @@
 import { db } from '../db/index.js';
 import { alerts, alertRules, users } from '../db/schema.js';
 import { eq, desc, and, gte, sql } from 'drizzle-orm';
-import type { AlertRecord, NewAlertRecord, AlertRuleRecord, NewAlertRuleRecord } from '../db/schema.js';
+import type {
+	AlertRecord,
+	NewAlertRecord,
+	AlertRuleRecord,
+	NewAlertRuleRecord
+} from '../db/schema.js';
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type AlertStatus = 'active' | 'acknowledged' | 'resolved';
@@ -188,6 +193,9 @@ export async function toggleAlertRule(ruleId: string): Promise<boolean> {
  * Delete alert rule
  */
 export async function deleteAlertRule(ruleId: string): Promise<boolean> {
-	const result = await db.delete(alertRules).where(eq(alertRules.id, ruleId)).returning({ id: alertRules.id });
+	const result = await db
+		.delete(alertRules)
+		.where(eq(alertRules.id, ruleId))
+		.returning({ id: alertRules.id });
 	return result.length > 0;
 }

@@ -38,8 +38,10 @@ test.describe('Dashboard', () => {
 	});
 
 	test('language switcher works', async ({ page }) => {
-		const langSwitcher = page.locator('[data-testid="language-switcher"], button:has-text("EN"), button:has-text("RU")');
-		
+		const langSwitcher = page.locator(
+			'[data-testid="language-switcher"], button:has-text("EN"), button:has-text("RU")'
+		);
+
 		if (await langSwitcher.first().isVisible()) {
 			await langSwitcher.first().click();
 			// Language should change
@@ -81,7 +83,7 @@ test.describe('Maintenance Page', () => {
 	test('displays maintenance forecasts', async ({ page }) => {
 		// Should show engine maintenance info
 		await page.waitForTimeout(2000);
-		
+
 		// Look for engine IDs or maintenance-related text
 		const maintenanceContent = page.locator('main');
 		await expect(maintenanceContent).toBeVisible();
@@ -96,11 +98,11 @@ test.describe('Engine Detail Page', () => {
 
 		// Try to navigate to an engine detail page
 		const engineLink = page.locator('a[href*="/engine/"]').first();
-		
+
 		if (await engineLink.isVisible()) {
 			await engineLink.click();
 			await expect(page).toHaveURL(/\/engine\//);
-			
+
 			// Should show engine details
 			await expect(page.locator('h1')).toBeVisible();
 		}
@@ -110,7 +112,7 @@ test.describe('Engine Detail Page', () => {
 test.describe('Authentication', () => {
 	test('login page is accessible', async ({ page }) => {
 		await page.goto('/login');
-		
+
 		// Should show login form
 		await expect(page.locator('form')).toBeVisible();
 		await expect(page.locator('input[type="email"]')).toBeVisible();
@@ -119,7 +121,7 @@ test.describe('Authentication', () => {
 
 	test('register page is accessible', async ({ page }) => {
 		await page.goto('/register');
-		
+
 		// Should show registration form
 		await expect(page.locator('form')).toBeVisible();
 		await expect(page.locator('input[type="email"]')).toBeVisible();
@@ -130,7 +132,7 @@ test.describe('Responsive Design', () => {
 	test('mobile view shows menu button', async ({ page }) => {
 		await page.setViewportSize({ width: 375, height: 667 });
 		await page.goto('/');
-		
+
 		// Should show mobile menu button
 		const menuButton = page.locator('[data-testid="mobile-menu"], button[aria-label*="menu"]');
 		await expect(menuButton.first()).toBeVisible();
@@ -139,7 +141,7 @@ test.describe('Responsive Design', () => {
 	test('desktop view shows full navigation', async ({ page }) => {
 		await page.setViewportSize({ width: 1920, height: 1080 });
 		await page.goto('/');
-		
+
 		// Should show navigation links
 		const nav = page.locator('nav, [role="navigation"]');
 		await expect(nav.first()).toBeVisible();

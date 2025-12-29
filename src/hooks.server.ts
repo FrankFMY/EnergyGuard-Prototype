@@ -17,13 +17,7 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX = 100; // 100 requests per minute
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = [
-	'/api/auth',
-	'/login',
-	'/register',
-	'/forgot-password',
-	'/api/health'
-];
+const PUBLIC_ROUTES = ['/api/auth', '/login', '/register', '/forgot-password', '/api/health'];
 
 // Rate limiting function
 function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
@@ -86,7 +80,8 @@ async function createAlertFromTelemetry(
 	severity: 'warning' | 'critical'
 ) {
 	const titles: Record<string, string> = {
-		temp_exhaust: severity === 'critical' ? 'Critical Exhaust Temperature' : 'High Exhaust Temperature',
+		temp_exhaust:
+			severity === 'critical' ? 'Critical Exhaust Temperature' : 'High Exhaust Temperature',
 		vibration: severity === 'critical' ? 'Critical Vibration Level' : 'High Vibration Level'
 	};
 

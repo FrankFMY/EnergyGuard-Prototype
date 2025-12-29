@@ -2,7 +2,6 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 import {
 	getAlerts,
-	getAlertStats,
 	createAlert,
 	type AlertFilters,
 	type AlertSeverity,
@@ -33,9 +32,26 @@ export const GET: RequestHandler = async ({ url }) => {
 		filters.hours = parseInt(hours, 10);
 	}
 
-	const [alerts, stats] = await Promise.all([getAlerts(filters), getAlertStats()]);
+	const alerts = await getAlerts(filters);
 
-	return json({ alerts, stats });
+	// Transform to client format
+	const clientAlerts = alerts.map((a) => ({
+		id: a.id,
+		engine_id: a.engineId,
+		severity: a.severity,
+		status: a.status,
+		title: a.title,
+		message: a.message,
+		metric: a.metric,
+		threshold: a.threshold,
+		actual_value: a.actualValue,
+		created_at: a.createdAt?.toISOString(),
+		acknowledged_at: a.acknowledgedAt?.toISOString() ?? null,
+		resolved_at: a.resolvedAt?.toISOString() ?? null,
+		acknowledged_by: a.acknowledgedByName ?? null
+	}));
+
+	return json(clientAlerts);
 };
 
 export const POST: RequestHandler = async ({ request, locals }) => {

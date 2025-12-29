@@ -21,7 +21,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
 
 	// Validate required fields
-	if (!body.name || !body.metric || !body.operator || body.threshold === undefined || !body.severity) {
+	if (
+		!body.name ||
+		!body.metric ||
+		!body.operator ||
+		body.threshold === undefined ||
+		!body.severity
+	) {
 		throw error(400, 'Missing required fields: name, metric, operator, threshold, severity');
 	}
 

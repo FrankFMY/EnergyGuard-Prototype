@@ -20,7 +20,8 @@ export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
 export const DashboardDataSchema = z.object({
 	engines: z.array(EngineWithMetricsSchema),
 	summary: DashboardSummarySchema,
-	events: z.array(EventDisplaySchema)
+	events: z.array(EventDisplaySchema),
+	timestamp: z.string().optional()
 });
 
 export type DashboardData = z.infer<typeof DashboardDataSchema>;

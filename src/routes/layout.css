@@ -126,7 +126,7 @@ body {
 /* Better keyboard navigation indicators */
 a:focus-visible,
 button:focus-visible,
-[role="button"]:focus-visible,
+[role='button']:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {

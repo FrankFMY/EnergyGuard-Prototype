@@ -37,7 +37,11 @@
 </script>
 
 {#if $isLoading}
-	<div class="flex h-screen items-center justify-center bg-slate-950" aria-busy="true" aria-live="polite">
+	<div
+		class="flex h-screen items-center justify-center bg-slate-950"
+		aria-busy="true"
+		aria-live="polite"
+	>
 		<div
 			class="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent"
 			role="status"

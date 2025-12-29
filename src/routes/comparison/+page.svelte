@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { _, isLoading } from 'svelte-i18n';
 	import { base } from '$app/paths';
 	import { Card } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
@@ -60,7 +61,12 @@
 			grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
 			xAxis: {
 				type: 'category',
-				data: ['Power (kW)', 'Temp (°C)', 'Vibration (mm/s)', 'Efficiency (%)'],
+				data: [
+					$_('comparison.powerOutput'),
+					$_('engine.temp'),
+					$_('engine.vibration'),
+					$_('engine.efficiency')
+				],
 				axisLabel: { color: '#64748b' }
 			},
 			yAxis: {
@@ -74,8 +80,8 @@
 				data: [
 					engine.power_kw,
 					engine.temp,
-					engine.vibration * 100, // Scale for visibility
-					(engine.power_kw / 1500) * 100 // Mock efficiency
+					engine.vibration * 100,
+					(engine.power_kw / 1500) * 100
 				],
 				itemStyle: {
 					color: ['#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'][i % 4]
@@ -128,14 +134,18 @@
 	<div>
 		<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 			<BarChart class="h-7 w-7 text-cyan-400" />
-			Engine Comparison
+			{#if !$isLoading}{$_('comparison.title')}{:else}Engine Comparison{/if}
 		</h1>
-		<p class="mt-1 text-sm text-slate-400">Compare performance metrics across engines</p>
+		<p class="mt-1 text-sm text-slate-400">
+			{#if !$isLoading}{$_('comparison.subtitle')}{:else}Compare performance metrics across engines{/if}
+		</p>
 	</div>
 
 	<!-- Engine Selection -->
 	<Card class="p-4">
-		<div class="mb-3 text-sm text-slate-400">Select engines to compare (max 4):</div>
+		<div class="mb-3 text-sm text-slate-400">
+			{#if !$isLoading}{$_('comparison.selectEngines')}{:else}Select engines to compare (max 4){/if}:
+		</div>
 		<div class="flex flex-wrap gap-2">
 			{#each engines as engine (engine.id)}
 				<button
@@ -161,7 +171,9 @@
 
 	<!-- Comparison Chart -->
 	<Card>
-		<h3 class="mb-4 text-lg font-semibold text-white">Performance Comparison</h3>
+		<h3 class="mb-4 text-lg font-semibold text-white">
+			{#if !$isLoading}{$_('comparison.performanceComparison')}{:else}Performance Comparison{/if}
+		</h3>
 		<div class="h-80 w-full" bind:this={chartContainer}></div>
 	</Card>
 
@@ -171,11 +183,15 @@
 			<table class="w-full text-left text-sm">
 				<thead class="border-b border-white/5 bg-slate-800/50">
 					<tr>
-						<th class="p-4 font-semibold text-slate-300">Metric</th>
+						<th class="p-4 font-semibold text-slate-300">
+							{#if !$isLoading}{$_('comparison.metric')}{:else}Metric{/if}
+						</th>
 						{#each selectedEngineData as engine (engine.id)}
 							<th class="p-4 font-semibold text-slate-300">{engine.id.toUpperCase()}</th>
 						{/each}
-						<th class="p-4 font-semibold text-slate-400">Fleet Avg</th>
+						<th class="p-4 font-semibold text-slate-400">
+							{#if !$isLoading}{$_('comparison.fleetAvg')}{:else}Fleet Avg{/if}
+						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-white/5">
@@ -183,47 +199,55 @@
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Activity class="h-4 w-4 text-cyan-400" />
-								Power Output
+								{#if !$isLoading}{$_('comparison.powerOutput')}{:else}Power Output{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
-							<td class="p-4 font-mono text-white">{engine.power_kw.toFixed(0)} kW</td>
+							<td class="p-4 font-mono text-white">{engine.power_kw.toFixed(0)} {$_('units.kw')}</td
+							>
 						{/each}
-						<td class="p-4 font-mono text-slate-400">{fleetAverage.power.toFixed(0)} kW</td>
+						<td class="p-4 font-mono text-slate-400"
+							>{fleetAverage.power.toFixed(0)} {$_('units.kw')}</td
+						>
 					</tr>
 					<tr class="hover:bg-white/5">
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Thermometer class="h-4 w-4 text-rose-400" />
-								Exhaust Temp
+								{#if !$isLoading}{$_('comparison.exhaustTemp')}{:else}Exhaust Temp{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
 							<td class="p-4 font-mono {engine.temp > 500 ? 'text-rose-400' : 'text-white'}">
-								{engine.temp.toFixed(0)}°C
+								{engine.temp.toFixed(0)}{$_('units.celsius')}
 							</td>
 						{/each}
-						<td class="p-4 font-mono text-slate-400">{fleetAverage.temp.toFixed(0)}°C</td>
+						<td class="p-4 font-mono text-slate-400"
+							>{fleetAverage.temp.toFixed(0)}{$_('units.celsius')}</td
+						>
 					</tr>
 					<tr class="hover:bg-white/5">
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Gauge class="h-4 w-4 text-amber-400" />
-								Vibration
+								{#if !$isLoading}{$_('engine.vibration')}{:else}Vibration{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
 							<td class="p-4 font-mono {engine.vibration > 8 ? 'text-amber-400' : 'text-white'}">
-								{engine.vibration.toFixed(1)} mm/s
+								{engine.vibration.toFixed(1)}
+								{$_('units.mms')}
 							</td>
 						{/each}
-						<td class="p-4 font-mono text-slate-400">{fleetAverage.vibration.toFixed(1)} mm/s</td>
+						<td class="p-4 font-mono text-slate-400"
+							>{fleetAverage.vibration.toFixed(1)} {$_('units.mms')}</td
+						>
 					</tr>
 					<tr class="hover:bg-white/5">
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Zap class="h-4 w-4 text-emerald-400" />
-								Profitability
+								{#if !$isLoading}{$_('comparison.profitability')}{:else}Profitability{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
@@ -232,11 +256,13 @@
 									? 'text-emerald-400'
 									: 'text-rose-400'}"
 							>
-								{engine.profit_rate > 0 ? '+' : ''}{engine.profit_rate.toFixed(0)} ₽/h
+								{engine.profit_rate > 0 ? '+' : ''}{engine.profit_rate.toFixed(0)}
+								{$_('units.rubPerHour')}
 							</td>
 						{/each}
 						<td class="p-4 font-mono text-slate-400">
-							{(engines.reduce((sum, e) => sum + e.profit_rate, 0) / engines.length).toFixed(0)} ₽/h
+							{(engines.reduce((sum, e) => sum + e.profit_rate, 0) / engines.length).toFixed(0)}
+							{$_('units.rubPerHour')}
 						</td>
 					</tr>
 				</tbody>
@@ -246,7 +272,9 @@
 
 	<!-- Ranking -->
 	<Card>
-		<h3 class="mb-4 text-lg font-semibold text-white">Efficiency Ranking</h3>
+		<h3 class="mb-4 text-lg font-semibold text-white">
+			{#if !$isLoading}{$_('comparison.efficiencyRanking')}{:else}Efficiency Ranking{/if}
+		</h3>
 		<div class="space-y-3">
 			{#each [...engines].sort((a, b) => b.profit_rate - a.profit_rate) as engine, i (engine.id)}
 				<div class="flex items-center gap-4 rounded-lg bg-slate-800/50 p-3">
@@ -270,9 +298,10 @@
 					</div>
 					<div class="text-right">
 						<div class="font-mono text-lg text-emerald-400">
-							+{engine.profit_rate.toFixed(0)} ₽/h
+							+{engine.profit_rate.toFixed(0)}
+							{$_('units.rubPerHour')}
 						</div>
-						<div class="text-xs text-slate-500">{engine.power_kw.toFixed(0)} kW</div>
+						<div class="text-xs text-slate-500">{engine.power_kw.toFixed(0)} {$_('units.kw')}</div>
 					</div>
 				</div>
 			{/each}

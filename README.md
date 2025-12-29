@@ -12,6 +12,82 @@ Real-time monitoring and analytics platform for gas-powered engines (Jenbacher J
 
 ---
 
+## Quick Start
+
+```bash
+# Clone repository
+git clone https://github.com/FrankFMY/kastor-IoT.git
+cd kastor-IoT
+
+# Install dependencies
+bun install
+
+# Copy environment variables
+cp .env.example .env
+
+# Start infrastructure (TimescaleDB, Redis, EMQX)
+bun run db:start
+
+# Apply database migrations
+bun run db:push
+
+# Seed demo data
+bun run db:seed
+
+# Start development server
+bun run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173)
+
+**Demo credentials:**
+
+- Admin: `admin@kastor.io` / `demo1234`
+- Operator: `operator@kastor.io` / `demo1234`
+- Technician: `technician@kastor.io` / `demo1234`
+
+---
+
+## Tech Stack
+
+| Category             | Technologies                                                      |
+| -------------------- | ----------------------------------------------------------------- |
+| **Frontend**         | Svelte 5 (runes), SvelteKit 2.49, TailwindCSS v4                  |
+| **Backend**          | Drizzle ORM 0.45, PostgreSQL 16 / TimescaleDB                     |
+| **Auth**             | Better-Auth with Argon2 password hashing                          |
+| **Caching**          | Redis with in-memory fallback                                     |
+| **Real-time**        | MQTT (EMQX 5.3), Server-Sent Events (SSE) with diff-based updates |
+| **Visualization**    | ECharts 6 (tree-shaking optimized), svelte-echarts                |
+| **UI**               | lucide-svelte (icons), svelte-motion (animations)                 |
+| **Validation**       | Zod 4 (runtime type checking)                                     |
+| **i18n**             | svelte-i18n (Russian / English)                                   |
+| **Testing**          | Vitest, Playwright                                                |
+| **Observability**    | Prometheus metrics, structured logging                            |
+| **Containerization** | Docker Compose                                                    |
+
+---
+
+## Environment Variables
+
+Create `.env` file (see `.env.example`):
+
+```env
+# Database
+DATABASE_URL=postgres://root:mysecretpassword@localhost:5444/local
+
+# Redis (optional - falls back to in-memory cache)
+REDIS_URL=redis://localhost:6379
+
+# MQTT
+MQTT_ADMIN_PASSWORD=admin_password_here
+
+# Authentication
+AUTH_SECRET=your-auth-secret-at-least-32-chars
+PUBLIC_AUTH_URL=http://localhost:5173
+```
+
+---
+
 ## Architecture
 
 ### System Overview
@@ -22,455 +98,315 @@ flowchart TB
         Browser[Browser PWA]
         SSE[SSE Real-time Stream]
     end
-    
+
     subgraph app [SvelteKit Application]
-        subgraph pages [Pages - 13 Routes]
+        Auth[Better-Auth]
+        RateLimit[Rate Limiter]
+
+        subgraph pages [Pages - 15+ Routes]
             Dashboard[Dashboard]
-            EngineDetails[Engine Details]
-            Maintenance[Maintenance]
-            Analytics[Analytics]
-            Economics[Economics]
             Alerts[Alerts]
+            WorkOrders[Work Orders]
+            Analytics[Analytics]
             Admin[Admin]
         end
-        
+
         subgraph components [Component Library]
             UIComponents[UI Components]
-            DashboardWidgets[Dashboard Widgets]
-        end
-        
-        subgraph hooks [Reactive Layer]
-            SSEHook[useSSE Hook]
-            I18n[svelte-i18n]
+            ErrorBoundary[Error Boundary]
         end
     end
-    
+
     subgraph services [Services Layer]
-        subgraph frontend [Frontend Services]
-            AlertsSvc[Alerts Service]
-            EconomicsSvc[Economics Service]
-            MaintenanceSvc[Maintenance Service]
-            WorkordersSvc[Workorders Service]
-        end
-        
+        Cache[Redis Cache]
+
         subgraph backend [Server Services]
             EngineSvc[Engine Service]
-            TelemetrySvc[Telemetry Service]
-            EventSvc[Event Service]
-            MaintSvc[Maintenance Service]
+            AlertSvc[Alert Service]
+            WorkOrderSvc[WorkOrder Service]
+            UserSvc[User Service]
         end
     end
-    
+
     subgraph data [Data Layer]
         Drizzle[Drizzle ORM]
-        Zod[Zod Validation]
+        Metrics[Prometheus Metrics]
     end
-    
+
     subgraph infra [Infrastructure]
         TimescaleDB[(TimescaleDB)]
+        Redis[(Redis)]
         EMQX[EMQX MQTT Broker]
-        Simulator[Mock Device Script]
     end
-    
-    Browser --> pages
-    SSE --> SSEHook
-    SSEHook --> Dashboard
-    pages --> components
-    pages --> frontend
-    frontend --> backend
+
+    Browser --> Auth
+    Auth --> pages
+    SSE --> Dashboard
+    pages --> backend
+    backend --> Cache
     backend --> Drizzle
     Drizzle --> TimescaleDB
-    Simulator --> EMQX
+    Cache --> Redis
     EMQX -.-> backend
 ```
-
-### Database Schema
-
-```mermaid
-erDiagram
-    ENGINES {
-        text id PK "Primary key"
-        text model "Engine model"
-        status status "ok | warning | error"
-        int total_hours "Running hours"
-    }
-    
-    TELEMETRY {
-        timestamp time "Timestamp with timezone"
-        text engine_id FK "Reference to engine"
-        float power_kw "Power output in kW"
-        float temp_exhaust "Exhaust temperature C"
-        float gas_consumption "Gas consumption m3/h"
-        float vibration "Vibration mm/s"
-        float gas_pressure "Gas pressure bar"
-    }
-    
-    EVENTS {
-        text id PK "UUID"
-        timestamp time "Event timestamp"
-        text level "info | warning | error"
-        text message "Event message"
-        text engine_id FK "Optional engine reference"
-    }
-    
-    DOWNTIMES {
-        text id PK "UUID"
-        text engine_id FK "Engine reference"
-        timestamp start_time "Downtime start"
-        timestamp end_time "Downtime end"
-        text reason "Downtime reason"
-        float loss_rub "Financial loss in RUB"
-    }
-    
-    MAINTENANCE_SCHEDULES {
-        text id PK "UUID"
-        text engine_id FK "Engine reference"
-        service_type service_type "Service type enum"
-        timestamp due_date "Scheduled date"
-        int due_hours "Due at hours"
-        float estimated_cost "Cost estimate"
-        jsonb parts_required "Required parts"
-        bool completed "Completion status"
-    }
-    
-    SPARE_PARTS {
-        text id PK "UUID"
-        text name "Part name"
-        text part_number "Part number"
-        int quantity "Current quantity"
-        int min_quantity "Minimum threshold"
-        float unit_cost "Cost per unit"
-    }
-    
-    COST_RECORDS {
-        text id PK "UUID"
-        timestamp date "Record date"
-        text category "gas | depreciation | spare_parts | labor | other"
-        float amount "Amount in RUB"
-        text engine_id FK "Optional engine reference"
-        text description "Description"
-    }
-    
-    ENGINES ||--o{ TELEMETRY : generates
-    ENGINES ||--o{ EVENTS : triggers
-    ENGINES ||--o{ DOWNTIMES : experiences
-    ENGINES ||--o{ MAINTENANCE_SCHEDULES : requires
-    ENGINES ||--o{ COST_RECORDS : tracks
-```
-
----
-
-## Tech Stack
-
-| Category | Technologies |
-|----------|-------------|
-| **Frontend** | Svelte 5 (runes), SvelteKit 2.49, TailwindCSS v4 |
-| **Backend** | Drizzle ORM 0.45, PostgreSQL 16 / TimescaleDB |
-| **Real-time** | MQTT (EMQX 5.3), Server-Sent Events (SSE) |
-| **Visualization** | ECharts 6, svelte-echarts |
-| **UI** | lucide-svelte (icons), svelte-motion (animations) |
-| **Validation** | Zod 4 (runtime type checking) |
-| **i18n** | svelte-i18n (Russian / English) |
-| **Testing** | Vitest, Playwright |
-| **Runtime** | Bun 1.1+ |
-| **Containerization** | Docker Compose |
-
----
-
-## Application Modules
-
-| Route | Module | Description |
-|-------|--------|-------------|
-| `/` | **Dashboard** | Fleet status, power output, OEE widget, live events feed |
-| `/engine/[id]` | **Engine Details** | Real-time metrics, performance correlation charts, AI diagnostics |
-| `/maintenance` | **Maintenance Forecast** | Predictive maintenance, spare parts inventory, budget forecast |
-| `/analytics` | **Business Analytics** | ROI tracking, savings analysis, downtime prevention metrics |
-| `/economics` | **Economics** | Cost structure breakdown, cost per kWh, monthly trends |
-| `/alerts` | **Alert Center** | Active alerts, filtering, acknowledge/resolve workflow |
-| `/alerts/rules` | **Alert Rules** | Configure alert thresholds and notifications |
-| `/admin` | **Admin Panel** | System configuration, user management |
-| `/settings` | **Settings** | Application preferences |
-| `/reports` | **Reports** | Generate and export reports |
-| `/calendar` | **Calendar** | Maintenance calendar view |
-| `/comparison` | **Comparison** | Engine performance comparison |
-| `/work-orders` | **Work Orders** | Work order management |
-| `/integrations` | **Integrations** | External system integrations |
-| `/dashboards` | **Custom Dashboards** | User-defined dashboards |
 
 ---
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/status` | GET | Dashboard data (engines with metrics, summary, events) |
-| `/api/events` | GET | SSE stream for real-time updates (2s interval) |
-| `/api/history/[id]` | GET | Telemetry history for specific engine |
+### Public Endpoints
 
-### Response Types
+| Endpoint       | Method | Description                     |
+| -------------- | ------ | ------------------------------- |
+| `/api/status`  | GET    | Dashboard data with caching     |
+| `/api/events`  | GET    | SSE stream (diff-based updates) |
+| `/api/health`  | GET    | Health check (DB, Redis)        |
+| `/api/metrics` | GET    | Prometheus metrics              |
 
-All API responses are validated with Zod schemas defined in `src/lib/types/`:
+### Authentication
 
-- `DashboardData` - Full dashboard response
-- `EngineWithMetrics` - Engine with calculated metrics
-- `DashboardSummary` - Aggregated fleet statistics
-- `EventDisplay` - Event log entry
+| Endpoint      | Method | Description                                     |
+| ------------- | ------ | ----------------------------------------------- |
+| `/api/auth/*` | ALL    | Better-Auth endpoints (login, register, logout) |
 
----
+### Protected Endpoints (require authentication)
 
-## UI Component Library
-
-### Base Components (`src/lib/components/ui/`)
-
-| Component | Description |
-|-----------|-------------|
-| `Card` | Glass-morphism card with variants (default, danger) |
-| `Button` | Button with variants (primary, outline, ghost, danger) |
-| `Badge` | Status badge (success, warning, danger, info) |
-| `Modal` | Accessible modal dialog |
-| `KPICard` | Key performance indicator display |
-| `ProgressBar` | Animated progress bar with variants |
-| `Skeleton` | Loading skeleton placeholder |
-| `StatusIndicator` | Engine status indicator (ok, warning, error) |
-| `Toast` | Toast notification system |
-| `NumberTicker` | Animated number counter |
-
-### Dashboard Widgets (`src/lib/components/dashboard/`)
-
-| Widget | Description |
-|--------|-------------|
-| `OEEWidget` | Overall Equipment Effectiveness display |
-| `DowntimeTimeline` | Visual downtime timeline |
-
-### Utility Components
-
-| Component | Description |
-|-----------|-------------|
-| `CommandPalette` | Keyboard navigation (Cmd+K) |
-| `LanguageSwitcher` | i18n language toggle |
-| `MobileNav` | Responsive mobile navigation |
+| Endpoint                       | Method             | Description               |
+| ------------------------------ | ------------------ | ------------------------- |
+| `/api/alerts`                  | GET, POST          | List/create alerts        |
+| `/api/alerts/:id`              | GET, PATCH         | Get/update alert          |
+| `/api/alerts/stats`            | GET                | Alert statistics          |
+| `/api/alerts/rules`            | GET, POST          | Alert rules CRUD          |
+| `/api/alerts/rules/:id`        | GET, PATCH, DELETE | Rule operations           |
+| `/api/alerts/rules/:id/toggle` | PATCH              | Toggle rule enabled       |
+| `/api/workorders`              | GET, POST          | List/create work orders   |
+| `/api/workorders/:id`          | GET, PATCH, DELETE | Work order operations     |
+| `/api/workorders/stats`        | GET                | Work order statistics     |
+| `/api/users`                   | GET, POST          | User management (admin)   |
+| `/api/users/:id`               | GET, PATCH, DELETE | User operations (admin)   |
+| `/api/engines`                 | GET, POST          | Engine management (admin) |
+| `/api/engines/:id`             | GET, PATCH, DELETE | Engine operations (admin) |
 
 ---
 
-## Project Structure
+## Database Schema
 
-```
-kastor-IoT/
-├── src/
-│   ├── lib/
-│   │   ├── components/
-│   │   │   ├── ui/              # 10 reusable UI components
-│   │   │   └── dashboard/       # Dashboard-specific widgets
-│   │   ├── server/
-│   │   │   ├── db/
-│   │   │   │   ├── index.ts     # Drizzle client
-│   │   │   │   └── schema.ts    # Database schema (7 tables)
-│   │   │   └── services/        # Backend services
-│   │   │       ├── engine.service.ts
-│   │   │       ├── telemetry.service.ts
-│   │   │       ├── event.service.ts
-│   │   │       └── maintenance.service.ts
-│   │   ├── services/            # Frontend services
-│   │   │   ├── alerts.service.ts
-│   │   │   ├── economics.service.ts
-│   │   │   ├── maintenance.service.ts
-│   │   │   └── workorders.service.ts
-│   │   ├── types/               # Zod schemas & TypeScript types
-│   │   │   ├── engine.ts
-│   │   │   ├── telemetry.ts
-│   │   │   ├── event.ts
-│   │   │   ├── maintenance.ts
-│   │   │   ├── alert.ts
-│   │   │   ├── workorder.ts
-│   │   │   └── api.ts
-│   │   ├── hooks/
-│   │   │   └── useSSE.svelte.ts # SSE connection hook
-│   │   ├── i18n/
-│   │   │   ├── index.ts
-│   │   │   └── locales/
-│   │   │       ├── ru.json
-│   │   │       └── en.json
-│   │   ├── index.ts             # Library exports
-│   │   └── utils.ts             # Utility functions (cn, etc.)
-│   ├── routes/                  # SvelteKit pages (13+)
-│   │   ├── +layout.svelte
-│   │   ├── +page.svelte         # Dashboard
-│   │   ├── api/
-│   │   │   ├── status/
-│   │   │   ├── events/          # SSE endpoint
-│   │   │   └── history/[id]/
-│   │   ├── engine/[id]/
-│   │   ├── maintenance/
-│   │   ├── analytics/
-│   │   ├── economics/
-│   │   ├── alerts/
-│   │   │   └── rules/
-│   │   ├── admin/
-│   │   └── ...
-│   └── app.html
-├── scripts/
-│   └── mock-device.ts           # MQTT telemetry simulator
-├── drizzle/                     # Database migrations
-├── static/
-│   ├── manifest.json            # PWA manifest
-│   └── sw.js                    # Service Worker
-├── compose.yaml                 # Docker Compose (TimescaleDB + EMQX)
-├── drizzle.config.ts
-├── svelte.config.js
-├── vite.config.ts
-└── package.json
-```
+### Core Tables
+
+| Table       | Description                             |
+| ----------- | --------------------------------------- |
+| `engines`   | Engine records with status              |
+| `telemetry` | Time-series telemetry data (hypertable) |
+| `events`    | System event log                        |
+| `downtimes` | Engine downtime tracking                |
+
+### Authentication Tables (Better-Auth)
+
+| Table           | Description               |
+| --------------- | ------------------------- |
+| `users`         | User accounts with roles  |
+| `sessions`      | Active sessions           |
+| `accounts`      | OAuth/credential accounts |
+| `verifications` | Email verification tokens |
+
+### Business Tables
+
+| Table                   | Description                  |
+| ----------------------- | ---------------------------- |
+| `alerts`                | Active and historical alerts |
+| `alert_rules`           | Alert rule configuration     |
+| `work_orders`           | Maintenance work orders      |
+| `audit_logs`            | User action audit trail      |
+| `spare_parts`           | Parts inventory              |
+| `maintenance_schedules` | Maintenance planning         |
+| `cost_records`          | Cost tracking                |
 
 ---
 
-## Setup & Installation
+## User Roles
 
-### Prerequisites
+| Role         | Permissions                                      |
+| ------------ | ------------------------------------------------ |
+| `admin`      | Full access, user management, system config      |
+| `operator`   | Create/manage alerts, work orders, view all data |
+| `technician` | Manage assigned work orders, acknowledge alerts  |
+| `viewer`     | Read-only access to dashboards                   |
 
-- [Bun](https://bun.sh/) v1.1+
-- [Docker](https://www.docker.com/) & Docker Compose
+---
 
-### 1. Clone & Install
+## Application Routes
 
-```bash
-git clone https://github.com/FrankFMY/kastor-IoT.git
-cd kastor-IoT
-bun install
-```
-
-### 2. Environment Variables
-
-Create `.env` file:
-
-```env
-DATABASE_URL=postgres://root:mysecretpassword@localhost:5444/local
-```
-
-### 3. Start Infrastructure
-
-```bash
-bun run db:start
-# or
-docker compose up -d
-```
-
-This starts:
-- **TimescaleDB** on port `5444`
-- **EMQX MQTT Broker** on ports `1883` (MQTT), `8083` (WebSocket), `8081` (Dashboard)
-
-### 4. Apply Database Migrations
-
-```bash
-bun run db:migrate
-```
-
-### 5. Start Device Simulator (Optional)
-
-In a separate terminal:
-
-```bash
-bun run scripts/mock-device.ts
-```
-
-Simulates 6 engines with realistic telemetry including "overheat" scenarios on GPU-2.
-
-### 6. Start Development Server
-
-```bash
-bun run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173)
+| Route           | Module               | Access    |
+| --------------- | -------------------- | --------- |
+| `/`             | Dashboard            | All       |
+| `/login`        | Login                | Public    |
+| `/register`     | Registration         | Public    |
+| `/engine/[id]`  | Engine Details       | All       |
+| `/maintenance`  | Maintenance Forecast | All       |
+| `/analytics`    | Business Analytics   | All       |
+| `/economics`    | Economics            | All       |
+| `/alerts`       | Alert Center         | All       |
+| `/alerts/rules` | Alert Rules          | Operator+ |
+| `/work-orders`  | Work Orders          | All       |
+| `/admin`        | Admin Panel          | Admin     |
+| `/comparison`   | Engine Comparison    | All       |
+| `/calendar`     | Maintenance Calendar | All       |
+| `/reports`      | Reports              | Operator+ |
+| `/settings`     | Settings             | All       |
+| `/integrations` | Integrations         | Admin     |
+| `/dashboards`   | Custom Dashboards    | All       |
 
 ---
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `bun run dev` | Start development server |
-| `bun run build` | Build for production |
-| `bun run preview` | Preview production build |
-| `bun run check` | TypeScript type checking |
-| `bun run lint` | Run ESLint + Prettier |
-| `bun run format` | Format code with Prettier |
-| `bun run test` | Run unit tests (Vitest) |
-| `bun run test:unit` | Run unit tests in watch mode |
-| `bun run db:start` | Start Docker infrastructure |
-| `bun run db:migrate` | Apply database migrations |
-| `bun run db:push` | Push schema changes |
-| `bun run db:generate` | Generate migration files |
-| `bun run db:studio` | Open Drizzle Studio GUI |
+| Script              | Description                 |
+| ------------------- | --------------------------- |
+| `bun run dev`       | Start development server    |
+| `bun run build`     | Build for production        |
+| `bun run preview`   | Preview production build    |
+| `bun run check`     | TypeScript type checking    |
+| `bun run lint`      | Run ESLint + Prettier       |
+| `bun run test`      | Run all tests               |
+| `bun run test:unit` | Run unit tests (watch)      |
+| `bun run test:e2e`  | Run E2E tests (Playwright)  |
+| `bun run db:start`  | Start Docker infrastructure |
+| `bun run db:stop`   | Stop Docker infrastructure  |
+| `bun run db:push`   | Apply schema changes        |
+| `bun run db:seed`   | Seed demo data              |
+| `bun run db:studio` | Open Drizzle Studio         |
 
 ---
 
-## Features
+## Docker Deployment
 
-### Real-time Data
-
-- **SSE (Server-Sent Events)** - Primary real-time transport with automatic reconnection
-- **Polling Fallback** - 2-second polling if SSE unavailable
-- **MQTT Integration** - Device telemetry via EMQX broker
-
-### Progressive Web App (PWA)
-
-- Service Worker for offline support
-- Installable on desktop and mobile
-- Web App Manifest
-
-### Internationalization (i18n)
-
-- Russian (default)
-- English
-- Persistent language preference
-
-### Keyboard Navigation
-
-- `Cmd/Ctrl + K` - Open Command Palette
-- Quick navigation to any page
-
-### Svelte 5 Runes
-
-Project uses modern Svelte 5 reactive primitives:
-- `$state()` - Reactive state
-- `$derived()` - Computed values
-- `$props()` - Component props
-- `$effect()` - Side effects
-
----
-
-## Library Export
-
-This project can be used as an npm package. Components are exported via `dist/`:
-
-```typescript
-// Import components
-import { NumberTicker } from 'kastor-iot';
-import { cn } from 'kastor-iot';
-```
-
-Build the library:
+### Using Docker Compose
 
 ```bash
-bun run build
+# Build and start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+### Services Started
+
+| Service     | Port              | Description                 |
+| ----------- | ----------------- | --------------------------- |
+| TimescaleDB | 5444              | PostgreSQL with time-series |
+| Redis       | 6379              | Caching layer               |
+| EMQX        | 1883, 8083, 18083 | MQTT broker + dashboard     |
+
+### Building Application Image
+
+```bash
+docker build -t kastor-iot .
+docker run -p 3000:3000 --env-file .env kastor-iot
 ```
 
 ---
 
-## Engine Constants
+## Observability
 
-Default values used for calculations (configurable in `src/lib/types/engine.ts`):
+### Prometheus Metrics
 
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `TARIFF_RUB_PER_KWH` | 4.5 | Electricity tariff |
-| `GAS_COST_RUB_PER_M3` | 6.0 | Gas cost |
-| `PLANNED_MW_PER_ENGINE` | 1.2 | Target power per engine |
-| `SERVICE_INTERVAL_HOURS` | 2000 | Maintenance interval |
-| `CRITICAL_TEMP_THRESHOLD` | 520 | Critical exhaust temp (°C) |
-| `WARNING_TEMP_THRESHOLD` | 500 | Warning exhaust temp (°C) |
-| `CRITICAL_VIBRATION_THRESHOLD` | 15 | Critical vibration (mm/s) |
-| `WARNING_VIBRATION_THRESHOLD` | 10 | Warning vibration (mm/s) |
+Access metrics at `/api/metrics`:
+
+```
+# Request metrics
+kastor_http_requests_total{method="GET",path="/api/status"} 1234
+kastor_http_request_duration_seconds_bucket{le="0.1"} 1000
+
+# SSE metrics
+kastor_sse_connections_active 5
+kastor_sse_messages_total 5000
+
+# MQTT metrics
+kastor_mqtt_messages_total 10000
+kastor_mqtt_connection_status 1
+
+# Business metrics
+kastor_engines_online 4
+kastor_alerts_active 2
+```
+
+### Health Check
+
+Access at `/api/health`:
+
+```json
+{
+	"status": "healthy",
+	"timestamp": "2024-12-29T10:00:00Z",
+	"services": {
+		"database": "healthy",
+		"redis": "healthy"
+	}
+}
+```
+
+### Structured Logging
+
+In production, logs are output as JSON:
+
+```json
+{
+	"level": "info",
+	"message": "MQTT message received",
+	"timestamp": "2024-12-29T10:00:00Z",
+	"context": { "topic": "engines/gpu-1/telemetry" }
+}
+```
+
+---
+
+## Security Features
+
+- **Authentication**: Better-Auth with Argon2 password hashing
+- **Authorization**: Role-based access control (RBAC)
+- **Rate Limiting**: API endpoint protection
+- **MQTT Security**: Password-based authentication (anonymous disabled)
+- **Audit Logging**: User action tracking
+- **Input Validation**: Zod schemas on all endpoints
+
+---
+
+## Performance Optimizations
+
+- **ECharts Tree-Shaking**: Only used chart components are bundled
+- **Redis Caching**: Frequently accessed data cached
+- **SSE Diff Updates**: Only changed data sent to clients
+- **TimescaleDB**: Hypertables with compression for telemetry
+- **Continuous Aggregates**: Pre-computed hourly statistics
+
+---
+
+## Testing
+
+```bash
+# Unit tests
+bun run test
+
+# E2E tests (requires running server)
+bun run test:e2e
+
+# Coverage report
+bun run test:coverage
+```
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with tests
+4. Run linting and tests
+5. Submit a pull request
 
 ---
 
