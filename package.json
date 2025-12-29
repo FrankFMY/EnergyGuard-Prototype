@@ -18,6 +18,10 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "bun run test:unit -- --run",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:coverage": "vitest run --coverage",
+		"test:all": "bun run test && bun run test:e2e",
 		"db:start": "docker compose up",
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
@@ -47,6 +51,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",
 		"@eslint/js": "^9.39.2",
+		"@playwright/test": "^1.57.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.49.2",
 		"@sveltejs/package": "^2.5.7",
@@ -82,8 +87,12 @@
 		"svelte"
 	],
 	"dependencies": {
+		"@node-rs/argon2": "^2.0.2",
+		"arctic": "^3.7.0",
+		"better-auth": "^1.4.9",
 		"clsx": "^2.1.1",
 		"echarts": "^6.0.0",
+		"ioredis": "^5.8.2",
 		"lucide-svelte": "^0.562.0",
 		"mqtt": "^5.14.1",
 		"postgres": "^3.4.7",

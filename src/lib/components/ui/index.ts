@@ -7,3 +7,4 @@ export { default as KPICard } from './KPICard.svelte';
 export { default as StatusIndicator } from './StatusIndicator.svelte';
 export { default as ProgressBar } from './ProgressBar.svelte';
 export { default as Modal } from './Modal.svelte';
+export { default as SkipLink } from './SkipLink.svelte';

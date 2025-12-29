@@ -14,19 +14,11 @@
 		"alerts": "Алерты",
 		"analytics": "Аналитика",
 		"admin": "Администрирование",
-		"integrations": "Интеграции"
-	},
-	"common": {
-		"loading": "Загрузка...",
-		"error": "Ошибка",
-		"retry": "Повторить",
-		"save": "Сохранить",
-		"cancel": "Отмена",
-		"close": "Закрыть",
-		"yes": "Да",
-		"no": "Нет",
-		"kw": "кВт",
-		"celsius": "°C"
+		"integrations": "Интеграции",
+		"workOrders": "Наряд-заказы",
+		"calendar": "Календарь",
+		"comparison": "Сравнение",
+		"dashboards": "Дашборды"
 	},
 	"dashboard": {
 		"title": "Панель управления",
@@ -59,10 +51,17 @@
 		"optimalOperation": "Оптимальная работа",
 		"performanceCorrelation": "Корреляция производительности",
 		"cylinderTemps": "Температуры цилиндров",
+		"cylinderMisfire": "Обнаружен пропуск зажигания",
 		"topView": "Вид сверху",
 		"normal": "Норма",
 		"warning": "Предупреждение",
-		"critical": "Критический"
+		"critical": "Критический",
+		"tabs": {
+			"overview": "Обзор",
+			"history": "История",
+			"maintenance": "Обслуживание",
+			"diagnostics": "Диагностика"
+		}
 	},
 	"maintenance": {
 		"title": "Прогноз техобслуживания",
@@ -90,6 +89,8 @@
 		"title": "Экономика энергии",
 		"costStructure": "Структура себестоимости",
 		"costPerKwh": "Себестоимость кВт·ч",
+		"monthlyProduction": "Месячная выработка",
+		"totalCosts": "Общие затраты",
 		"gasShare": "Газ",
 		"depreciation": "Амортизация",
 		"spareParts": "ЗИП",
@@ -97,27 +98,101 @@
 		"other": "Прочее",
 		"monthlyTrend": "Динамика затрат"
 	},
-	"status": {
-		"ok": "Работа",
-		"warning": "Предупреждение",
-		"error": "Авария"
+	"alerts": {
+		"title": "Алерты",
+		"subtitle": "Уведомления и системные оповещения",
+		"all": "Все",
+		"active": "Активные",
+		"acknowledged": "Подтвержденные",
+		"resolved": "Решенные",
+		"severity": {
+			"info": "Информация",
+			"warning": "Предупреждение",
+			"critical": "Критический"
+		},
+		"noAlerts": "Алертов не найдено",
+		"acknowledge": "Подтвердить",
+		"resolve": "Решить",
+		"viewDetails": "Подробнее",
+		"rules": {
+			"title": "Правила алертов",
+			"add": "Добавить правило",
+			"edit": "Редактировать правило",
+			"delete": "Удалить правило"
+		},
+		"stats": {
+			"active": "Активные",
+			"critical": "Критические",
+			"resolved24h": "Решено (24ч)"
+		}
 	},
-	"units": {
-		"kw": "кВт",
-		"mw": "МВт",
-		"kwh": "кВт·ч",
-		"celsius": "°C",
-		"mms": "мм/с",
-		"m3": "м³",
-		"rub": "₽",
-		"rubPerHour": "₽/ч",
-		"hours": "ч",
-		"days": "дн"
+	"workOrders": {
+		"title": "Наряд-заказы",
+		"create": "Создать наряд-заказ",
+		"status": {
+			"open": "Открыт",
+			"in_progress": "В работе",
+			"completed": "Завершен",
+			"cancelled": "Отменен"
+		},
+		"priority": {
+			"low": "Низкий",
+			"medium": "Средний",
+			"high": "Высокий",
+			"critical": "Критический"
+		},
+		"assignedTo": "Исполнитель",
+		"dueDate": "Срок выполнения",
+		"noWorkOrders": "Наряд-заказы не найдены"
 	},
-	"time": {
-		"hours": "{count} ч",
-		"days": "{count} дн",
-		"hoursLeft": "осталось {hours} ч ({days} дн)"
+	"analytics": {
+		"title": "Бизнес-аналитика",
+		"subtitle": "ROI и показатели эффективности",
+		"totalSavings": "Общая экономия",
+		"preventedDowntime": "Предотвращенные простои",
+		"roi": "Возврат инвестиций",
+		"monthlySavings": "Экономия за месяц"
+	},
+	"admin": {
+		"title": "Администрирование",
+		"subtitle": "Управление системой, оборудованием и пользователями",
+		"tabs": {
+			"engines": "Двигатели",
+			"users": "Пользователи",
+			"connections": "Подключения"
+		},
+		"engines": {
+			"addEngine": "Добавить двигатель",
+			"editEngine": "Редактировать двигатель",
+			"deleteEngine": "Удалить двигатель",
+			"confirmDelete": "Вы уверены, что хотите удалить этот двигатель?"
+		},
+		"users": {
+			"addUser": "Добавить пользователя",
+			"editRole": "Изменить роль",
+			"deleteUser": "Удалить пользователя",
+			"roles": {
+				"admin": "Администратор",
+				"operator": "Оператор",
+				"technician": "Техник",
+				"viewer": "Наблюдатель"
+			}
+		}
+	},
+	"auth": {
+		"login": "Войти",
+		"logout": "Выйти",
+		"register": "Создать аккаунт",
+		"email": "Электронная почта",
+		"password": "Пароль",
+		"confirmPassword": "Подтвердите пароль",
+		"name": "Полное имя",
+		"forgotPassword": "Забыли пароль?",
+		"rememberMe": "Запомнить меня",
+		"noAccount": "Нет аккаунта?",
+		"hasAccount": "Уже есть аккаунт?",
+		"invalidCredentials": "Неверный email или пароль",
+		"passwordMismatch": "Пароли не совпадают"
 	},
 	"oee": {
 		"title": "OEE Метрики",
@@ -134,5 +209,65 @@
 		"totalLosses": "Общие потери",
 		"completed": "Завершен",
 		"ongoing": "В процессе"
+	},
+	"status": {
+		"ok": "Работа",
+		"warning": "Предупреждение",
+		"error": "Авария"
+	},
+	"units": {
+		"kw": "кВт",
+		"mw": "МВт",
+		"kwh": "кВт·ч",
+		"celsius": "°C",
+		"mms": "мм/с",
+		"m3": "м³",
+		"rub": "₽",
+		"rubPerHour": "₽/ч",
+		"hours": "ч",
+		"days": "дн",
+		"percent": "%"
+	},
+	"time": {
+		"hours": "{count} ч",
+		"days": "{count} дн",
+		"hoursLeft": "осталось {hours} ч ({days} дн)",
+		"today": "Сегодня",
+		"yesterday": "Вчера",
+		"lastWeek": "Прошлая неделя",
+		"lastMonth": "Прошлый месяц",
+		"last24h": "Последние 24 часа"
+	},
+	"common": {
+		"loading": "Загрузка...",
+		"error": "Ошибка",
+		"retry": "Повторить",
+		"save": "Сохранить",
+		"cancel": "Отмена",
+		"close": "Закрыть",
+		"yes": "Да",
+		"no": "Нет",
+		"search": "Поиск",
+		"filter": "Фильтр",
+		"export": "Экспорт",
+		"import": "Импорт",
+		"delete": "Удалить",
+		"edit": "Редактировать",
+		"add": "Добавить",
+		"view": "Просмотр",
+		"back": "Назад",
+		"next": "Далее",
+		"previous": "Назад",
+		"submit": "Отправить",
+		"reset": "Сбросить",
+		"clear": "Очистить",
+		"selectAll": "Выбрать все",
+		"noData": "Нет данных",
+		"confirmDelete": "Вы уверены, что хотите удалить этот элемент?",
+		"skipToContent": "Перейти к основному содержимому",
+		"openMenu": "Открыть меню навигации",
+		"closeMenu": "Закрыть меню навигации",
+		"toggleLanguage": "Сменить язык",
+		"toggleTheme": "Переключить тему"
 	}
 }

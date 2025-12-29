@@ -3,6 +3,7 @@
 	import { base } from '$app/paths';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
+	import { _ } from 'svelte-i18n';
 	import Shield from 'lucide-svelte/icons/shield';
 	import Server from 'lucide-svelte/icons/server';
 	import Users from 'lucide-svelte/icons/users';
@@ -142,9 +143,9 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<Shield class="h-7 w-7 text-cyan-400" />
-				Администрирование
+				{$_('admin.title')}
 			</h1>
-			<p class="mt-1 text-sm text-slate-400">Управление системой, оборудованием и пользователями</p>
+			<p class="mt-1 text-sm text-slate-400">{$_('admin.subtitle')}</p>
 		</div>
 	</div>
 
@@ -161,7 +162,7 @@
 			)}
 		>
 			<Cpu class="h-4 w-4" />
-			Оборудование
+			{$_('admin.tabs.engines')}
 		</button>
 		<button
 			type="button"
@@ -174,7 +175,7 @@
 			)}
 		>
 			<Users class="h-4 w-4" />
-			Пользователи
+			{$_('admin.tabs.users')}
 		</button>
 		<button
 			type="button"

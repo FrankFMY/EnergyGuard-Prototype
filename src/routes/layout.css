@@ -89,3 +89,58 @@ body {
 .status-glow-error {
 	box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
 }
+
+/* Accessibility - Focus styles */
+:focus-visible {
+	outline: 2px solid theme('colors.cyan.400');
+	outline-offset: 2px;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	.animate-fade-in {
+		animation: none;
+	}
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+	.glass-card {
+		border-color: theme('colors.white');
+	}
+
+	.text-slate-400 {
+		color: theme('colors.slate.300');
+	}
+}
+
+/* Better keyboard navigation indicators */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	@apply ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-950;
+	outline: none;
+}
+
+/* Skip link utility (used by SkipLink component) */
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+	position: static;
+	width: auto;
+	height: auto;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+}

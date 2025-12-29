@@ -33,7 +33,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Tooling
+# Tooling & IDE
 .cursor
+.serena
 .idea
 .vscode
+*.plan.md
+
+# Test outputs
+playwright-report
+test-results
+coverage
+
+# Docker
+*.log

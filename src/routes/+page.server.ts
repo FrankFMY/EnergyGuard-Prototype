@@ -1,4 +1,4 @@
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types.js';
 import { getDashboardData } from '$lib/server/services/engine.service.js';
 
 export const load: PageServerLoad = async () => {

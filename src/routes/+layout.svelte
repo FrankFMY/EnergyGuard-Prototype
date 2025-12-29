@@ -14,6 +14,7 @@
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
+	import { SkipLink } from '$lib/components/ui/index.js';
 
 	const { children } = $props();
 
@@ -36,16 +37,22 @@
 </script>
 
 {#if $isLoading}
-	<div class="flex h-screen items-center justify-center bg-slate-950">
+	<div class="flex h-screen items-center justify-center bg-slate-950" aria-busy="true" aria-live="polite">
 		<div
 			class="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent"
+			role="status"
+			aria-label="Loading"
 		></div>
 	</div>
 {:else}
 	<div class="min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30">
+		<!-- Skip Link for keyboard users -->
+		<SkipLink />
+
 		<!-- Navbar -->
 		<nav
 			class="sticky top-0 z-50 flex items-center justify-between border-b border-white/5 bg-slate-950/80 px-4 py-4 backdrop-blur-md md:px-6"
+			aria-label="Main navigation"
 		>
 			<div class="flex items-center gap-4 md:gap-8">
 				<!-- Mobile Menu -->
@@ -104,7 +111,7 @@
 			</div>
 		</nav>
 
-		<main class="mx-auto max-w-7xl p-4 md:p-6 lg:p-8">
+		<main id="main-content" class="mx-auto max-w-7xl p-4 md:p-6 lg:p-8" tabindex="-1">
 			{@render children()}
 		</main>
 
