@@ -325,6 +325,8 @@
 		"saved": "Settings saved"
 	},
 	"common": {
+		"kw": " kW",
+		"celsius": "°C",
 		"loading": "Loading...",
 		"error": "Error",
 		"retry": "Retry",

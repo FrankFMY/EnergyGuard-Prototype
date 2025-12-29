@@ -17,7 +17,19 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX = 100; // 100 requests per minute
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ['/api/auth', '/login', '/register', '/forgot-password', '/api/health'];
+const PUBLIC_ROUTES = [
+	'/api/auth',
+	'/api/health',
+	'/api/events',
+	'/api/status',
+	'/api/history',
+	'/api/alerts',
+	'/api/metrics',
+	'/login',
+	'/register',
+	'/forgot-password',
+	'/' // Main dashboard
+];
 
 // Rate limiting function
 function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
@@ -207,7 +219,15 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 
 // Rate limiting handler
 const rateLimitHandler: Handle = async ({ event, resolve }) => {
-	const ip = event.getClientAddress();
+	// Try to get client IP, fallback to 'unknown' in dev mode
+	let ip: string;
+	try {
+		ip = event.getClientAddress();
+	} catch {
+		// In development, getClientAddress() may throw
+		ip = event.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'localhost';
+	}
+
 	const { allowed, remaining } = checkRateLimit(ip);
 
 	if (!allowed) {
