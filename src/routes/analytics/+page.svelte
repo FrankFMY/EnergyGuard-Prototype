@@ -50,14 +50,109 @@
 	};
 
 	let savingsChartEl = $state<HTMLDivElement>();
+	let waterfallChartEl = $state<HTMLDivElement>();
 	let downtimeChartEl = $state<HTMLDivElement>();
 	let roiChartEl = $state<HTMLDivElement>();
 	let savingsChart: EChartsInstance | null = null;
+	let waterfallChart: EChartsInstance | null = null;
 	let downtimeChart: EChartsInstance | null = null;
 	let roiChart: EChartsInstance | null = null;
 
 	onMount(async () => {
 		const echarts = await import('echarts');
+
+		// Financial Waterfall chart
+		if (waterfallChartEl) {
+			const chart = echarts.init(waterfallChartEl);
+			waterfallChart = chart;
+
+			const rawData = [
+				{ name: 'Целевая выручка', value: 5000000, type: 'start' },
+				{ name: 'Потери КПД (газ)', value: -450000, type: 'loss' },
+				{ name: 'Внеплановые простои', value: -320000, type: 'loss' },
+				{ name: 'Затраты на ТО', value: -280000, type: 'loss' },
+				{ name: 'Прочие издержки', value: -150000, type: 'loss' },
+				{ name: 'Фактическая прибыль', value: 3800000, type: 'total' }
+			];
+
+			let current = 0;
+			const help = [];
+			const positive = [];
+			const negative = [];
+
+			for (let i = 0; i < rawData.length; i++) {
+				const item = rawData[i];
+				if (item.type === 'start' || item.type === 'total') {
+					help.push(0);
+					positive.push(item.value);
+					negative.push('-');
+					current = item.value;
+				} else {
+					if (item.value >= 0) {
+						help.push(current);
+						positive.push(item.value);
+						negative.push('-');
+						current += item.value;
+					} else {
+						current += item.value;
+						help.push(current);
+						positive.push('-');
+						negative.push(Math.abs(item.value));
+					}
+				}
+			}
+
+			chart.setOption({
+				tooltip: {
+					trigger: 'axis',
+					axisPointer: { type: 'shadow' },
+					backgroundColor: 'rgba(15, 23, 42, 0.95)',
+					borderColor: '#334155',
+					textStyle: { color: '#f8fafc' },
+					formatter: function (params: any) {
+						const item = rawData[params[0].dataIndex];
+						return `${item.name}<br/><b>${item.value.toLocaleString()} ₽</b>`;
+					}
+				},
+				grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+				xAxis: {
+					type: 'category',
+					data: rawData.map((i) => i.name),
+					axisLabel: { color: '#64748b', interval: 0, fontSize: 10 }
+				},
+				yAxis: {
+					type: 'value',
+					axisLabel: {
+						color: '#64748b',
+						formatter: (v: number) => (v / 1000000).toFixed(1) + 'M'
+					},
+					splitLine: { lineStyle: { color: '#1e293b' } }
+				},
+				series: [
+					{
+						name: 'Placeholder',
+						type: 'bar',
+						stack: 'all',
+						itemStyle: { color: 'rgba(0,0,0,0)' },
+						data: help
+					},
+					{
+						name: 'Positive',
+						type: 'bar',
+						stack: 'all',
+						itemStyle: { color: '#06b6d4' },
+						data: positive
+					},
+					{
+						name: 'Negative',
+						type: 'bar',
+						stack: 'all',
+						itemStyle: { color: '#f43f5e' },
+						data: negative
+					}
+				]
+			});
+		}
 
 		// Savings trend chart
 		if (savingsChartEl) {
@@ -207,6 +302,7 @@
 
 	onDestroy(() => {
 		savingsChart?.dispose();
+		waterfallChart?.dispose();
 		downtimeChart?.dispose();
 		roiChart?.dispose();
 		if (typeof window !== 'undefined') {
@@ -216,6 +312,7 @@
 
 	function handleResize() {
 		savingsChart?.resize();
+		waterfallChart?.resize();
 		downtimeChart?.resize();
 		roiChart?.resize();
 	}
@@ -322,13 +419,13 @@
 	</div>
 
 	<div class="grid gap-6 lg:grid-cols-3">
-		<!-- Savings Trend Chart -->
+		<!-- Waterfall Chart -->
 		<Card class="lg:col-span-2">
 			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-				<TrendingUp class="h-5 w-5 text-emerald-400" />
-				{#if !$isLoading}{$_('analytics.savingsTrend')}{:else}Monthly Savings Trend{/if}
+				<TrendingUp class="h-5 w-5 text-cyan-400" />
+				{#if !$isLoading}Анализ прибыли (Waterfall){:else}Profit Waterfall Analysis{/if}
 			</h3>
-			<div class="h-72 w-full" bind:this={savingsChartEl}></div>
+			<div class="h-72 w-full" bind:this={waterfallChartEl}></div>
 		</Card>
 
 		<!-- ROI Gauge -->

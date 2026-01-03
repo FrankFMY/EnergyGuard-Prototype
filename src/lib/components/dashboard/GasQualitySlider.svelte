@@ -6,7 +6,8 @@
 	import {
 		calculatePowerDerating,
 		calculateTemperatureFromGasQuality,
-		calculateLostRevenue
+		calculateLostRevenue,
+		calculateGasEfficiency
 	} from '$lib/services/gas-quality.service.js';
 	import { ENGINE_CONSTANTS } from '$lib/types/index.js';
 	import Fuel from 'lucide-svelte/icons/fuel';
@@ -15,33 +16,73 @@
 	import TrendingDown from 'lucide-svelte/icons/trending-down';
 	import Banknote from 'lucide-svelte/icons/banknote';
 	import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
+	import { base } from '$app/paths';
 
 	interface Props {
 		class?: string;
+		engineId?: string;
 		nominalPower?: number;
 		baseTemp?: number;
-		onchange?: (detail: { gasQuality: number; temperature: number; deratedPower: number }) => void;
+		onchange?: (detail: {
+			gasQuality: number;
+			temperature: number;
+			deratedPower: number;
+			efficiency: number;
+		}) => void;
 	}
 
-	const { class: className = '', nominalPower = 1200, baseTemp = 450, onchange }: Props = $props();
+	const {
+		class: className = '',
+		engineId = 'gpu-1',
+		nominalPower = 1200,
+		baseTemp = 450,
+		onchange
+	}: Props = $props();
 
 	// State for the slider
 	let gasQuality = $state(1.0);
+	let lastScenario = $state<string | null>(null);
+
+	async function triggerScenarioEvent(name: string, level: 'info' | 'warning' | 'error') {
+		if (lastScenario === name) return;
+		lastScenario = name;
+
+		try {
+			await fetch(`${base}/api/events`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					message: `SIMULATOR: Режим "${name}" активирован пользователем.`,
+					level,
+					engine_id: engineId
+				})
+			});
+		} catch (e) {
+			console.error('Failed to log simulator event', e);
+		}
+	}
 
 	// Reactive calculations
 	const deratedPower = $derived(calculatePowerDerating(gasQuality, nominalPower));
 	const temperature = $derived(calculateTemperatureFromGasQuality(gasQuality, baseTemp));
 	const powerLoss = $derived(nominalPower - deratedPower);
 	const lostRevenue = $derived(calculateLostRevenue(powerLoss));
-	const efficiency = $derived((deratedPower / nominalPower) * 100);
+	const efficiency = $derived(calculateGasEfficiency(gasQuality));
+	const relativeEfficiency = $derived((deratedPower / nominalPower) * 100);
 
 	// Emit changes to parent
 	$effect(() => {
 		onchange?.({
 			gasQuality,
 			temperature,
-			deratedPower
+			deratedPower,
+			efficiency
 		});
+
+		// Trigger simulator audit event
+		if (gasQuality === 1.0) triggerScenarioEvent('Эталон', 'info');
+		else if (gasQuality === 0.85) triggerScenarioEvent('Загрязнение', 'warning');
+		else if (gasQuality === 0.72) triggerScenarioEvent('Авария', 'error');
 	});
 
 	const getTempColor = (t: number) => {
@@ -100,6 +141,40 @@
 			</div>
 		</div>
 
+		<!-- Scenario Presets -->
+		<div class="grid grid-cols-3 gap-2">
+			<button
+				type="button"
+				class={cn(
+					'rounded-lg border border-slate-700 py-2 text-xs font-medium transition-all hover:bg-slate-800',
+					gasQuality === 1.0 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400' : 'text-slate-400'
+				)}
+				onclick={() => (gasQuality = 1.0)}
+			>
+				Эталон (100%)
+			</button>
+			<button
+				type="button"
+				class={cn(
+					'rounded-lg border border-slate-700 py-2 text-xs font-medium transition-all hover:bg-slate-800',
+					gasQuality === 0.85 ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'text-slate-400'
+				)}
+				onclick={() => (gasQuality = 0.85)}
+			>
+				Загрязнение (85%)
+			</button>
+			<button
+				type="button"
+				class={cn(
+					'rounded-lg border border-slate-700 py-2 text-xs font-medium transition-all hover:bg-slate-800',
+					gasQuality === 0.72 ? 'border-rose-500 bg-rose-500/10 text-rose-400' : 'text-slate-400'
+				)}
+				onclick={() => (gasQuality = 0.72)}
+			>
+				Авария (72%)
+			</button>
+		</div>
+
 		<!-- Real-time Metrics -->
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<!-- Power Output -->
@@ -116,7 +191,7 @@
 				<div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
 					<div
 						class="h-full bg-emerald-500 transition-all duration-500"
-						style="width: {efficiency}%"
+						style="width: {relativeEfficiency}%"
 					></div>
 				</div>
 			</div>

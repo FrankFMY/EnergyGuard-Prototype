@@ -48,6 +48,22 @@
 	let engineData: EngineData | null = $state({ temp: 450, power: 1120 });
 	let loading = $state(false);
 
+	// Live Technical Log state
+	let rawLog = $state<{ id: string; time: string; msg: string }[]>([]);
+	const MAX_LOG_ENTRIES = 8;
+
+	function addLogEntry() {
+		const now = new Date();
+		const timeStr = now.toLocaleTimeString();
+		const p = simulatedData?.power || 1100 + Math.random() * 100;
+		const t = simulatedData?.temp || 450 + Math.random() * 20;
+		const eff = simulatedData?.efficiency || 42.5;
+
+		const msg = `[PROT:MQTT] ${engineId?.toUpperCase()}: power=${p.toFixed(1)}kW | temp=${t.toFixed(1)}C | eff=${eff.toFixed(1)}%`;
+
+		rawLog = [{ id: crypto.randomUUID(), time: timeStr, msg }, ...rawLog].slice(0, MAX_LOG_ENTRIES);
+	}
+
 	// Mock Cylinder Temps (4x5 Grid)
 	let cylinderTemps = $state(
 		Array(20)
@@ -63,18 +79,20 @@
 	let historyData: ChartDataPoint[] = $state([]);
 
 	// State to track if simulation is active (gas quality < 1.0)
-	let simulatedData: { temp: number; power: number } | null = $state(null);
+	let simulatedData: { temp: number; power: number; efficiency: number } | null = $state(null);
 
 	// Handler for Gas Quality changes
 	function handleSimulationChange(detail: {
 		gasQuality: number;
 		temperature: number;
 		deratedPower: number;
+		efficiency: number;
 	}) {
 		if (detail.gasQuality < 0.99) {
 			simulatedData = {
 				temp: detail.temperature,
-				power: detail.deratedPower
+				power: detail.deratedPower,
+				efficiency: detail.efficiency
 			};
 		} else {
 			simulatedData = null;
@@ -94,6 +112,7 @@
 	});
 
 	async function updateData() {
+		addLogEntry();
 		try {
 			const res = await fetch(`${base}/api/history/${engineId}`);
 			if (!res.ok) throw new Error('API offline');
@@ -225,10 +244,49 @@
 
 		_historyLoading = true;
 		try {
-			const res = await fetch(`${base}/api/history/${engineId}?range=${historyRange}`);
+			const [res, eventsRes] = await Promise.all([
+				fetch(`${base}/api/history/${engineId}?range=${historyRange}`),
+				fetch(`${base}/api/events/${engineId}?limit=50`)
+			]);
+
 			if (!res.ok) return;
 			const history: ChartDataPoint[] = await res.json();
 			historyData = history;
+
+			let eventMarkers: any[] = [];
+			if (eventsRes.ok) {
+				const engineEvents = await eventsRes.json();
+				const startTime = history.length > 0 ? new Date(history[0].time).getTime() : 0;
+				const endTime =
+					history.length > 0 ? new Date(history[history.length - 1].time).getTime() : Date.now();
+
+				eventMarkers = engineEvents
+					.filter((e: any) => {
+						const t = new Date(e.time).getTime();
+						return t >= startTime && t <= endTime && (e.level === 'warning' || e.level === 'error');
+					})
+					.map((e: any) => ({
+						xAxis: new Date(e.time).toLocaleString(),
+						label: {
+							show: true,
+							formatter: e.level === 'error' ? 'CRITICAL' : 'WARNING',
+							backgroundColor: e.level === 'error' ? '#f43f5e' : '#f59e0b',
+							color: '#fff',
+							padding: [2, 4],
+							borderRadius: 2,
+							fontSize: 10
+						},
+						lineStyle: {
+							color: e.level === 'error' ? '#f43f5e' : '#f59e0b',
+							type: 'dashed',
+							width: 1,
+							opacity: 0.6
+						},
+						tooltip: {
+							formatter: `${new Date(e.time).toLocaleTimeString()}: ${e.message}`
+						}
+					}));
+			}
 
 			if (!historyChartInstance) {
 				const echarts = await import('echarts');
@@ -284,6 +342,11 @@
 						areaStyle: {
 							opacity: 0.1,
 							color: '#06b6d4'
+						},
+						markLine: {
+							symbol: ['none', 'none'],
+							data: eventMarkers,
+							label: { show: true }
 						}
 					},
 					{
@@ -434,7 +497,12 @@
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
 			<!-- Simulation (Full Width for Demo) -->
 			<div class="lg:col-span-12">
-				<GasQualitySlider nominalPower={1200} baseTemp={450} onchange={handleSimulationChange} />
+				<GasQualitySlider
+					engineId={$page.params.id}
+					nominalPower={1200}
+					baseTemp={450}
+					onchange={handleSimulationChange}
+				/>
 			</div>
 
 			<!-- Left Column: KPIs (3 cols) -->
@@ -487,8 +555,14 @@
 									<Gauge size={14} />
 									{$_('engine.efficiency')}
 								</div>
-								<div class="font-mono text-2xl font-bold text-emerald-400">
-									42.5 <span class="text-sm text-emerald-500/50">%</span>
+								<div
+									class={cn(
+										'font-mono text-2xl font-bold',
+										(simulatedData?.efficiency ?? 42.5) < 38 ? 'text-rose-400' : 'text-emerald-400'
+									)}
+								>
+									{(simulatedData?.efficiency ?? 42.5).toFixed(1)}
+									<span class="text-sm opacity-50">%</span>
 								</div>
 							</div>
 						</div>
@@ -526,6 +600,21 @@
 							<p class="text-xs text-emerald-200/70">{$_('engine.matchesBaseline')}</p>
 						</div>
 					{/if}
+				</Card>
+
+				<Card class="border-slate-800 bg-black/40 font-mono text-[10px]">
+					<div class="mb-2 flex items-center justify-between border-b border-white/5 pb-1">
+						<span class="tracking-widest text-slate-500 uppercase">Live Protocol Data</span>
+						<div class="h-1.5 w-1.5 animate-ping rounded-full bg-emerald-500"></div>
+					</div>
+					<div class="h-[120px] space-y-1 overflow-hidden">
+						{#each rawLog as entry (entry.id)}
+							<div class="flex gap-2 transition-opacity duration-500">
+								<span class="text-slate-600">[{entry.time}]</span>
+								<span class="truncate text-cyan-500/80">{entry.msg}</span>
+							</div>
+						{/each}
+					</div>
 				</Card>
 			</div>
 
