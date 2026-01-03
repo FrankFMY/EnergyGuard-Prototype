@@ -76,7 +76,9 @@ async function seed() {
 		{ id: 'gpu-1', model: 'Jenbacher J620', status: 'ok' as const, total_hours: 18500 },
 		{ id: 'gpu-2', model: 'Jenbacher J620', status: 'warning' as const, total_hours: 12300 },
 		{ id: 'gpu-3', model: 'Caterpillar CG170-12', status: 'ok' as const, total_hours: 9800 },
-		{ id: 'gpu-4', model: 'Caterpillar CG170-12', status: 'ok' as const, total_hours: 7200 }
+		{ id: 'gpu-4', model: 'Caterpillar CG170-12', status: 'ok' as const, total_hours: 7200 },
+		{ id: 'gpu-5', model: 'Jenbacher J420', status: 'ok' as const, total_hours: 1850 },
+		{ id: 'gpu-6', model: 'Jenbacher J420', status: 'ok' as const, total_hours: 100 }
 	];
 
 	await db.insert(schema.engines).values(enginesData).onConflictDoNothing();
@@ -456,12 +458,12 @@ async function seed() {
 
 	// 9. Create initial telemetry data
 	console.log('📊 Creating telemetry data...');
-	const telemetryData = [];
+	const telemetryData: (typeof schema.telemetry.$inferInsert)[] = [];
 	const baseTime = new Date();
 
 	for (let i = 0; i < 60; i++) {
 		const time = new Date(baseTime.getTime() - i * 60 * 1000);
-		for (const engine of ['gpu-1', 'gpu-2', 'gpu-3', 'gpu-4']) {
+		for (const engine of ['gpu-1', 'gpu-2', 'gpu-3', 'gpu-4', 'gpu-5', 'gpu-6']) {
 			telemetryData.push({
 				time,
 				engine_id: engine,

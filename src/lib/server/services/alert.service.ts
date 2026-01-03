@@ -26,6 +26,7 @@ export interface AlertWithAcknowledger extends AlertRecord {
  * Get alerts with optional filtering
  */
 export async function getAlerts(filters?: AlertFilters): Promise<AlertWithAcknowledger[]> {
+	console.log('[ALERT SERVICE] Fetching alerts with filters:', JSON.stringify(filters));
 	const conditions = [];
 
 	if (filters?.severity) {
@@ -39,26 +40,33 @@ export async function getAlerts(filters?: AlertFilters): Promise<AlertWithAcknow
 	}
 	if (filters?.hours) {
 		const cutoff = new Date(Date.now() - filters.hours * 60 * 60 * 1000);
+		console.log('[ALERT SERVICE] Time cutoff:', cutoff.toISOString());
 		conditions.push(gte(alerts.createdAt, cutoff));
 	}
 
 	const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-	const result = await db
-		.select({
-			alert: alerts,
-			acknowledgerName: users.name
-		})
-		.from(alerts)
-		.leftJoin(users, eq(alerts.acknowledgedBy, users.id))
-		.where(whereClause)
-		.orderBy(desc(alerts.createdAt))
-		.limit(100);
+	try {
+		const result = await db
+			.select({
+				alert: alerts,
+				acknowledgerName: users.name
+			})
+			.from(alerts)
+			.leftJoin(users, eq(alerts.acknowledgedBy, users.id))
+			.where(whereClause)
+			.orderBy(desc(alerts.createdAt))
+			.limit(100);
 
-	return result.map((row) => ({
-		...row.alert,
-		acknowledgedByName: row.acknowledgerName
-	}));
+		console.log(`[ALERT SERVICE] Found ${result.length} alerts`);
+		return result.map((row) => ({
+			...row.alert,
+			acknowledgedByName: row.acknowledgerName
+		}));
+	} catch (e) {
+		console.error('[ALERT SERVICE] Error fetching alerts:', e);
+		return [];
+	}
 }
 
 /**
@@ -68,26 +76,51 @@ export async function getAlertStats() {
 	const now = new Date();
 	const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-	const result = await db
-		.select({
-			total: sql<number>`count(*)`,
-			active: sql<number>`count(*) filter (where ${alerts.status} = 'active')`,
-			acknowledged: sql<number>`count(*) filter (where ${alerts.status} = 'acknowledged')`,
-			resolved: sql<number>`count(*) filter (where ${alerts.status} = 'resolved' and ${alerts.resolvedAt} >= ${last24h})`,
-			critical: sql<number>`count(*) filter (where ${alerts.severity} = 'critical' and ${alerts.status} = 'active')`,
-			warning: sql<number>`count(*) filter (where ${alerts.severity} = 'warning' and ${alerts.status} = 'active')`
-		})
-		.from(alerts);
+	try {
+		const [totalCount, activeCount, acknowledgedCount, resolvedCount, criticalCount, warningCount] =
+			await Promise.all([
+				db.select({ count: sql<number>`count(*)` }).from(alerts),
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(alerts)
+					.where(eq(alerts.status, 'active')),
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(alerts)
+					.where(eq(alerts.status, 'acknowledged')),
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(alerts)
+					.where(and(eq(alerts.status, 'resolved'), gte(alerts.resolvedAt, last24h))),
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(alerts)
+					.where(and(eq(alerts.severity, 'critical'), eq(alerts.status, 'active'))),
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(alerts)
+					.where(and(eq(alerts.severity, 'warning'), eq(alerts.status, 'active')))
+			]);
 
-	const stats = result[0];
-	return {
-		total: Number(stats?.total ?? 0),
-		active: Number(stats?.active ?? 0),
-		acknowledged: Number(stats?.acknowledged ?? 0),
-		resolved: Number(stats?.resolved ?? 0),
-		critical: Number(stats?.critical ?? 0),
-		warning: Number(stats?.warning ?? 0)
-	};
+		return {
+			total: Number(totalCount[0]?.count ?? 0),
+			active: Number(activeCount[0]?.count ?? 0),
+			acknowledged: Number(acknowledgedCount[0]?.count ?? 0),
+			resolved: Number(resolvedCount[0]?.count ?? 0),
+			critical: Number(criticalCount[0]?.count ?? 0),
+			warning: Number(warningCount[0]?.count ?? 0)
+		};
+	} catch (e) {
+		console.error('[ALERT SERVICE] Failed to get alert stats:', e);
+		return {
+			total: 0,
+			active: 0,
+			acknowledged: 0,
+			resolved: 0,
+			critical: 0,
+			warning: 0
+		};
+	}
 }
 
 /**

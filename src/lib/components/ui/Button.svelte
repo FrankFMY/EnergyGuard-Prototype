@@ -7,6 +7,7 @@
 		size?: 'sm' | 'md' | 'lg';
 		disabled?: boolean;
 		loading?: boolean;
+		href?: string;
 		type?: 'button' | 'submit' | 'reset';
 		onclick?: (e: MouseEvent) => void;
 		children: import('svelte').Snippet;
@@ -18,6 +19,7 @@
 		size = 'md',
 		disabled = false,
 		loading = false,
+		href,
 		type = 'button',
 		onclick,
 		children
@@ -36,24 +38,33 @@
 		md: 'px-4 py-2 text-sm',
 		lg: 'px-6 py-3 text-base'
 	};
+
+	const baseClass = $derived(
+		cn(
+			'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all',
+			'focus:ring-2 focus:ring-cyan-500/50 focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none',
+			'disabled:cursor-not-allowed disabled:opacity-50',
+			variants[variant],
+			sizes[size],
+			className
+		)
+	);
 </script>
 
-<button
-	{type}
-	{disabled}
-	{onclick}
-	class={cn(
-		'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all',
-		'focus:ring-2 focus:ring-cyan-500/50 focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none',
-		'disabled:cursor-not-allowed disabled:opacity-50',
-		variants[variant],
-		sizes[size],
-		className
-	)}
->
-	{#if loading}
-		<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-		></span>
-	{/if}
-	{@render children()}
-</button>
+{#if href}
+	<a {href} class={baseClass}>
+		{#if loading}
+			<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+			></span>
+		{/if}
+		{@render children()}
+	</a>
+{:else}
+	<button {type} {disabled} {onclick} class={baseClass}>
+		{#if loading}
+			<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+			></span>
+		{/if}
+		{@render children()}
+	</button>
+{/if}

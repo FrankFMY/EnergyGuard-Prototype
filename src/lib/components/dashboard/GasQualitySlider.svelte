@@ -20,9 +20,10 @@
 		class?: string;
 		nominalPower?: number;
 		baseTemp?: number;
+		onchange?: (detail: { gasQuality: number; temperature: number; deratedPower: number }) => void;
 	}
 
-	const { class: className = '', nominalPower = 1200, baseTemp = 450 }: Props = $props();
+	const { class: className = '', nominalPower = 1200, baseTemp = 450, onchange }: Props = $props();
 
 	// State for the slider
 	let gasQuality = $state(1.0);
@@ -33,6 +34,15 @@
 	const powerLoss = $derived(nominalPower - deratedPower);
 	const lostRevenue = $derived(calculateLostRevenue(powerLoss));
 	const efficiency = $derived((deratedPower / nominalPower) * 100);
+
+	// Emit changes to parent
+	$effect(() => {
+		onchange?.({
+			gasQuality,
+			temperature,
+			deratedPower
+		});
+	});
 
 	const getTempColor = (t: number) => {
 		if (t > ENGINE_CONSTANTS.CRITICAL_TEMP_THRESHOLD) return 'text-rose-500';

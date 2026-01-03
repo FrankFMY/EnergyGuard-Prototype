@@ -6,6 +6,7 @@
 	import { cn } from '$lib/utils.js';
 	import { Card, Badge, Skeleton } from '$lib/components/ui/index.js';
 	import { GasQualitySlider } from '$lib/components/dashboard/index.js';
+	import { ENGINE_CONSTANTS } from '$lib/types/index.js';
 	import Thermometer from 'lucide-svelte/icons/thermometer';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Gauge from 'lucide-svelte/icons/gauge';
@@ -61,6 +62,37 @@
 	let _historyLoading = $state(false);
 	let historyData: ChartDataPoint[] = $state([]);
 
+	// State to track if simulation is active (gas quality < 1.0)
+	let simulatedData: { temp: number; power: number } | null = $state(null);
+
+	// Handler for Gas Quality changes
+	function handleSimulationChange(detail: {
+		gasQuality: number;
+		temperature: number;
+		deratedPower: number;
+	}) {
+		if (detail.gasQuality < 0.99) {
+			simulatedData = {
+				temp: detail.temperature,
+				power: detail.deratedPower
+			};
+		} else {
+			simulatedData = null;
+		}
+	}
+
+	// Logic for dynamic narrative
+	let narrativeValues = $derived.by(() => {
+		if (simulatedData) {
+			return {
+				temp: Math.round(simulatedData.temp - 450),
+				power: Math.round(1200 - simulatedData.power),
+				loss: Math.round((1200 - simulatedData.power) * 4.5) // Using constant tariff
+			};
+		}
+		return { temp: 0, power: 0, loss: 0 };
+	});
+
 	async function updateData() {
 		try {
 			const res = await fetch(`${base}/api/history/${engineId}`);
@@ -69,7 +101,10 @@
 
 			if (history.length > 0) {
 				const latest = history[history.length - 1];
-				engineData = latest;
+				// Use simulated data if active, otherwise real data
+				engineData = simulatedData
+					? { temp: simulatedData.temp, power: simulatedData.power }
+					: latest;
 				loading = false;
 				renderChart(history);
 			} else {
@@ -80,9 +115,16 @@
 		}
 
 		// Always update Heatmap for visual "life"
-		cylinderTemps = cylinderTemps.map((t) => {
-			const jitter = (Math.random() - 0.5) * 5;
-			return Math.max(450, Math.min(650, t + jitter));
+		cylinderTemps = cylinderTemps.map((t, i) => {
+			// Create a stable but slightly different base offset for each cylinder
+			// to avoid uniform "all yellow" behavior
+			const baseVariance = ((i * 137) % 40) - 20; // -20 to +20 fixed variance
+			const jitter = (Math.random() - 0.5) * 8; // Small dynamic jitter
+
+			const targetTemp = engineData?.temp || 480;
+			const currentTemp = targetTemp + baseVariance + jitter;
+
+			return Math.max(450, Math.min(750, currentTemp));
 		});
 	}
 
@@ -93,11 +135,14 @@
 		for (let i = 20; i >= 0; i--) {
 			fakeHistory.push({
 				time: new Date(now - i * 5000).toISOString(),
-				temp: 450 + Math.random() * 30,
-				power: 1100 + Math.random() * 100
+				temp: (simulatedData?.temp || 450) + Math.random() * 10,
+				power: (simulatedData?.power || 1100) + Math.random() * 50
 			});
 		}
-		engineData = fakeHistory[fakeHistory.length - 1];
+		engineData = {
+			temp: simulatedData?.temp || fakeHistory[fakeHistory.length - 1].temp,
+			power: simulatedData?.power || fakeHistory[fakeHistory.length - 1].power
+		};
 		loading = false;
 		renderChart(fakeHistory);
 	}
@@ -300,8 +345,9 @@
 	}
 
 	function getCylinderColor(temp: number) {
-		if (temp > 600) return 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse';
-		if (temp > 500) return 'bg-amber-500';
+		if (temp > ENGINE_CONSTANTS.CRITICAL_TEMP_THRESHOLD)
+			return 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse';
+		if (temp > ENGINE_CONSTANTS.WARNING_TEMP_THRESHOLD) return 'bg-amber-500';
 		return 'bg-emerald-500/20';
 	}
 
@@ -388,13 +434,18 @@
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
 			<!-- Simulation (Full Width for Demo) -->
 			<div class="lg:col-span-12">
-				<GasQualitySlider nominalPower={1200} baseTemp={450} />
+				<GasQualitySlider nominalPower={1200} baseTemp={450} onchange={handleSimulationChange} />
 			</div>
 
 			<!-- Left Column: KPIs (3 cols) -->
 			<div class="space-y-4 lg:col-span-3">
 				<Card>
-					<h3 class="mb-4 text-sm font-medium text-slate-400">{$_('engine.realTimeMetrics')}</h3>
+					<div class="mb-4 flex items-center justify-between">
+						<h3 class="text-sm font-medium text-slate-400">{$_('engine.realTimeMetrics')}</h3>
+						{#if simulatedData}
+							<Badge variant="warning" class="animate-pulse">SIMULATION</Badge>
+						{/if}
+					</div>
 
 					{#if loading}
 						<div class="space-y-6">
@@ -456,6 +507,16 @@
 								{$_('engine.cylinderMisfire')}
 							</p>
 						</div>
+					{:else if (engineData?.temp ?? 0) > 500}
+						<div class="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4">
+							<div class="mb-1 flex items-center gap-2 text-sm font-bold text-amber-400">
+								<TriangleAlert size={16} />
+								{$_('engine.riskMedium')}
+							</div>
+							<p class="text-xs text-amber-200/70">
+								Температура выше нормы. Возможен дерейтинг мощности.
+							</p>
+						</div>
 					{:else}
 						<div class="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
 							<div class="flex items-center gap-2 text-sm font-bold text-emerald-400">
@@ -475,9 +536,17 @@
 						<h3 class="text-sm font-medium text-slate-400">
 							{$_('engine.performanceCorrelation')}
 						</h3>
-						<div class="text-[10px] font-medium tracking-wider text-cyan-400 uppercase">
-							{$_('engine.performanceNarrative', { values: { temp: 12, power: 85, loss: 1240 } })}
-						</div>
+						{#if simulatedData}
+							<div class="text-[10px] font-medium tracking-wider text-rose-400 uppercase">
+								{$_('engine.performanceNarrative', {
+									values: narrativeValues
+								})}
+							</div>
+						{:else}
+							<div class="text-[10px] font-medium tracking-wider text-cyan-400 uppercase">
+								{$_('engine.optimalOperation')}
+							</div>
+						{/if}
 					</div>
 					<div bind:this={chartContainer} class="w-full flex-1"></div>
 				</Card>
@@ -604,7 +673,7 @@
 							></div>
 							<div class="flex items-center justify-between opacity-50">
 								<h4 class="font-medium text-white">ТО-2 (Среднее обслуживание)</h4>
-								<Badge variant="outline">через 2000 ч</Badge>
+								<Badge variant="secondary">через 2000 ч</Badge>
 							</div>
 							<p class="mt-1 text-sm text-slate-500">Полная диагностика, регулировка клапанов.</p>
 						</div>

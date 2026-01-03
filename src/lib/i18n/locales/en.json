@@ -59,7 +59,7 @@
 		"aiRiskAssessment": "Risk Assessment (7 days)",
 		"riskRange": "Assessment Range",
 		"riskLow": "Risk low. No action required.",
-		"riskMedium": "Risk medium. Monitoring recommended.",
+		"riskMedium": "Risk moderate. Monitoring recommended.",
 		"riskHigh": "Risk high. Intervention required.",
 		"disclaimer": "Assessment based on rules and thresholds. Requires calibration on site data.",
 		"performanceNarrative": "Gas degraded → temp +{temp}°C → derating −{power} kW → loss {loss} ₽/h",

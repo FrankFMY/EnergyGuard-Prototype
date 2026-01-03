@@ -47,7 +47,13 @@
 		if (!browser) return;
 
 		try {
+			connectionStatus = 'polling'; // Initial state while connecting
 			eventSource = new EventSource(`${base}/api/events`);
+
+			eventSource.onopen = () => {
+				connectionStatus = 'connected';
+				lastUpdate = new Date();
+			};
 
 			eventSource.onmessage = (event) => {
 				try {
@@ -62,13 +68,19 @@
 			eventSource.onerror = () => {
 				// Fall back to polling on SSE error
 				console.log('SSE connection failed, falling back to polling');
+				if (connectionStatus === 'connected') {
+					connectionStatus = 'polling';
+				}
 				useSSE = false;
 				eventSource?.close();
-				interval = setInterval(fetchData, 2000);
+				if (!interval) {
+					interval = setInterval(fetchData, 2000);
+				}
 			};
 		} catch {
 			// SSE not supported, use polling
 			useSSE = false;
+			connectionStatus = 'polling';
 			interval = setInterval(fetchData, 2000);
 		}
 	}

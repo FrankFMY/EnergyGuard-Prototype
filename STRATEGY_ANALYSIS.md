@@ -41,15 +41,17 @@
 В документе упоминается "ElysiaJS (Bun Runtime)" как основной backend, но в коде используется **SvelteKit server routes**.
 
 **Рекомендация:**
+
 ```typescript
 // Вариант А: Обновить документ
-"Backend: SvelteKit server routes на базе Bun runtime"
+'Backend: SvelteKit server routes на базе Bun runtime';
 
 // Вариант Б: Мигрировать на ElysiaJS (если нужен отдельный API-сервис)
 // Это потребует рефакторинга, но даст больше гибкости
 ```
 
 **Когда нужен ElysiaJS:**
+
 - Если планируете отдельный API-сервис (микросервисная архитектура)
 - Если нужна максимальная производительность для API-only endpoint'ов
 - Если будете делать GraphQL gateway
@@ -60,6 +62,7 @@
 
 **Проблема:**
 В документе обещана "Предиктивная Аналитика на Python + FastAPI", но в коде:
+
 - ❌ Нет Python-сервиса для ML
 - ❌ Нет интеграции с TensorFlow/PyTorch
 - ✅ Есть только базовый `calculateMaintenanceForecast` на основе моточасов
@@ -67,6 +70,7 @@
 **Рекомендация:**
 
 **Фаза 1 (MVP - сейчас):**
+
 ```typescript
 // Текущая реализация через TypeScript - нормально для старта
 // calculateMaintenanceForecast использует простую логику
@@ -74,11 +78,13 @@
 ```
 
 **Фаза 2 (3-6 месяцев):**
+
 - Запустить отдельный Python FastAPI сервис
 - Начать сбор данных для обучения моделей
 - Внедрить простые статистические модели (anomaly detection)
 
 **Фаза 3 (6-12 месяцев):**
+
 - LSTM для прогнозирования отказов
 - Интеграция с историческими данными клиентов
 
@@ -88,6 +94,7 @@
 
 **Проблема:**
 В документе для MVP "Цифровой Двойник Энергоцентра" указана:
+
 - Двусторонняя интеграция с 1С (склад ЗИП, наработка)
 - В коде нет этой интеграции
 
@@ -103,7 +110,8 @@ src/lib/server/services/1c-integration.service.ts
 // - Или COM-соединение (не рекомендуется для облака)
 ```
 
-**Приоритет:** 
+**Приоритет:**
+
 - Для MVP Энергоцентра это **критично** (склад ЗИП)
 - Для базового MVP Цеха - можно отложить
 
@@ -113,9 +121,10 @@ src/lib/server/services/1c-integration.service.ts
 В документе указаны Telegram-уведомления, в коде не реализовано.
 
 **Рекомендация:**
+
 ```typescript
 // Добавить сервис уведомлений
-src/lib/server/services/notification.service.ts
+src / lib / server / services / notification.service.ts;
 
 // Интеграция:
 import { Telegraf } from 'telegraf';
@@ -128,6 +137,7 @@ import { Telegraf } from 'telegraf';
 ### 5. **Масштабирование и Производительность**
 
 **Текущее состояние:**
+
 - ✅ SSE с diff-updates - хорошо
 - ✅ Redis кэширование - есть
 - ✅ TimescaleDB compression - настроено
@@ -150,12 +160,14 @@ const telemetryQueue = new Bull('telemetry', { redis: redisClient });
 ```
 
 **Когда нужно оптимизировать:**
+
 - Сейчас: не критично (1-2 завода)
 - При 10+ заводах: обязательно
 
 ### 6. **Безопасность - Дополнительные Меры**
 
 **Хорошо:**
+
 - ✅ Аутентификация через Better-Auth
 - ✅ Rate limiting
 - ✅ Input validation (Zod)
@@ -165,10 +177,10 @@ const telemetryQueue = new Bull('telemetry', { redis: redisClient });
 ```typescript
 // 1. MQTT TLS шифрование (важно!)
 const client = mqtt.connect(env.MQTT_URL, {
-  ca: fs.readFileSync('mqtt-ca.crt'),
-  cert: fs.readFileSync('mqtt-client.crt'),
-  key: fs.readFileSync('mqtt-client.key'),
-  rejectUnauthorized: true
+	ca: fs.readFileSync('mqtt-ca.crt'),
+	cert: fs.readFileSync('mqtt-client.crt'),
+	key: fs.readFileSync('mqtt-client.key'),
+	rejectUnauthorized: true
 });
 
 // 2. API Key для шлюзов (не только username/password)
@@ -187,6 +199,7 @@ const client = mqtt.connect(env.MQTT_URL, {
 **Что доделать критично:**
 
 1. **Telegram-бот для уведомлений** (2-3 дня)
+
    ```typescript
    // Использовать библиотеку telegraf
    // Интегрировать с alert.service.ts
@@ -198,6 +211,7 @@ const client = mqtt.connect(env.MQTT_URL, {
    - Отправка наработки в 1С
 
 3. **Расчет потерь от простоев** (добавить в DowntimeAnalysis)
+
    ```typescript
    // Уже есть базовая структура
    // Дополнить формулой из документа:
@@ -255,6 +269,7 @@ const client = mqtt.connect(env.MQTT_URL, {
 ### Ценообразование
 
 **Текущие цифры в документе:**
+
 - Подписка: 85 тыс. руб./год (~7 тыс./мес)
 
 **Рекомендация:** Разделить на тарифы:
@@ -288,22 +303,24 @@ Enterprise:
 ### 1. MQTT Handler Оптимизация
 
 **Текущий код:**
+
 ```typescript:src/hooks.server.ts
 // MQTT обработчик в hooks - может блокировать
 ```
 
 **Улучшение:**
+
 ```typescript
 // Вынести в отдельный worker или использовать очередь
 import { Queue } from 'bullmq';
 
 const telemetryQueue = new Queue('telemetry', {
-  connection: redisClient
+	connection: redisClient
 });
 
 // В MQTT handler:
 client.on('message', async (topic, message) => {
-  await telemetryQueue.add('process', { topic, message });
+	await telemetryQueue.add('process', { topic, message });
 });
 ```
 
@@ -311,6 +328,7 @@ client.on('message', async (topic, message) => {
 
 **Текущее:** Базовый расчет есть  
 **Нужно добавить:**
+
 - Availability = (Рабочее время - Простои) / Рабочее время
 - Performance = Факт кВт·ч / План кВт·ч
 - Quality = (Выработка - Брак) / Выработка
@@ -319,6 +337,7 @@ client.on('message', async (topic, message) => {
 ### 3. Интеграция с 1С
 
 **Архитектура:**
+
 ```typescript
 src/lib/server/services/1c-integration.service.ts
 
