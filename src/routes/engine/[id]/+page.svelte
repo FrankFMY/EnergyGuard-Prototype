@@ -5,6 +5,7 @@
 	import { base } from '$app/paths';
 	import { cn } from '$lib/utils.js';
 	import { Card, Badge, Skeleton } from '$lib/components/ui/index.js';
+	import { GasQualitySlider } from '$lib/components/dashboard/index.js';
 	import Thermometer from 'lucide-svelte/icons/thermometer';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Gauge from 'lucide-svelte/icons/gauge';
@@ -43,11 +44,15 @@
 	let chartContainer = $state<HTMLDivElement>();
 	let chartInstance: unknown;
 	let interval: ReturnType<typeof setInterval>;
-	let engineData: EngineData | null = $state(null);
-	let loading = $state(true);
+	let engineData: EngineData | null = $state({ temp: 450, power: 1120 });
+	let loading = $state(false);
 
 	// Mock Cylinder Temps (4x5 Grid)
-	let cylinderTemps = $state(Array(20).fill(480));
+	let cylinderTemps = $state(
+		Array(20)
+			.fill(480)
+			.map((t) => t + Math.random() * 20)
+	);
 
 	// History Tab specific state
 	let historyChartContainer = $state<HTMLDivElement>();
@@ -59,89 +64,114 @@
 	async function updateData() {
 		try {
 			const res = await fetch(`${base}/api/history/${engineId}`);
-			if (!res.ok) return;
+			if (!res.ok) throw new Error('API offline');
 			const history: ChartDataPoint[] = await res.json();
 
 			if (history.length > 0) {
 				const latest = history[history.length - 1];
 				engineData = latest;
 				loading = false;
-
-				// Update Chart if available
-				if (
-					chartInstance &&
-					typeof chartInstance === 'object' &&
-					'setOption' in chartInstance &&
-					activeTab === 'overview'
-				) {
-					const times = history.map((d) => new Date(d.time).toLocaleTimeString());
-					const temps = history.map((d) => d.temp);
-					const powers = history.map((d) => d.power);
-
-					(chartInstance as { setOption: (opts: unknown) => void }).setOption({
-						tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-						grid: { left: '5%', right: '5%', bottom: '10%', top: '15%' },
-						legend: {
-							data: ['Power (kW)', 'Exhaust Temp (°C)'],
-							textStyle: { color: '#94a3b8' }
-						},
-						xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b' } },
-						yAxis: [
-							{
-								type: 'value',
-								name: 'Power',
-								position: 'left',
-								axisLabel: { color: '#64748b' },
-								splitLine: { lineStyle: { color: '#1e293b' } }
-							},
-							{
-								type: 'value',
-								name: 'Temp',
-								position: 'right',
-								axisLabel: { color: '#64748b' },
-								splitLine: { show: false }
-							}
-						],
-						series: [
-							{
-								name: 'Power (kW)',
-								type: 'bar',
-								data: powers,
-								itemStyle: {
-									color: {
-										type: 'linear',
-										x: 0,
-										y: 0,
-										x2: 0,
-										y2: 1,
-										colorStops: [
-											{ offset: 0, color: '#06b6d4' },
-											{ offset: 1, color: '#3b82f6' }
-										]
-									}
-								}
-							},
-							{
-								name: 'Exhaust Temp (°C)',
-								type: 'line',
-								yAxisIndex: 1,
-								data: temps,
-								smooth: true,
-								lineStyle: { color: '#f43f5e', width: 3 },
-								symbol: 'none'
-							}
-						]
-					});
-				}
-
-				// Update Heatmap
-				cylinderTemps = cylinderTemps.map(() => 470 + Math.random() * 20);
-				if (latest.temp > 520) {
-					cylinderTemps[11] = 650;
-				}
+				renderChart(history);
+			} else {
+				generateFallbackData();
 			}
 		} catch (e) {
-			console.error(e);
+			generateFallbackData();
+		}
+
+		// Always update Heatmap for visual "life"
+		cylinderTemps = cylinderTemps.map((t) => {
+			const jitter = (Math.random() - 0.5) * 5;
+			return Math.max(450, Math.min(650, t + jitter));
+		});
+	}
+
+	function generateFallbackData() {
+		// Create 20 points of fake history if DB is empty
+		const fakeHistory: ChartDataPoint[] = [];
+		const now = Date.now();
+		for (let i = 20; i >= 0; i--) {
+			fakeHistory.push({
+				time: new Date(now - i * 5000).toISOString(),
+				temp: 450 + Math.random() * 30,
+				power: 1100 + Math.random() * 100
+			});
+		}
+		engineData = fakeHistory[fakeHistory.length - 1];
+		loading = false;
+		renderChart(fakeHistory);
+	}
+
+	function renderChart(history: ChartDataPoint[]) {
+		if (
+			chartInstance &&
+			typeof chartInstance === 'object' &&
+			'setOption' in chartInstance &&
+			activeTab === 'overview'
+		) {
+			const times = history.map((d) => new Date(d.time).toLocaleTimeString());
+			const temps = history.map((d) => d.temp);
+			const powers = history.map((d) => d.power);
+
+			(chartInstance as { setOption: (opts: unknown) => void }).setOption({
+				tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+				grid: { left: '5%', right: '5%', bottom: '10%', top: '15%' },
+				legend: {
+					data: ['Power (kW)', 'Exhaust Temp (°C)'],
+					textStyle: { color: '#94a3b8' }
+				},
+				xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b' } },
+				yAxis: [
+					{
+						type: 'value',
+						name: 'Power',
+						position: 'left',
+						axisLabel: { color: '#64748b' },
+						splitLine: { lineStyle: { color: '#1e293b' } }
+					},
+					{
+						type: 'value',
+						name: 'Temp',
+						position: 'right',
+						axisLabel: { color: '#64748b' },
+						splitLine: { show: false }
+					}
+				],
+				series: [
+					{
+						name: 'Power (kW)',
+						type: 'bar',
+						data: powers,
+						itemStyle: {
+							color: {
+								type: 'linear',
+								x: 0,
+								y: 0,
+								x2: 0,
+								y2: 1,
+								colorStops: [
+									{ offset: 0, color: '#06b6d4' },
+									{ offset: 1, color: '#3b82f6' }
+								]
+							}
+						}
+					},
+					{
+						name: 'Exhaust Temp (°C)',
+						type: 'line',
+						yAxisIndex: 1,
+						data: temps,
+						smooth: true,
+						lineStyle: { color: '#f43f5e', width: 3 },
+						symbol: 'none'
+					}
+				]
+			});
+		}
+
+		// Special case for Cylinder 12 overheating visualization
+		if (engineData && engineData.temp > 520) {
+			cylinderTemps[11] = 650;
 		}
 	}
 
@@ -347,8 +377,8 @@
 					)}
 					onclick={() => (activeTab = tab.id)}
 				>
-					<TabIcon class="h-4 w-4" />
-					<span class="hidden md:inline">{tab.labelKey}</span>
+					<TabIcon class="h-5 w-5 md:h-4 md:w-4" />
+					<span class="hidden md:inline">{$_(`engine.tabs.${tab.id}`)}</span>
 				</button>
 			{/each}
 		</div>
@@ -356,6 +386,11 @@
 
 	{#if activeTab === 'overview'}
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+			<!-- Simulation (Full Width for Demo) -->
+			<div class="lg:col-span-12">
+				<GasQualitySlider nominalPower={1200} baseTemp={450} />
+			</div>
+
 			<!-- Left Column: KPIs (3 cols) -->
 			<div class="space-y-4 lg:col-span-3">
 				<Card>
@@ -412,18 +447,21 @@
 				<Card class="bg-linear-to-br from-slate-900 to-slate-800">
 					<h3 class="mb-2 text-sm font-medium text-slate-400">{$_('engine.aiDiagnostic')}</h3>
 					{#if (engineData?.temp ?? 0) > 520}
-						<div class="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3">
+						<div class="rounded-lg border border-rose-500/20 bg-rose-500/10 p-4">
 							<div class="mb-1 flex items-center gap-2 text-sm font-bold text-rose-400">
-								<TriangleAlert size={14} />
-								{$_('engine.criticalOverheat')}
+								<TriangleAlert size={16} />
+								{$_('engine.riskHigh')}
 							</div>
 							<p class="text-xs text-rose-200/70">
 								{$_('engine.cylinderMisfire')}
 							</p>
 						</div>
 					{:else}
-						<div class="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
-							<div class="text-sm font-bold text-emerald-400">{$_('engine.optimalOperation')}</div>
+						<div class="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+							<div class="flex items-center gap-2 text-sm font-bold text-emerald-400">
+								<Activity size={16} />
+								{$_('engine.riskLow')}
+							</div>
 							<p class="text-xs text-emerald-200/70">{$_('engine.matchesBaseline')}</p>
 						</div>
 					{/if}
@@ -433,9 +471,14 @@
 			<!-- Center Column: Chart (6 cols) -->
 			<div class="lg:col-span-6">
 				<Card class="flex h-[500px] flex-col p-5">
-					<h3 class="mb-4 text-sm font-medium text-slate-400">
-						{$_('engine.performanceCorrelation')}
-					</h3>
+					<div class="mb-4 flex items-center justify-between">
+						<h3 class="text-sm font-medium text-slate-400">
+							{$_('engine.performanceCorrelation')}
+						</h3>
+						<div class="text-[10px] font-medium tracking-wider text-cyan-400 uppercase">
+							{$_('engine.performanceNarrative', { values: { temp: 12, power: 85, loss: 1240 } })}
+						</div>
+					</div>
 					<div bind:this={chartContainer} class="w-full flex-1"></div>
 				</Card>
 			</div>
@@ -523,15 +566,81 @@
 			<div class="h-[500px] w-full" bind:this={historyChartContainer}></div>
 		</Card>
 	{:else if activeTab === 'maintenance'}
-		<Card>
-			<div class="flex h-64 items-center justify-center text-slate-500">
-				<div class="text-center">
-					<Wrench class="mx-auto mb-2 h-12 w-12 opacity-20" />
-					<p>План обслуживания</p>
-					<p class="text-xs text-slate-600">История ТО и предстоящие работы</p>
+		<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+			<Card class="lg:col-span-2">
+				<h3 class="mb-6 text-lg font-semibold text-white">{$_('engine.maintenancePlan')}</h3>
+				<div class="space-y-6">
+					<div
+						class="relative pl-6 before:absolute before:top-0 before:bottom-0 before:left-0 before:w-px before:bg-slate-800"
+					>
+						<div class="relative mb-6">
+							<div
+								class="absolute top-1 -left-[29px] h-3 w-3 rounded-full border-2 border-slate-900 bg-cyan-500"
+							></div>
+							<div class="flex items-center justify-between">
+								<h4 class="font-medium text-white">ТО-1 (Малое обслуживание)</h4>
+								<Badge variant="warning"
+									>{$_('time.hoursLeft', { values: { hours: 124, days: 5 } })}</Badge
+								>
+							</div>
+							<p class="mt-1 text-sm text-slate-400">
+								Замена масла, фильтров, проверка свечей зажигания.
+							</p>
+							<div class="mt-3 flex gap-4">
+								<div class="text-xs text-slate-500">
+									<span class="block text-[10px] tracking-wider uppercase">Бюджет</span>
+									<span class="text-slate-300">150 000 ₽</span>
+								</div>
+								<div class="text-xs text-slate-500">
+									<span class="block text-[10px] tracking-wider uppercase">ЗИП</span>
+									<span class="text-emerald-500">В наличии</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="relative">
+							<div
+								class="absolute top-1 -left-[29px] h-3 w-3 rounded-full border-2 border-slate-900 bg-slate-800"
+							></div>
+							<div class="flex items-center justify-between opacity-50">
+								<h4 class="font-medium text-white">ТО-2 (Среднее обслуживание)</h4>
+								<Badge variant="outline">через 2000 ч</Badge>
+							</div>
+							<p class="mt-1 text-sm text-slate-500">Полная диагностика, регулировка клапанов.</p>
+						</div>
+					</div>
 				</div>
+			</Card>
+
+			<div class="space-y-6">
+				<Card>
+					<h3 class="mb-4 text-sm font-medium text-slate-400">Необходимые ЗИП</h3>
+					<div class="space-y-3">
+						<div class="flex items-center justify-between rounded bg-white/5 p-2 text-sm">
+							<span class="text-slate-300">Масляный фильтр</span>
+							<Badge variant="success">2 шт</Badge>
+						</div>
+						<div class="flex items-center justify-between rounded bg-white/5 p-2 text-sm">
+							<span class="text-slate-300">Свечи зажигания</span>
+							<Badge variant="success">20 шт</Badge>
+						</div>
+						<div class="flex items-center justify-between rounded bg-white/5 p-2 text-sm">
+							<span class="text-slate-300">Воздушный фильтр</span>
+							<Badge variant="danger">Заказать</Badge>
+						</div>
+					</div>
+					<Button class="mt-6 w-full" variant="outline">Оформить заявку</Button>
+				</Card>
+
+				<Card class="border-rose-500/20 bg-rose-500/5">
+					<h3 class="mb-2 text-sm font-medium text-rose-400">Внимание</h3>
+					<p class="text-xs text-rose-200/60">
+						Обнаружен повышенный износ воздушного фильтра. Рекомендуется сократить интервал замены
+						до 100 часов.
+					</p>
+				</Card>
 			</div>
-		</Card>
+		</div>
 	{:else if activeTab === 'diagnostics'}
 		<div class="grid gap-6 lg:grid-cols-2">
 			<!-- RUL Prediction -->
@@ -542,12 +651,14 @@
 				</h3>
 
 				<div class="mb-6 rounded-lg bg-slate-800/50 p-4">
-					<div class="mb-2 text-sm text-slate-400">Predicted Time to Next Service</div>
+					<div class="mb-2 text-sm text-slate-400">{$_('maintenance.nextService')}</div>
 					<div class="flex items-baseline gap-2">
 						<span class="text-4xl font-bold text-emerald-400">847</span>
-						<span class="text-lg text-slate-400">hours</span>
+						<span class="text-lg text-slate-400">{$_('units.hours')}</span>
 					</div>
-					<div class="mt-2 text-xs text-slate-500">Confidence Interval: 780 - 920 hours (95%)</div>
+					<div class="mt-2 text-xs text-slate-500">
+						{$_('engine.riskRange')}: 780 - 920 {$_('units.hours')}
+					</div>
 				</div>
 
 				<div class="space-y-4">
@@ -594,7 +705,7 @@
 			<Card>
 				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 					<TriangleAlert class="h-5 w-5 text-amber-400" />
-					Failure Probability (7 days)
+					{$_('engine.aiRiskAssessment')}
 				</h3>
 
 				<div class="mb-6 grid grid-cols-2 gap-4">
@@ -637,10 +748,15 @@
 
 			<!-- AI Recommendations -->
 			<Card class="lg:col-span-2">
-				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-					<Brain class="h-5 w-5 text-cyan-400" />
-					AI Recommendations
-				</h3>
+				<div class="mb-4 flex items-center justify-between">
+					<h3 class="flex items-center gap-2 text-lg font-semibold text-white">
+						<Brain class="h-5 w-5 text-cyan-400" />
+						AI Recommendations
+					</h3>
+					<span class="text-[10px] text-slate-500 italic">
+						* {$_('engine.disclaimer')}
+					</span>
+				</div>
 
 				<div class="grid gap-4 md:grid-cols-3">
 					<div class="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4">

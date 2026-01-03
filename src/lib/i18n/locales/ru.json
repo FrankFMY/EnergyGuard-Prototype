@@ -56,6 +56,17 @@
 		"normal": "Норма",
 		"warning": "Предупреждение",
 		"critical": "Критический",
+		"aiRiskAssessment": "Оценка риска (7 дней)",
+		"riskRange": "Диапазон оценки",
+		"riskLow": "Риск низкий. Действий не требуется.",
+		"riskMedium": "Риск средний. Требуется мониторинг.",
+		"riskHigh": "Риск высокий. Требуется вмешательство.",
+		"disclaimer": "Оценка на основе правил и порогов. Требует калибровки на данных объекта.",
+		"performanceNarrative": "Газ ухудшился → температура +{temp}°C → дерейтинг −{power} кВт → убыток {loss} ₽/час",
+		"maintenancePlan": "План обслуживания",
+		"nextServiceIn": "Следующее ТО через {hours} ч",
+		"requiredParts": "Необходимые ЗИП: {parts}",
+		"estimatedBudget": "Оценочный бюджет: {budget} ₽",
 		"tabs": {
 			"overview": "Обзор",
 			"history": "История",
@@ -357,5 +368,14 @@
 		"closeMenu": "Закрыть меню навигации",
 		"toggleLanguage": "Сменить язык",
 		"toggleTheme": "Переключить тему"
+	},
+	"demo": {
+		"gasQualitySim": "Симулятор качества газа",
+		"gasQualityIndex": "Индекс качества газа",
+		"expectedPower": "Ожидаемая мощность",
+		"exhaustTemp": "Температура выхлопа",
+		"lostRevenuePerHour": "Потери выручки в час",
+		"powerDeficit": "Дефицит мощности",
+		"title": "Демо: Влияние качества газа"
 	}
 }

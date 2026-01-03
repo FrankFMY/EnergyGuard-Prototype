@@ -56,6 +56,17 @@
 		"normal": "Normal",
 		"warning": "Warning",
 		"critical": "Critical",
+		"aiRiskAssessment": "Risk Assessment (7 days)",
+		"riskRange": "Assessment Range",
+		"riskLow": "Risk low. No action required.",
+		"riskMedium": "Risk medium. Monitoring recommended.",
+		"riskHigh": "Risk high. Intervention required.",
+		"disclaimer": "Assessment based on rules and thresholds. Requires calibration on site data.",
+		"performanceNarrative": "Gas degraded → temp +{temp}°C → derating −{power} kW → loss {loss} ₽/h",
+		"maintenancePlan": "Maintenance Plan",
+		"nextServiceIn": "Next service in {hours} h",
+		"requiredParts": "Required parts: {parts}",
+		"estimatedBudget": "Estimated budget: {budget} ₽",
 		"tabs": {
 			"overview": "Overview",
 			"history": "History",
@@ -357,5 +368,14 @@
 		"closeMenu": "Close navigation menu",
 		"toggleLanguage": "Change language",
 		"toggleTheme": "Toggle theme"
+	},
+	"demo": {
+		"gasQualitySim": "Gas Quality Simulator",
+		"gasQualityIndex": "Gas Quality Index",
+		"expectedPower": "Expected Power",
+		"exhaustTemp": "Exhaust Temperature",
+		"lostRevenuePerHour": "Lost Revenue per Hour",
+		"powerDeficit": "Power Deficit",
+		"title": "Demo: Gas Quality Impact"
 	}
 }
