@@ -78,7 +78,7 @@
 		<div class="flex items-center justify-between border-b border-white/5 p-4">
 			<a href="{base}/" onclick={close} class="flex items-center gap-2">
 				<div
-					class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 ring-1 ring-cyan-500/30"
+					class="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 ring-1 ring-cyan-500/30"
 				>
 					<Zap class="h-5 w-5 fill-current" />
 				</div>

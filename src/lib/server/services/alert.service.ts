@@ -47,22 +47,22 @@ export async function getAlerts(filters?: AlertFilters): Promise<AlertWithAcknow
 	const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
 	try {
-	const result = await db
-		.select({
-			alert: alerts,
-			acknowledgerName: users.name
-		})
-		.from(alerts)
-		.leftJoin(users, eq(alerts.acknowledgedBy, users.id))
-		.where(whereClause)
-		.orderBy(desc(alerts.createdAt))
-		.limit(100);
+		const result = await db
+			.select({
+				alert: alerts,
+				acknowledgerName: users.name
+			})
+			.from(alerts)
+			.leftJoin(users, eq(alerts.acknowledgedBy, users.id))
+			.where(whereClause)
+			.orderBy(desc(alerts.createdAt))
+			.limit(100);
 
 		console.log(`[ALERT SERVICE] Found ${result.length} alerts`);
-	return result.map((row) => ({
-		...row.alert,
-		acknowledgedByName: row.acknowledgerName
-	}));
+		return result.map((row) => ({
+			...row.alert,
+			acknowledgedByName: row.acknowledgerName
+		}));
 	} catch (e) {
 		console.error('[ALERT SERVICE] Error fetching alerts:', e);
 		return [];
@@ -112,14 +112,14 @@ export async function getAlertStats() {
 		};
 	} catch (e) {
 		console.error('[ALERT SERVICE] Failed to get alert stats:', e);
-	return {
+		return {
 			total: 0,
 			active: 0,
 			acknowledged: 0,
 			resolved: 0,
 			critical: 0,
 			warning: 0
-	};
+		};
 	}
 }
 

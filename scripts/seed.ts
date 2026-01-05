@@ -83,14 +83,17 @@ async function seed() {
 
 	// Use upsert to update existing engines with new model names
 	for (const engine of enginesData) {
-		await db.insert(schema.engines).values(engine).onConflictDoUpdate({
-			target: schema.engines.id,
-			set: {
-				model: engine.model,
-				status: engine.status,
-				total_hours: engine.total_hours
-			}
-		});
+		await db
+			.insert(schema.engines)
+			.values(engine)
+			.onConflictDoUpdate({
+				target: schema.engines.id,
+				set: {
+					model: engine.model,
+					status: engine.status,
+					total_hours: engine.total_hours
+				}
+			});
 	}
 
 	// 3. Create spare parts
@@ -309,16 +312,19 @@ async function seed() {
 
 	// Use upsert to ensure alerts have recent timestamps
 	for (const alert of alertsData) {
-		await db.insert(schema.alerts).values(alert).onConflictDoUpdate({
-			target: schema.alerts.id,
-			set: {
-				createdAt: alert.createdAt,
-				severity: alert.severity,
-				status: alert.status,
-				title: alert.title,
-				message: alert.message
-			}
-		});
+		await db
+			.insert(schema.alerts)
+			.values(alert)
+			.onConflictDoUpdate({
+				target: schema.alerts.id,
+				set: {
+					createdAt: alert.createdAt,
+					severity: alert.severity,
+					status: alert.status,
+					title: alert.title,
+					message: alert.message
+				}
+			});
 	}
 
 	// 6. Create work orders
