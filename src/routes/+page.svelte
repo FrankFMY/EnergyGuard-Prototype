@@ -55,8 +55,52 @@
 				lastUpdate = new Date();
 			};
 
+			// Listen for 'full' events (initial state)
+			eventSource.addEventListener('full', (event) => {
+				try {
+					data = JSON.parse(event.data);
+					lastUpdate = new Date();
+					connectionStatus = 'connected';
+				} catch (e) {
+					console.error('Failed to parse SSE full data:', e);
+				}
+			});
+
+			// Listen for 'diff' events (updates)
+			eventSource.addEventListener('diff', (event) => {
+				try {
+					const diffData = JSON.parse(event.data);
+					// For simplicity, treat diff as full update in demo
+					if (diffData.engines) {
+						data = {
+							engines: diffData.engines,
+							events: diffData.events || data?.events || [],
+							summary: diffData.summary ||
+								data?.summary || {
+									totalPowerMW: 0,
+									totalPlannedMW: 0,
+									efficiency: 0,
+									currentLoss: 0,
+									enginesOnline: 0,
+									enginesTotal: 0,
+									enginesWarning: 0,
+									enginesError: 0
+								},
+							timestamp: diffData.timestamp
+						};
+					}
+					lastUpdate = new Date();
+					connectionStatus = 'connected';
+				} catch (e) {
+					console.error('Failed to parse SSE diff data:', e);
+				}
+			});
+
+			// Fallback for legacy message format
 			eventSource.onmessage = (event) => {
 				try {
+					// Skip heartbeat comments
+					if (event.data.startsWith(':')) return;
 					data = JSON.parse(event.data);
 					lastUpdate = new Date();
 					connectionStatus = 'connected';

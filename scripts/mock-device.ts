@@ -3,12 +3,12 @@ import mqtt from 'mqtt';
 const client = mqtt.connect('mqtt://localhost:1883');
 
 const engines = [
-	{ id: 'gpu-1', model: 'Jenbacher J420' },
-	{ id: 'gpu-2', model: 'Jenbacher J420' }, // Bad boy
-	{ id: 'gpu-3', model: 'Jenbacher J624' },
-	{ id: 'gpu-4', model: 'Jenbacher J420' },
-	{ id: 'gpu-5', model: 'Jenbacher J420' },
-	{ id: 'gpu-6', model: 'Jenbacher J420' }
+	{ id: 'gpu-1', model: 'Weichai 16VCN' },
+	{ id: 'gpu-2', model: 'Weichai 16VCN' }, // Bad boy
+	{ id: 'gpu-3', model: 'Yuchai YC16V' },
+	{ id: 'gpu-4', model: 'Yuchai YC16V' },
+	{ id: 'gpu-5', model: 'Jenbacher J620' },
+	{ id: 'gpu-6', model: 'Jenbacher J620' }
 ];
 
 // State for Engine 2 scenario
@@ -27,9 +27,9 @@ function simulate() {
 	cycleTime = (cycleTime + 1) % SCENARIO_CYCLE;
 
 	engines.forEach((engine) => {
-		let power = 1200; // kW
+		let power = 1000; // kW
 		let temp = 480; // °C
-		let gas = 300; // m3/h
+		let gas = 250; // m3/h
 		let vibration = 2.5; // mm/s
 		let gas_pressure = 4.2; // bar
 
@@ -55,7 +55,7 @@ function simulate() {
 			else if (cycleTime < 90) {
 				vibration = 15;
 				temp = 560;
-				power = 1200 - ((cycleTime - 60) / 30) * (1200 - 800); // Drop to 800kW
+				power = 1000 - ((cycleTime - 60) / 30) * (1000 - 600); // Drop to 600kW
 				if (cycleTime === 65) {
 					publishEvent('info', 'GPU-2: Auto-derating active to protect engine', 'gpu-2');
 				}
@@ -64,11 +64,11 @@ function simulate() {
 			else {
 				vibration = 15 - ((cycleTime - 90) / 30) * 12.5;
 				temp = 560 - ((cycleTime - 90) / 30) * 80;
-				power = 800 + ((cycleTime - 90) / 30) * 400;
+				power = 600 + ((cycleTime - 90) / 30) * 400;
 			}
 		} else {
 			// Stable engines with minor noise
-			power = (engine.model === 'Jenbacher J624' ? 1500 : 1200) + (Math.random() * 20 - 10);
+			power = 1000 + (Math.random() * 20 - 10);
 			temp = 480 + (Math.random() * 10 - 5);
 			vibration = 2.0 + Math.random() * 0.5;
 			gas_pressure = 4.0 + Math.random() * 0.2;

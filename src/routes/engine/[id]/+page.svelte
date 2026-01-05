@@ -17,6 +17,9 @@
 	import Brain from 'lucide-svelte/icons/brain';
 	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
 	import Download from 'lucide-svelte/icons/download';
+	import ShieldCheck from 'lucide-svelte/icons/shield-check';
+	import Network from 'lucide-svelte/icons/network';
+	import HardDrive from 'lucide-svelte/icons/hard-drive';
 	import { Button } from '$lib/components/ui/index.js';
 
 	interface ChartDataPoint {
@@ -59,7 +62,18 @@
 		const t = simulatedData?.temp || 450 + Math.random() * 20;
 		const eff = simulatedData?.efficiency || 42.5;
 
-		const msg = `[PROT:MQTT] ${engineId?.toUpperCase()}: power=${p.toFixed(1)}kW | temp=${t.toFixed(1)}C | eff=${eff.toFixed(1)}%`;
+		// Real Modbus addresses from 16VCN Excel table
+		// 3514: Total Power
+		// 3001: Cylinder 1 Temp
+		// 3111: Water Temp
+		const logs = [
+			`[MBUS:TCP] REG:3514 (PWR) -> ${p.toFixed(2)} kW`,
+			`[MBUS:TCP] REG:3001 (CYL1) -> ${(t + Math.random() * 5).toFixed(1)} °C`,
+			`[MBUS:TCP] REG:3111 (H2O) -> ${(85 + Math.random() * 2).toFixed(1)} °C`,
+			`[MQTT:PUB] engine/${engineId}/telemetry -> {"p": ${p.toFixed(1)}, "t": ${t.toFixed(1)}, "eff": ${eff.toFixed(1)}}`
+		];
+
+		const msg = logs[Math.floor(Math.random() * logs.length)];
 
 		rawLog = [{ id: crypto.randomUUID(), time: timeStr, msg }, ...rawLog].slice(0, MAX_LOG_ENTRIES);
 	}
@@ -600,6 +614,38 @@
 							<p class="text-xs text-emerald-200/70">{$_('engine.matchesBaseline')}</p>
 						</div>
 					{/if}
+				</Card>
+
+				<Card class="border-slate-800/50 bg-slate-900/50">
+					<h3 class="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+						Connectivity & Gateway
+					</h3>
+					<div class="space-y-3">
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2 text-xs text-slate-400">
+								<Cpu size={14} class="text-cyan-500" />
+								Wiren Board 7
+							</div>
+							<Badge variant="secondary" class="text-[10px]">Online</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2 text-xs text-slate-400">
+								<Network size={14} class="text-emerald-500" />
+								WireGuard VPN
+							</div>
+							<div class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
+								<div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
+								Encrypted
+							</div>
+						</div>
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2 text-xs text-slate-400">
+								<ShieldCheck size={14} class="text-indigo-400" />
+								HZM Protocol
+							</div>
+							<span class="text-[10px] text-slate-500">Modbus/TCP</span>
+						</div>
+					</div>
 				</Card>
 
 				<Card class="border-slate-800 bg-black/40 font-mono text-[10px]">

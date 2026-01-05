@@ -34,7 +34,7 @@
 	// Filters
 	let severityFilter = $state<AlertSeverity | ''>('');
 	let statusFilter = $state<AlertStatus | ''>('');
-	let timeFilter = $state<number>(24);
+	let timeFilter = $state<number>(168); // Default to 7 days
 
 	async function loadData() {
 		loading = true;
@@ -120,9 +120,9 @@
 		const diffMins = Math.floor(diffMs / 60000);
 		const diffHours = Math.floor(diffMins / 60);
 
-		if (diffMins < 60) return `${diffMins}m ago`;
-		if (diffHours < 24) return `${diffHours}h ago`;
-		return date.toLocaleDateString();
+		if (diffMins < 60) return `${diffMins} мин назад`;
+		if (diffHours < 24) return `${diffHours} ч назад`;
+		return date.toLocaleDateString('ru-RU');
 	}
 </script>
 
@@ -132,15 +132,15 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<Bell class="h-7 w-7 text-cyan-400" />
-				Alert Center
+				Центр алертов
 			</h1>
-			<p class="mt-1 text-sm text-slate-400">Monitor and manage system alerts</p>
+			<p class="mt-1 text-sm text-slate-400">Мониторинг и управление системными оповещениями</p>
 		</div>
 		<div class="flex items-center gap-2">
 			<a href="{base}/alerts/rules">
 				<Button variant="outline" class="gap-2">
 					<Filter class="h-4 w-4" />
-					Alert Rules
+					Правила
 				</Button>
 			</a>
 			<Button variant="ghost" onclick={loadData} disabled={loading} class="gap-2">
@@ -153,19 +153,19 @@
 	<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
 		<Card class="text-center">
 			<div class="text-3xl font-bold text-white">{stats.active}</div>
-			<div class="text-xs text-slate-400">Active Alerts</div>
+			<div class="text-xs text-slate-400">Активные</div>
 		</Card>
 		<Card class="text-center">
 			<div class="text-3xl font-bold text-rose-400">{stats.critical}</div>
-			<div class="text-xs text-slate-400">Critical</div>
+			<div class="text-xs text-slate-400">Критические</div>
 		</Card>
 		<Card class="text-center">
 			<div class="text-3xl font-bold text-amber-400">{stats.warning}</div>
-			<div class="text-xs text-slate-400">Warnings</div>
+			<div class="text-xs text-slate-400">Предупреждения</div>
 		</Card>
 		<Card class="text-center">
 			<div class="text-3xl font-bold text-emerald-400">{stats.resolved}</div>
-			<div class="text-xs text-slate-400">Resolved (24h)</div>
+			<div class="text-xs text-slate-400">Решено (24ч)</div>
 		</Card>
 	</div>
 
@@ -173,7 +173,7 @@
 	<Card class="flex flex-wrap items-center gap-4 p-4">
 		<div class="flex items-center gap-2 text-sm text-slate-400">
 			<Filter class="h-4 w-4" />
-			Filters:
+			Фильтры:
 		</div>
 
 		<select
@@ -181,10 +181,10 @@
 			onchange={loadData}
 			class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white"
 		>
-			<option value="">All Severities</option>
-			<option value="critical">Critical</option>
-			<option value="warning">Warning</option>
-			<option value="info">Info</option>
+			<option value="">Все уровни</option>
+			<option value="critical">Критические</option>
+			<option value="warning">Предупреждения</option>
+			<option value="info">Информация</option>
 		</select>
 
 		<select
@@ -192,10 +192,10 @@
 			onchange={loadData}
 			class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white"
 		>
-			<option value="">All Statuses</option>
-			<option value="active">Active</option>
-			<option value="acknowledged">Acknowledged</option>
-			<option value="resolved">Resolved</option>
+			<option value="">Все статусы</option>
+			<option value="active">Активные</option>
+			<option value="acknowledged">Подтвержденные</option>
+			<option value="resolved">Решенные</option>
 		</select>
 
 		<select
@@ -203,10 +203,10 @@
 			onchange={loadData}
 			class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white"
 		>
-			<option value={1}>Last Hour</option>
-			<option value={6}>Last 6 Hours</option>
-			<option value={24}>Last 24 Hours</option>
-			<option value={168}>Last 7 Days</option>
+			<option value={1}>Последний час</option>
+			<option value={6}>Последние 6 часов</option>
+			<option value={24}>Последние 24 часа</option>
+			<option value={168}>Последние 7 дней</option>
 		</select>
 	</Card>
 
@@ -227,7 +227,7 @@
 		{:else if alerts.length === 0}
 			<Card class="py-12 text-center">
 				<CheckCircle class="mx-auto mb-4 h-12 w-12 text-emerald-400/50" />
-				<p class="text-slate-400">No alerts match your filters</p>
+				<p class="text-slate-400">Нет алертов по выбранным фильтрам</p>
 			</Card>
 		{:else}
 			{#each alerts as alert (alert.id)}
@@ -276,12 +276,12 @@
 								</span>
 								{#if alert.actual_value !== null && alert.threshold !== null}
 									<span>
-										Value: <span class="font-mono text-white">{alert.actual_value}</span>
-										/ Threshold: <span class="font-mono">{alert.threshold}</span>
+										Значение: <span class="font-mono text-white">{alert.actual_value}</span>
+										/ Порог: <span class="font-mono">{alert.threshold}</span>
 									</span>
 								{/if}
 								{#if alert.acknowledged_by}
-									<span>Ack by: {alert.acknowledged_by}</span>
+									<span>Подтвердил: {alert.acknowledged_by}</span>
 								{/if}
 							</div>
 						</div>
@@ -296,7 +296,7 @@
 										onclick={() => handleAcknowledge(alert.id)}
 										disabled={actionLoading === alert.id}
 									>
-										{actionLoading === alert.id ? 'Loading...' : 'Acknowledge'}
+										{actionLoading === alert.id ? '...' : 'Подтвердить'}
 									</Button>
 								{/if}
 								<Button
@@ -305,7 +305,7 @@
 									onclick={() => handleResolve(alert.id)}
 									disabled={actionLoading === alert.id}
 								>
-									{actionLoading === alert.id ? 'Loading...' : 'Resolve'}
+									{actionLoading === alert.id ? '...' : 'Решить'}
 								</Button>
 							</div>
 						{/if}

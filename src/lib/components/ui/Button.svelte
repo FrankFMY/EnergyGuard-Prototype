@@ -41,12 +41,12 @@
 
 	const baseClass = $derived(
 		cn(
-			'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all',
-			'focus:ring-2 focus:ring-cyan-500/50 focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none',
-			'disabled:cursor-not-allowed disabled:opacity-50',
-			variants[variant],
-			sizes[size],
-			className
+		'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all',
+		'focus:ring-2 focus:ring-cyan-500/50 focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none',
+		'disabled:cursor-not-allowed disabled:opacity-50',
+		variants[variant],
+		sizes[size],
+		className
 		)
 	);
 </script>
@@ -61,10 +61,10 @@
 	</a>
 {:else}
 	<button {type} {disabled} {onclick} class={baseClass}>
-		{#if loading}
-			<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-			></span>
-		{/if}
-		{@render children()}
-	</button>
+	{#if loading}
+		<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+		></span>
+	{/if}
+	{@render children()}
+</button>
 {/if}

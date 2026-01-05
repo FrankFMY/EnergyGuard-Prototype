@@ -73,15 +73,25 @@ async function seed() {
 	// 2. Create engines
 	console.log('⚙️ Creating engines...');
 	const enginesData = [
-		{ id: 'gpu-1', model: 'Jenbacher J620', status: 'ok' as const, total_hours: 18500 },
-		{ id: 'gpu-2', model: 'Jenbacher J620', status: 'warning' as const, total_hours: 12300 },
-		{ id: 'gpu-3', model: 'Caterpillar CG170-12', status: 'ok' as const, total_hours: 9800 },
-		{ id: 'gpu-4', model: 'Caterpillar CG170-12', status: 'ok' as const, total_hours: 7200 },
-		{ id: 'gpu-5', model: 'Jenbacher J420', status: 'ok' as const, total_hours: 1850 },
-		{ id: 'gpu-6', model: 'Jenbacher J420', status: 'ok' as const, total_hours: 100 }
+		{ id: 'gpu-1', model: 'Weichai 16VCN', status: 'ok' as const, total_hours: 8500 },
+		{ id: 'gpu-2', model: 'Weichai 16VCN', status: 'warning' as const, total_hours: 12300 },
+		{ id: 'gpu-3', model: 'Yuchai YC16V', status: 'ok' as const, total_hours: 9800 },
+		{ id: 'gpu-4', model: 'Yuchai YC16V', status: 'ok' as const, total_hours: 7200 },
+		{ id: 'gpu-5', model: 'Jenbacher J620', status: 'ok' as const, total_hours: 1850 },
+		{ id: 'gpu-6', model: 'Jenbacher J620', status: 'ok' as const, total_hours: 100 }
 	];
 
-	await db.insert(schema.engines).values(enginesData).onConflictDoNothing();
+	// Use upsert to update existing engines with new model names
+	for (const engine of enginesData) {
+		await db.insert(schema.engines).values(engine).onConflictDoUpdate({
+			target: schema.engines.id,
+			set: {
+				model: engine.model,
+				status: engine.status,
+				total_hours: engine.total_hours
+			}
+		});
+	}
 
 	// 3. Create spare parts
 	console.log('🔧 Creating spare parts...');
@@ -297,7 +307,19 @@ async function seed() {
 		}
 	];
 
-	await db.insert(schema.alerts).values(alertsData).onConflictDoNothing();
+	// Use upsert to ensure alerts have recent timestamps
+	for (const alert of alertsData) {
+		await db.insert(schema.alerts).values(alert).onConflictDoUpdate({
+			target: schema.alerts.id,
+			set: {
+				createdAt: alert.createdAt,
+				severity: alert.severity,
+				status: alert.status,
+				title: alert.title,
+				message: alert.message
+			}
+		});
+	}
 
 	// 6. Create work orders
 	console.log('📝 Creating work orders...');
@@ -467,7 +489,7 @@ async function seed() {
 			telemetryData.push({
 				time,
 				engine_id: engine,
-				power_kw: 1800 + Math.random() * 400,
+				power_kw: 900 + Math.random() * 150,
 				temp_exhaust: 450 + Math.random() * 80,
 				gas_consumption: 400 + Math.random() * 50,
 				vibration: 4 + Math.random() * 4,

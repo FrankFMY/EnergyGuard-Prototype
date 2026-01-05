@@ -55,7 +55,11 @@
 		const diffMs = endTime.getTime() - start.getTime();
 		const hours = Math.floor(diffMs / (1000 * 60 * 60));
 		const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-		return `${hours}ч ${minutes}м`;
+		// Using explicit hour/min abbreviations to avoid font rendering issues
+		if (minutes === 0) {
+			return hours + ' ч';
+		}
+		return hours + ' ч ' + minutes + ' мин';
 	}
 </script>
 

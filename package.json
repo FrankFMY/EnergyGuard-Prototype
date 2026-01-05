@@ -103,6 +103,6 @@
 		"svelte-i18n": "^4.0.1",
 		"svelte-motion": "^0.12.2",
 		"tailwind-merge": "^3.4.0",
-		"zod": "^4.3.4"
+		"zod": "^4.3.5"
 	}
 }

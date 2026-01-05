@@ -61,46 +61,47 @@
 	onMount(async () => {
 		const echarts = await import('echarts');
 
-		// Financial Waterfall chart
+		// ═══════════════════════════════════════════════════════════════
+		// WATERFALL CHART (Financial Bridge)
+		// Shows how we go from target revenue to actual profit
+		// ═══════════════════════════════════════════════════════════════
 		if (waterfallChartEl) {
 			const chart = echarts.init(waterfallChartEl);
 			waterfallChart = chart;
 
-			const rawData = [
-				{ name: 'Целевая выручка', value: 5000000, type: 'start' },
-				{ name: 'Потери КПД (газ)', value: -450000, type: 'loss' },
-				{ name: 'Внеплановые простои', value: -320000, type: 'loss' },
-				{ name: 'Затраты на ТО', value: -280000, type: 'loss' },
-				{ name: 'Прочие издержки', value: -150000, type: 'loss' },
-				{ name: 'Фактическая прибыль', value: 3800000, type: 'total' }
+			// Data structure for waterfall
+			const data = [
+				{ name: 'Целевая\nвыручка', value: 5000000, type: 'total' },
+				{ name: 'Потери\nКПД (газ)', value: -450000, type: 'loss' },
+				{ name: 'Внеплановые\nпростои', value: -320000, type: 'loss' },
+				{ name: 'Затраты\nна ТО', value: -280000, type: 'loss' },
+				{ name: 'Прочие\nиздержки', value: -150000, type: 'loss' },
+				{ name: 'Фактическая\nприбыль', value: 3800000, type: 'total' }
 			];
 
-			let current = 0;
-			const help = [];
-			const positive = [];
-			const negative = [];
+			// Calculate stacked bar data
+			let runningTotal = 0;
+			const placeholder: number[] = [];
+			const income: (number | string)[] = [];
+			const expense: (number | string)[] = [];
 
-			for (let i = 0; i < rawData.length; i++) {
-				const item = rawData[i];
-				if (item.type === 'start' || item.type === 'total') {
-					help.push(0);
-					positive.push(item.value);
-					negative.push('-');
-					current = item.value;
+			data.forEach((item, i) => {
+				if (item.type === 'total') {
+					placeholder.push(0);
+					income.push(item.value);
+					expense.push('-');
+					runningTotal = i === 0 ? item.value : runningTotal;
 				} else {
-					if (item.value >= 0) {
-						help.push(current);
-						positive.push(item.value);
-						negative.push('-');
-						current += item.value;
-					} else {
-						current += item.value;
-						help.push(current);
-						positive.push('-');
-						negative.push(Math.abs(item.value));
-					}
+					const loss = Math.abs(item.value);
+					runningTotal -= loss;
+					placeholder.push(runningTotal);
+					income.push('-');
+					expense.push(loss);
 				}
-			}
+			});
+
+			// Bridge connector line (shows the flow)
+			const bridgeLine = [5000000, 5000000, 4550000, 4230000, 3950000, 3800000];
 
 			chart.setOption({
 				tooltip: {
@@ -108,17 +109,29 @@
 					axisPointer: { type: 'shadow' },
 					backgroundColor: 'rgba(15, 23, 42, 0.95)',
 					borderColor: '#334155',
-					textStyle: { color: '#f8fafc' },
-					formatter: function (params: any) {
-						const item = rawData[params[0].dataIndex];
-						return `${item.name}<br/><b>${item.value.toLocaleString()} ₽</b>`;
+					textStyle: { color: '#f8fafc', fontSize: 12 },
+					formatter: (params: any) => {
+						const idx = params[0].dataIndex;
+						const item = data[idx];
+						const color = item.type === 'loss' ? '#f43f5e' : '#06b6d4';
+						const sign = item.value < 0 ? '' : '+';
+						return `<b>${item.name}</b><br/>
+							<span style="color:${color};font-size:14px;font-weight:bold">
+								${sign}${item.value.toLocaleString('ru-RU')} ₽
+							</span>`;
 					}
 				},
-				grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+				grid: { left: 20, right: 20, bottom: 20, top: 20 },
 				xAxis: {
 					type: 'category',
-					data: rawData.map((i) => i.name),
-					axisLabel: { color: '#64748b', interval: 0, fontSize: 10 }
+					data: data.map((d) => d.name),
+					axisLabel: {
+						color: '#94a3b8',
+						fontSize: 10,
+						interval: 0,
+						lineHeight: 14
+					},
+					axisLine: { lineStyle: { color: '#334155' } }
 				},
 				yAxis: {
 					type: 'value',
@@ -126,29 +139,71 @@
 						color: '#64748b',
 						formatter: (v: number) => (v / 1000000).toFixed(1) + 'M'
 					},
-					splitLine: { lineStyle: { color: '#1e293b' } }
+					splitLine: { lineStyle: { color: '#1e293b', type: 'dashed' } }
 				},
 				series: [
+					// Invisible placeholder (creates the "floating" effect)
 					{
-						name: 'Placeholder',
+						name: 'Base',
 						type: 'bar',
-						stack: 'all',
-						itemStyle: { color: 'rgba(0,0,0,0)' },
-						data: help
+						stack: 'waterfall',
+						silent: true,
+						itemStyle: { color: 'transparent' },
+						data: placeholder
 					},
+					// Income bars (cyan)
 					{
-						name: 'Positive',
+						name: 'Доход',
 						type: 'bar',
-						stack: 'all',
-						itemStyle: { color: '#06b6d4' },
-						data: positive
+						stack: 'waterfall',
+						itemStyle: {
+							color: '#06b6d4',
+							borderRadius: [4, 4, 0, 0]
+						},
+						label: {
+							show: true,
+							position: 'top',
+							color: '#06b6d4',
+							fontWeight: 'bold',
+							fontSize: 11,
+							formatter: (p: any) => (p.value !== '-' ? (p.value / 1000000).toFixed(1) + 'M ₽' : '')
+						},
+						data: income
 					},
+					// Expense bars (red) - these "hang" from the bridge
 					{
-						name: 'Negative',
+						name: 'Расход',
 						type: 'bar',
-						stack: 'all',
-						itemStyle: { color: '#f43f5e' },
-						data: negative
+						stack: 'waterfall',
+						itemStyle: {
+							color: '#f43f5e',
+							borderRadius: [4, 4, 4, 4]
+						},
+						label: {
+							show: true,
+							position: 'inside',
+							color: '#fff',
+							fontWeight: 'bold',
+							fontSize: 10,
+							formatter: (p: any) =>
+								p.value !== '-' ? '-' + (p.value / 1000).toFixed(0) + 'k' : ''
+						},
+						data: expense
+					},
+					// Bridge connector line
+					{
+						name: 'Мост',
+						type: 'line',
+						step: 'end',
+						symbol: 'none',
+						silent: true,
+						lineStyle: {
+							color: '#475569',
+							width: 2,
+							type: [5, 3] // dashed
+						},
+						z: 1,
+						data: bridgeLine
 					}
 				]
 			});
