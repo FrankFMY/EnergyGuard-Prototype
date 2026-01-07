@@ -1,6 +1,8 @@
 {
 	"name": "kastor-iot",
 	"version": "0.0.1",
+	"private": true,
+	"license": "UNLICENSED",
 	"author": {
 		"name": "Прянишников Артём Алексеевич",
 		"email": "Pryanishnikovartem@gmail.com",
@@ -87,8 +89,25 @@
 		"vitest-browser-svelte": "^2.0.1"
 	},
 	"keywords": [
-		"svelte"
+		"svelte",
+		"sveltekit",
+		"iot",
+		"industrial",
+		"dashboard",
+		"monitoring",
+		"mqtt",
+		"timescaledb",
+		"real-time",
+		"gas-engines"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/FrankFMY/kastor-IoT"
+	},
+	"homepage": "https://github.com/FrankFMY/kastor-IoT#readme",
+	"bugs": {
+		"url": "https://github.com/FrankFMY/kastor-IoT/issues"
+	},
 	"dependencies": {
 		"@node-rs/argon2": "^2.0.2",
 		"arctic": "^3.7.0",

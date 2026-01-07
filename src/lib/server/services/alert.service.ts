@@ -26,7 +26,6 @@ export interface AlertWithAcknowledger extends AlertRecord {
  * Get alerts with optional filtering
  */
 export async function getAlerts(filters?: AlertFilters): Promise<AlertWithAcknowledger[]> {
-	console.log('[ALERT SERVICE] Fetching alerts with filters:', JSON.stringify(filters));
 	const conditions = [];
 
 	if (filters?.severity) {
@@ -40,7 +39,6 @@ export async function getAlerts(filters?: AlertFilters): Promise<AlertWithAcknow
 	}
 	if (filters?.hours) {
 		const cutoff = new Date(Date.now() - filters.hours * 60 * 60 * 1000);
-		console.log('[ALERT SERVICE] Time cutoff:', cutoff.toISOString());
 		conditions.push(gte(alerts.createdAt, cutoff));
 	}
 
@@ -58,7 +56,6 @@ export async function getAlerts(filters?: AlertFilters): Promise<AlertWithAcknow
 			.orderBy(desc(alerts.createdAt))
 			.limit(100);
 
-		console.log(`[ALERT SERVICE] Found ${result.length} alerts`);
 		return result.map((row) => ({
 			...row.alert,
 			acknowledgedByName: row.acknowledgerName

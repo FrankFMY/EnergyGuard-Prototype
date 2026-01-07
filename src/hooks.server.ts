@@ -89,7 +89,11 @@ async function seedEngines() {
 	console.log('[KASTOR] Engines seeded and synced');
 }
 
-// Create alert from telemetry threshold violation
+// Track recent alerts to prevent flooding (engine:metric -> timestamp)
+const recentAlerts = new Map<string, number>();
+const ALERT_COOLDOWN_MS = 60_000; // 1 minute cooldown between same alerts
+
+// Create alert from telemetry threshold violation (with deduplication)
 async function createAlertFromTelemetry(
 	engineId: string,
 	metric: string,
@@ -97,6 +101,15 @@ async function createAlertFromTelemetry(
 	threshold: number,
 	severity: 'warning' | 'critical'
 ) {
+	const alertKey = `${engineId}:${metric}:${severity}`;
+	const now = Date.now();
+	const lastAlert = recentAlerts.get(alertKey);
+
+	// Skip if we recently created an alert for this engine/metric/severity
+	if (lastAlert && now - lastAlert < ALERT_COOLDOWN_MS) {
+		return;
+	}
+
 	const titles: Record<string, string> = {
 		temp_exhaust:
 			severity === 'critical' ? 'Critical Exhaust Temperature' : 'High Exhaust Temperature',
@@ -113,6 +126,17 @@ async function createAlertFromTelemetry(
 		threshold,
 		actualValue
 	});
+
+	recentAlerts.set(alertKey, now);
+
+	// Cleanup old entries periodically
+	if (recentAlerts.size > 100) {
+		for (const [key, time] of recentAlerts.entries()) {
+			if (now - time > ALERT_COOLDOWN_MS * 2) {
+				recentAlerts.delete(key);
+			}
+		}
+	}
 }
 
 // MQTT handler
@@ -144,14 +168,26 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 				try {
 					const payload = JSON.parse(message.toString());
 
+					// Validate engine_id exists
+					if (!payload.engine_id || typeof payload.engine_id !== 'string') {
+						console.warn('[KASTOR] Invalid telemetry: missing engine_id');
+						return;
+					}
+
+					// Validate required values
+					if (!payload.values || typeof payload.values.power !== 'number') {
+						console.warn('[KASTOR] Invalid telemetry: missing values');
+						return;
+					}
+
 					await db.insert(telemetry).values({
-						time: new Date(payload.timestamp),
+						time: new Date(payload.timestamp || Date.now()),
 						engine_id: payload.engine_id,
-						power_kw: payload.values.power,
-						temp_exhaust: payload.values.temp,
-						gas_consumption: payload.values.gas,
-						vibration: payload.values.vibration,
-						gas_pressure: payload.values.gas_pressure
+						power_kw: payload.values.power ?? 0,
+						temp_exhaust: payload.values.temp ?? 0,
+						gas_consumption: payload.values.gas ?? 0,
+						vibration: payload.values.vibration ?? 0,
+						gas_pressure: payload.values.gas_pressure ?? 0
 					});
 
 					// Status update and alert creation based on thresholds

@@ -4,15 +4,33 @@ import { events } from '$lib/server/db/schema.js';
 import { getDashboardData } from '$lib/server/services/engine.service.js';
 
 export async function GET() {
+	// Track intervals for cleanup
+	let dataInterval: ReturnType<typeof setInterval> | null = null;
+	let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+	let isClosed = false;
+
+	const cleanup = () => {
+		isClosed = true;
+		if (dataInterval) {
+			clearInterval(dataInterval);
+			dataInterval = null;
+		}
+		if (heartbeatInterval) {
+			clearInterval(heartbeatInterval);
+			heartbeatInterval = null;
+		}
+	};
+
 	const stream = new ReadableStream({
 		async start(controller) {
 			const encoder = new TextEncoder();
 
 			const sendEvent = (name: string, data: unknown) => {
+				if (isClosed) return;
 				try {
 					controller.enqueue(encoder.encode(`event: ${name}\ndata: ${JSON.stringify(data)}\n\n`));
 				} catch (_e) {
-					// Controller might be closed
+					cleanup();
 				}
 			};
 
@@ -28,7 +46,11 @@ export async function GET() {
 			}
 
 			// Periodic updates (diffs)
-			const interval = setInterval(async () => {
+			dataInterval = setInterval(async () => {
+				if (isClosed) {
+					cleanup();
+					return;
+				}
 				try {
 					const currentData = await getDashboardData();
 					sendEvent('diff', {
@@ -38,27 +60,25 @@ export async function GET() {
 						hash: Math.random().toString(36).substring(7)
 					});
 				} catch (_e) {
-					// If sending fails, clear interval
-					clearInterval(interval);
+					cleanup();
 				}
 			}, 5000);
 
 			// Keep-alive heartbeat
-			const heartbeat = setInterval(() => {
+			heartbeatInterval = setInterval(() => {
+				if (isClosed) {
+					cleanup();
+					return;
+				}
 				try {
 					controller.enqueue(encoder.encode(': heartbeat\n\n'));
 				} catch (_e) {
-					clearInterval(heartbeat);
+					cleanup();
 				}
 			}, 15000);
-
-			return () => {
-				clearInterval(interval);
-				clearInterval(heartbeat);
-			};
 		},
 		cancel() {
-			// Cleanup is handled by start return
+			cleanup();
 		}
 	});
 
@@ -71,18 +91,32 @@ export async function GET() {
 	});
 }
 
-export async function POST({ request }) {
-	// For demo purposes, we allow unauthorized posts if it's from the simulator
+export async function POST({ request, locals }) {
+	// Require authentication for event creation (except internal simulator calls)
+	const isInternalCall = request.headers.get('x-internal-key') === process.env.INTERNAL_API_KEY;
+
+	if (!isInternalCall && !locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
 	const body = await request.json();
 
 	if (!body.message || !body.level) {
 		throw error(400, 'Missing message or level');
 	}
 
+	// Validate level
+	if (!['info', 'warning', 'error'].includes(body.level)) {
+		throw error(400, 'Invalid level. Must be info, warning, or error');
+	}
+
+	// Sanitize message (basic XSS prevention)
+	const sanitizedMessage = String(body.message).slice(0, 500);
+
 	const [newEvent] = await db
 		.insert(events)
 		.values({
-			message: body.message,
+			message: sanitizedMessage,
 			level: body.level,
 			engine_id: body.engine_id || null,
 			time: new Date()

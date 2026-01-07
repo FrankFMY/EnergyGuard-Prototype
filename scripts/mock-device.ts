@@ -93,6 +93,24 @@ function simulate() {
 	});
 
 	process.stdout.write(`\r[${timestamp}] Simulating... Cycle: ${cycleTime}s`);
+
+	// Random background events to keep the feed alive (every ~10s)
+	if (Math.random() < 0.1 && cycleTime % 10 === 0) {
+		const randomEngine = engines[Math.floor(Math.random() * engines.length)];
+		const messages = [
+			'System health check OK',
+			'Data sync completed',
+			'Fuel pump pressure nominal',
+			'Cooling fan cycle started',
+			'Voltage stability confirmed',
+			'Network latency check: 12ms',
+			'Backup battery verified'
+		];
+		const msg = messages[Math.floor(Math.random() * messages.length)];
+		// Don't associate system messages with a specific engine sometimes
+		const engineId = Math.random() > 0.3 ? randomEngine.id : undefined;
+		publishEvent('info', msg, engineId);
+	}
 }
 
 function publishEvent(level: string, message: string, engine_id?: string) {

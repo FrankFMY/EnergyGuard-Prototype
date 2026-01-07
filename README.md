@@ -8,7 +8,22 @@
 
 **Industrial IoT Dashboard for Gas Power Plant Monitoring**
 
-Real-time monitoring and analytics platform for gas-powered engines (Jenbacher J420/J624). Features live telemetry visualization, predictive maintenance forecasting, financial loss tracking, OEE metrics, and comprehensive alert management.
+Real-time monitoring and analytics platform for gas-powered engines (Weichai 16VCN, Yuchai YC16V, Jenbacher J620). Features live telemetry visualization, predictive maintenance forecasting, financial loss tracking, OEE metrics, and comprehensive alert management.
+
+---
+
+## Features
+
+- **Real-time Dashboard** — Live telemetry from 6 gas engines via MQTT/SSE
+- **Fleet Monitoring** — Status overview, power output, efficiency metrics
+- **Alert System** — Configurable rules, severity levels, acknowledgment workflow
+- **Work Orders** — Maintenance task management with priority and assignment
+- **Analytics** — ROI tracking, cost savings, downtime analysis
+- **OEE Metrics** — Overall Equipment Effectiveness with gas consumption tracking
+- **Predictive Maintenance** — Service scheduling based on engine hours
+- **Multi-language** — Russian and English interface (svelte-i18n)
+- **PWA Ready** — Installable, offline-capable progressive web app
+- **Role-based Access** — Admin, Operator, Technician, Viewer roles
 
 ---
 
@@ -24,12 +39,16 @@ bun install
 
 # Copy environment variables
 cp .env.example .env
+# Edit .env with your configuration
 
 # Start infrastructure (TimescaleDB, Redis, EMQX)
 bun run db:start
 
 # Apply database migrations
 bun run db:push
+
+# Apply TimescaleDB optimizations (optional, for production)
+# Run drizzle/0003_timescale_optimization.sql manually in psql
 
 # Seed demo data
 bun run db:seed
@@ -40,11 +59,16 @@ bun run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
-**Demo credentials:**
+### Running the Simulator
 
-- Admin: `admin@kastor.io` / `demo1234`
-- Operator: `operator@kastor.io` / `demo1234`
-- Technician: `technician@kastor.io` / `demo1234`
+To generate live telemetry data:
+
+```bash
+# In a separate terminal
+bun scripts/mock-device.ts
+```
+
+This simulates 6 engines with realistic data patterns including a failure scenario on GPU-2.
 
 ---
 
@@ -53,10 +77,10 @@ Open [http://localhost:5173](http://localhost:5173)
 | Category             | Technologies                                                      |
 | -------------------- | ----------------------------------------------------------------- |
 | **Frontend**         | Svelte 5 (runes), SvelteKit 2.49, TailwindCSS v4                  |
-| **Backend**          | Drizzle ORM 0.45, PostgreSQL 16 / TimescaleDB                     |
+| **Backend**          | Drizzle ORM 0.45, PostgreSQL 17 / TimescaleDB                     |
 | **Auth**             | Better-Auth with Argon2 password hashing                          |
-| **Caching**          | Redis with in-memory fallback                                     |
-| **Real-time**        | MQTT (EMQX 5.3), Server-Sent Events (SSE) with diff-based updates |
+| **Caching**          | Redis 7 with in-memory fallback                                   |
+| **Real-time**        | MQTT (EMQX 6.0), Server-Sent Events (SSE) with diff-based updates |
 | **Visualization**    | ECharts 6 (tree-shaking optimized), svelte-echarts                |
 | **UI**               | lucide-svelte (icons), svelte-motion (animations)                 |
 | **Validation**       | Zod 4 (runtime type checking)                                     |
@@ -69,21 +93,28 @@ Open [http://localhost:5173](http://localhost:5173)
 
 ## Environment Variables
 
-Create `.env` file (see `.env.example`):
+Create `.env` file based on `.env.example`:
 
 ```env
 # Database
-DATABASE_URL=postgres://root:mysecretpassword@localhost:5444/local
+DATABASE_URL=postgres://user:password@localhost:5432/kastor
+
+# MQTT Broker
+MQTT_URL=mqtt://localhost:1883
+MQTT_USERNAME=kastor_app
+MQTT_PASSWORD=your_mqtt_password
 
 # Redis (optional - falls back to in-memory cache)
-REDIS_URL=redis://localhost:6379
+REDIS_URL=redis://:your_redis_password@localhost:6379
 
-# MQTT
-MQTT_ADMIN_PASSWORD=admin_password_here
+# Authentication (REQUIRED for production!)
+BETTER_AUTH_SECRET=generate-a-secure-32-char-string-here
 
-# Authentication
-AUTH_SECRET=your-auth-secret-at-least-32-chars
-PUBLIC_AUTH_URL=http://localhost:5173
+# CORS / Trusted Origins
+TRUSTED_ORIGINS=https://your-domain.com
+
+# Environment
+NODE_ENV=production
 ```
 
 ---
@@ -94,98 +125,49 @@ PUBLIC_AUTH_URL=http://localhost:5173
 
 ```mermaid
 flowchart TB
-    subgraph client [Client Layer]
-        Browser[Browser PWA]
-        SSE[SSE Real-time Stream]
+    subgraph devices [Field Devices]
+        Modbus[Modbus RTU/TCP]
+        Sensors[Engine Sensors]
+    end
+
+    subgraph broker [Message Broker]
+        EMQX[EMQX MQTT]
     end
 
     subgraph app [SvelteKit Application]
+        Hooks[Server Hooks]
+        SSE[SSE Endpoint]
+        API[REST API]
         Auth[Better-Auth]
-        RateLimit[Rate Limiter]
-
-        subgraph pages [Pages - 15+ Routes]
-            Dashboard[Dashboard]
-            Alerts[Alerts]
-            WorkOrders[Work Orders]
-            Analytics[Analytics]
-            Admin[Admin]
-        end
-
-        subgraph components [Component Library]
-            UIComponents[UI Components]
-            ErrorBoundary[Error Boundary]
-        end
     end
 
-    subgraph services [Services Layer]
-        Cache[Redis Cache]
-
-        subgraph backend [Server Services]
-            EngineSvc[Engine Service]
-            AlertSvc[Alert Service]
-            WorkOrderSvc[WorkOrder Service]
-            UserSvc[User Service]
-        end
-    end
-
-    subgraph data [Data Layer]
-        Drizzle[Drizzle ORM]
-        Metrics[Prometheus Metrics]
-    end
-
-    subgraph infra [Infrastructure]
+    subgraph storage [Data Storage]
         TimescaleDB[(TimescaleDB)]
-        Redis[(Redis)]
-        EMQX[EMQX MQTT Broker]
+        Redis[(Redis Cache)]
     end
 
-    Browser --> Auth
-    Auth --> pages
-    SSE --> Dashboard
-    pages --> backend
-    backend --> Cache
-    backend --> Drizzle
-    Drizzle --> TimescaleDB
-    Cache --> Redis
-    EMQX -.-> backend
+    subgraph client [Client]
+        Browser[Browser PWA]
+    end
+
+    Sensors --> Modbus
+    Modbus --> EMQX
+    EMQX --> Hooks
+    Hooks --> TimescaleDB
+    Hooks --> Redis
+    API --> TimescaleDB
+    API --> Redis
+    SSE --> Browser
+    API --> Browser
+    Auth --> Browser
 ```
 
----
+### Data Flow
 
-## API Endpoints
-
-### Public Endpoints
-
-| Endpoint       | Method | Description                     |
-| -------------- | ------ | ------------------------------- |
-| `/api/status`  | GET    | Dashboard data with caching     |
-| `/api/events`  | GET    | SSE stream (diff-based updates) |
-| `/api/health`  | GET    | Health check (DB, Redis)        |
-| `/api/metrics` | GET    | Prometheus metrics              |
-
-### Authentication
-
-| Endpoint      | Method | Description                                     |
-| ------------- | ------ | ----------------------------------------------- |
-| `/api/auth/*` | ALL    | Better-Auth endpoints (login, register, logout) |
-
-### Protected Endpoints (require authentication)
-
-| Endpoint                       | Method             | Description               |
-| ------------------------------ | ------------------ | ------------------------- |
-| `/api/alerts`                  | GET, POST          | List/create alerts        |
-| `/api/alerts/:id`              | GET, PATCH         | Get/update alert          |
-| `/api/alerts/stats`            | GET                | Alert statistics          |
-| `/api/alerts/rules`            | GET, POST          | Alert rules CRUD          |
-| `/api/alerts/rules/:id`        | GET, PATCH, DELETE | Rule operations           |
-| `/api/alerts/rules/:id/toggle` | PATCH              | Toggle rule enabled       |
-| `/api/workorders`              | GET, POST          | List/create work orders   |
-| `/api/workorders/:id`          | GET, PATCH, DELETE | Work order operations     |
-| `/api/workorders/stats`        | GET                | Work order statistics     |
-| `/api/users`                   | GET, POST          | User management (admin)   |
-| `/api/users/:id`               | GET, PATCH, DELETE | User operations (admin)   |
-| `/api/engines`                 | GET, POST          | Engine management (admin) |
-| `/api/engines/:id`             | GET, PATCH, DELETE | Engine operations (admin) |
+1. **Telemetry Ingestion**: Engine sensors → Modbus → MQTT → SvelteKit hooks → TimescaleDB
+2. **Real-time Updates**: TimescaleDB → SSE endpoint → Browser (every 5 seconds)
+3. **Caching**: Frequently accessed data cached in Redis with 2-30 second TTL
+4. **Alert Processing**: Threshold violations trigger alert creation with 60-second cooldown
 
 ---
 
@@ -221,6 +203,44 @@ flowchart TB
 | `maintenance_schedules` | Maintenance planning         |
 | `cost_records`          | Cost tracking                |
 
+### TimescaleDB Features
+
+- **Hypertables**: Telemetry table partitioned by time (1-day chunks)
+- **Compression**: Data older than 7 days automatically compressed
+- **Retention**: Data older than 90 days automatically dropped
+- **Continuous Aggregates**: Pre-computed hourly and daily statistics
+
+---
+
+## API Endpoints
+
+### Public Endpoints
+
+| Endpoint       | Method | Description                     |
+| -------------- | ------ | ------------------------------- |
+| `/api/status`  | GET    | Dashboard data with caching     |
+| `/api/events`  | GET    | SSE stream (diff-based updates) |
+| `/api/health`  | GET    | Health check (DB status)        |
+| `/api/metrics` | GET    | Prometheus metrics              |
+
+### Protected Endpoints (require authentication)
+
+| Endpoint                       | Method             | Description               |
+| ------------------------------ | ------------------ | ------------------------- |
+| `/api/alerts`                  | GET, POST          | List/create alerts        |
+| `/api/alerts/:id`              | GET, PATCH         | Get/update alert          |
+| `/api/alerts/stats`            | GET                | Alert statistics          |
+| `/api/alerts/rules`            | GET, POST          | Alert rules CRUD          |
+| `/api/alerts/rules/:id`        | GET, PATCH, DELETE | Rule operations           |
+| `/api/alerts/rules/:id/toggle` | PATCH              | Toggle rule enabled       |
+| `/api/workorders`              | GET, POST          | List/create work orders   |
+| `/api/workorders/:id`          | GET, PATCH, DELETE | Work order operations     |
+| `/api/workorders/stats`        | GET                | Work order statistics     |
+| `/api/users`                   | GET                | User management (admin)   |
+| `/api/users/:id`               | PATCH, DELETE      | User operations (admin)   |
+| `/api/engines`                 | GET, POST          | Engine management (admin) |
+| `/api/engines/:id`             | GET, PATCH, DELETE | Engine operations (admin) |
+
 ---
 
 ## User Roles
@@ -231,30 +251,6 @@ flowchart TB
 | `operator`   | Create/manage alerts, work orders, view all data |
 | `technician` | Manage assigned work orders, acknowledge alerts  |
 | `viewer`     | Read-only access to dashboards                   |
-
----
-
-## Application Routes
-
-| Route           | Module               | Access    |
-| --------------- | -------------------- | --------- |
-| `/`             | Dashboard            | All       |
-| `/login`        | Login                | Public    |
-| `/register`     | Registration         | Public    |
-| `/engine/[id]`  | Engine Details       | All       |
-| `/maintenance`  | Maintenance Forecast | All       |
-| `/analytics`    | Business Analytics   | All       |
-| `/economics`    | Economics            | All       |
-| `/alerts`       | Alert Center         | All       |
-| `/alerts/rules` | Alert Rules          | Operator+ |
-| `/work-orders`  | Work Orders          | All       |
-| `/admin`        | Admin Panel          | Admin     |
-| `/comparison`   | Engine Comparison    | All       |
-| `/calendar`     | Maintenance Calendar | All       |
-| `/reports`      | Reports              | Operator+ |
-| `/settings`     | Settings             | All       |
-| `/integrations` | Integrations         | Admin     |
-| `/dashboards`   | Custom Dashboards    | All       |
 
 ---
 
@@ -280,20 +276,20 @@ flowchart TB
 
 ## Docker Deployment
 
-### Using Docker Compose
+### Development (Docker Compose)
 
 ```bash
-# Build and start all services
-docker compose up -d
+# Start all infrastructure services
+bun run db:start
 
 # View logs
 docker compose logs -f
 
 # Stop services
-docker compose down
+bun run db:stop
 ```
 
-### Services Started
+### Services
 
 | Service     | Port              | Description                 |
 | ----------- | ----------------- | --------------------------- |
@@ -301,66 +297,40 @@ docker compose down
 | Redis       | 6379              | Caching layer               |
 | EMQX        | 1883, 8083, 18083 | MQTT broker + dashboard     |
 
-### Building Application Image
+### Production Deployment
 
 ```bash
+# Build application image
 docker build -t kastor-iot .
-docker run -p 3000:3000 --env-file .env kastor-iot
+
+# Run with environment file
+docker run -p 3000:3000 --env-file .env.production kastor-iot
 ```
+
+The Dockerfile includes:
+
+- Multi-stage build for minimal image size
+- Non-root user for security
+- Health check endpoint
+- Production-optimized Bun runtime
 
 ---
 
-## Observability
+## Production Checklist
 
-### Prometheus Metrics
+Before deploying to production, ensure:
 
-Access metrics at `/api/metrics`:
-
-```
-# Request metrics
-kastor_http_requests_total{method="GET",path="/api/status"} 1234
-kastor_http_request_duration_seconds_bucket{le="0.1"} 1000
-
-# SSE metrics
-kastor_sse_connections_active 5
-kastor_sse_messages_total 5000
-
-# MQTT metrics
-kastor_mqtt_messages_total 10000
-kastor_mqtt_connection_status 1
-
-# Business metrics
-kastor_engines_online 4
-kastor_alerts_active 2
-```
-
-### Health Check
-
-Access at `/api/health`:
-
-```json
-{
-	"status": "healthy",
-	"timestamp": "2024-12-29T10:00:00Z",
-	"services": {
-		"database": "healthy",
-		"redis": "healthy"
-	}
-}
-```
-
-### Structured Logging
-
-In production, logs are output as JSON:
-
-```json
-{
-	"level": "info",
-	"message": "MQTT message received",
-	"timestamp": "2024-12-29T10:00:00Z",
-	"context": { "topic": "engines/gpu-1/telemetry" }
-}
-```
+- [ ] Set `NODE_ENV=production`
+- [ ] Generate secure `BETTER_AUTH_SECRET` (32+ characters)
+- [ ] Configure `TRUSTED_ORIGINS` with production domain
+- [ ] Set strong database password in `DATABASE_URL`
+- [ ] Configure MQTT authentication (`MQTT_USERNAME`, `MQTT_PASSWORD`)
+- [ ] Set up EMQX user in dashboard (http://localhost:18083)
+- [ ] Run TimescaleDB optimization script (`drizzle/0003_timescale_optimization.sql`)
+- [ ] Configure Redis password if using Redis
+- [ ] Set up SSL/TLS termination (nginx/cloudflare)
+- [ ] Configure backup strategy for TimescaleDB
+- [ ] Set up monitoring (Prometheus + Grafana recommended)
 
 ---
 
@@ -368,20 +338,24 @@ In production, logs are output as JSON:
 
 - **Authentication**: Better-Auth with Argon2 password hashing
 - **Authorization**: Role-based access control (RBAC)
-- **Rate Limiting**: API endpoint protection
+- **Rate Limiting**: 100 requests/minute per IP
 - **MQTT Security**: Password-based authentication (anonymous disabled)
-- **Audit Logging**: User action tracking
-- **Input Validation**: Zod schemas on all endpoints
+- **Audit Logging**: User action tracking for compliance
+- **Input Validation**: Zod schemas on all API endpoints
+- **CSRF Protection**: Built-in via Better-Auth
+- **Secure Headers**: Recommended to add via reverse proxy
 
 ---
 
 ## Performance Optimizations
 
-- **ECharts Tree-Shaking**: Only used chart components are bundled
-- **Redis Caching**: Frequently accessed data cached
-- **SSE Diff Updates**: Only changed data sent to clients
-- **TimescaleDB**: Hypertables with compression for telemetry
-- **Continuous Aggregates**: Pre-computed hourly statistics
+- **SSE Diff Updates**: Only changed data sent to clients (reduces bandwidth)
+- **Redis Caching**: Dashboard data cached for 2-30 seconds
+- **TimescaleDB Hypertables**: Optimized time-series queries
+- **Continuous Aggregates**: Pre-computed hourly/daily statistics
+- **Data Compression**: Old telemetry automatically compressed
+- **ECharts Tree-Shaking**: Only used chart components bundled
+- **Lazy Loading**: Route-based code splitting via SvelteKit
 
 ---
 
@@ -394,36 +368,92 @@ bun run test
 # E2E tests (requires running server)
 bun run test:e2e
 
+# Interactive E2E test UI
+bun run test:e2e:ui
+
 # Coverage report
 bun run test:coverage
 ```
 
 ---
 
+## Monitoring
+
+### Health Check
+
+```bash
+curl http://localhost:5173/api/health
+```
+
+Response:
+
+```json
+{
+	"status": "ok",
+	"timestamp": "2026-01-07T12:00:00.000Z",
+	"version": "0.0.1",
+	"checks": {
+		"database": { "status": "ok", "latency": 5 }
+	}
+}
+```
+
+### Prometheus Metrics
+
+Available at `/api/metrics` for scraping by Prometheus.
+
+---
+
+## Troubleshooting
+
+### SSE not connecting
+
+- Check that `MQTT_URL` is set in `.env`
+- Verify EMQX is running: `docker compose logs emqx`
+- Make a request to the app first to initialize MQTT client
+
+### Database connection errors
+
+- Verify TimescaleDB is running: `docker compose ps`
+- Check `DATABASE_URL` format
+- Ensure migrations are applied: `bun run db:push`
+
+### Mock device not generating data
+
+- Verify MQTT broker is accessible
+- Check `bun scripts/mock-device.ts` output for errors
+- Ensure engine records exist in database: `bun run db:seed`
+
+---
+
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make changes with tests
-4. Run linting and tests
+4. Run linting and tests (`bun run lint && bun run test`)
 5. Submit a pull request
 
 ---
 
 ## Author
 
-**Прянишников Артём Алексеевич**
+**Прянишников Артём Алексеевич** (Lead Developer at ООО "Тотсофт")
 
 - Email: [Pryanishnikovartem@gmail.com](mailto:Pryanishnikovartem@gmail.com)
-- Telegram: [@FrankFMY](https://t.me/FrankFMY)
 - GitHub: [FrankFMY](https://github.com/FrankFMY)
+- Telegram: [@frankfmy](https://t.me/frankfmy)
 
 ---
 
 ## License
 
-This project is proprietary software. All rights reserved.
+Copyright (c) 2026 **ООО "Тотсофт"** (г. Бузулук). All rights reserved.
+
+This project is proprietary and confidential. Unauthorized copying, distribution, or modification is strictly prohibited. See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-Built with Svelte 5, SvelteKit, TailwindCSS & Bun
+<p align="center">
+  Built with ❤️ for ООО "Тотсофт" using Svelte 5, SvelteKit, TailwindCSS & Bun
+</p>
