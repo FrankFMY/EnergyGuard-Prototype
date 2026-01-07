@@ -19,8 +19,8 @@
 	import Download from 'lucide-svelte/icons/download';
 	import ShieldCheck from 'lucide-svelte/icons/shield-check';
 	import Network from 'lucide-svelte/icons/network';
-	import HardDrive from 'lucide-svelte/icons/hard-drive';
 	import { Button } from '$lib/components/ui/index.js';
+	import type { Event as EngineEvent } from '$lib/types/index.js';
 
 	interface ChartDataPoint {
 		time: string;
@@ -142,7 +142,7 @@
 			} else {
 				generateFallbackData();
 			}
-		} catch (e) {
+		} catch {
 			generateFallbackData();
 		}
 
@@ -324,19 +324,25 @@
 			const history: ChartDataPoint[] = await res.json();
 			historyData = history;
 
-			let eventMarkers: any[] = [];
+			let eventMarkers: {
+				xAxis: string;
+				label: Record<string, unknown>;
+				lineStyle: Record<string, unknown>;
+				tooltip: Record<string, unknown>;
+			}[] = [];
+
 			if (eventsRes.ok) {
-				const engineEvents = await eventsRes.json();
+				const engineEvents = (await eventsRes.json()) as EngineEvent[];
 				const startTime = history.length > 0 ? new Date(history[0].time).getTime() : 0;
 				const endTime =
 					history.length > 0 ? new Date(history[history.length - 1].time).getTime() : Date.now();
 
 				eventMarkers = engineEvents
-					.filter((e: any) => {
+					.filter((e: EngineEvent) => {
 						const t = new Date(e.time).getTime();
 						return t >= startTime && t <= endTime && (e.level === 'warning' || e.level === 'error');
 					})
-					.map((e: any) => ({
+					.map((e: EngineEvent) => ({
 						xAxis: new Date(e.time).toLocaleString(),
 						label: {
 							show: true,

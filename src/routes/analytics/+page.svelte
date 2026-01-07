@@ -110,8 +110,9 @@
 					backgroundColor: 'rgba(15, 23, 42, 0.95)',
 					borderColor: '#334155',
 					textStyle: { color: '#f8fafc', fontSize: 12 },
-					formatter: (params: any) => {
-						const idx = params[0].dataIndex;
+					formatter: (params: unknown) => {
+						const p = Array.isArray(params) ? params[0] : (params as { dataIndex: number });
+						const idx = p.dataIndex;
 						const item = data[idx];
 						const color = item.type === 'loss' ? '#f43f5e' : '#06b6d4';
 						const sign = item.value < 0 ? '' : '+';
@@ -166,7 +167,8 @@
 							color: '#06b6d4',
 							fontWeight: 'bold',
 							fontSize: 11,
-							formatter: (p: any) => (p.value !== '-' ? (p.value / 1000000).toFixed(1) + 'M ₽' : '')
+							formatter: (p: { value: number | string }) =>
+								p.value !== '-' ? ((p.value as number) / 1000000).toFixed(1) + 'M ₽' : ''
 						},
 						data: income
 					},
@@ -185,8 +187,8 @@
 							color: '#fff',
 							fontWeight: 'bold',
 							fontSize: 10,
-							formatter: (p: any) =>
-								p.value !== '-' ? '-' + (p.value / 1000).toFixed(0) + 'k' : ''
+							formatter: (p: { value: number | string }) =>
+								p.value !== '-' ? '-' + ((p.value as number) / 1000).toFixed(0) + 'k' : ''
 						},
 						data: expense
 					},

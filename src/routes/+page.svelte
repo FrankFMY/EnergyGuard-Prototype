@@ -58,11 +58,13 @@
 		}
 	}
 
-	function updateDashboardState(newData: any) {
+	function updateDashboardState(
+		newData: DashboardData | (Partial<DashboardData> & { type: 'diff' })
+	) {
 		if (!newData) return;
 
 		// If it's a diff, merge with existing
-		if (newData.type === 'diff' && data) {
+		if ('type' in newData && newData.type === 'diff' && data) {
 			data = {
 				engines: newData.engines || data.engines,
 				events: newData.events || data.events,
@@ -71,7 +73,7 @@
 			};
 		} else {
 			// Full update
-			data = newData;
+			data = newData as DashboardData;
 		}
 
 		lastUpdate = new Date();
