@@ -1,0 +1,18 @@
+# KASTOR IoT Simulator
+# Генерирует демо-данные телеметрии для 6 двигателей
+
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lock ./
+
+# Install only mqtt dependency
+RUN bun install mqtt
+
+# Copy simulator script
+COPY scripts/mock-device.ts ./simulator.ts
+
+# Run simulator
+CMD ["bun", "run", "simulator.ts"]

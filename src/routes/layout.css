@@ -1,0 +1,630 @@
+@import 'tailwindcss';
+
+/* ===== CUSTOM TAILWIND THEME EXTENSIONS ===== */
+@theme {
+	/* Extra small breakpoint for tiny phones */
+	--breakpoint-xs: 475px;
+
+	/* Z-index layer system for consistent stacking */
+	--z-index-dropdown: 50;
+	--z-index-sticky: 100;
+	--z-index-overlay: 9998;
+	--z-index-modal: 9999;
+	--z-index-toast: 10000;
+}
+
+:root {
+	--font-sans: 'Inter', system-ui, sans-serif;
+	--transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+	--glow-cyan: 0 0 20px rgba(34, 211, 238, 0.4), 0 0 40px rgba(34, 211, 238, 0.2);
+	--glow-rose: 0 0 20px rgba(244, 63, 94, 0.4), 0 0 40px rgba(244, 63, 94, 0.2);
+	--glow-amber: 0 0 20px rgba(245, 158, 11, 0.4), 0 0 40px rgba(245, 158, 11, 0.2);
+	--glow-emerald: 0 0 20px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
+
+	/* Safe area insets for notched devices */
+	--safe-area-top: env(safe-area-inset-top, 0px);
+	--safe-area-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-area-left: env(safe-area-inset-left, 0px);
+	--safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+body {
+	font-family: var(--font-sans);
+	@apply bg-slate-950 text-slate-50 antialiased;
+}
+
+/* ===== GLOBAL SMOOTH TRANSITIONS ===== */
+*,
+*::before,
+*::after {
+	transition-property:
+		background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter;
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	transition-duration: 150ms;
+}
+
+/* ===== NEON GLOW UTILITIES ===== */
+.neon-text-cyan {
+	text-shadow:
+		0 0 10px rgba(34, 211, 238, 0.5),
+		0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+.neon-text-red {
+	text-shadow:
+		0 0 10px rgba(244, 63, 94, 0.5),
+		0 0 20px rgba(244, 63, 94, 0.3);
+}
+
+.neon-border-cyan {
+	box-shadow:
+		0 0 15px rgba(34, 211, 238, 0.2),
+		inset 0 0 15px rgba(34, 211, 238, 0.05);
+}
+
+/* ===== GLASS CARD WITH ENHANCED EFFECTS ===== */
+.glass-card {
+	@apply relative overflow-hidden border border-white/5 bg-slate-900/60 backdrop-blur-md;
+	transition: all var(--transition-normal);
+}
+
+.glass-card::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		ellipse at var(--mouse-x, 50%) var(--mouse-y, 50%),
+		rgba(34, 211, 238, 0.06) 0%,
+		transparent 60%
+	);
+	opacity: 0;
+	transition: opacity var(--transition-normal);
+	pointer-events: none;
+}
+
+.glass-card:hover {
+	border-color: rgba(255, 255, 255, 0.1);
+	box-shadow:
+		0 4px 20px rgba(0, 0, 0, 0.3),
+		0 0 40px rgba(34, 211, 238, 0.05);
+}
+
+.glass-card:hover::before {
+	opacity: 1;
+}
+
+/* ===== INTERACTIVE BUTTON EFFECTS ===== */
+.btn-primary {
+	@apply relative overflow-hidden bg-cyan-500 font-medium text-white;
+	transition: all var(--transition-fast);
+}
+
+.btn-primary::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		45deg,
+		transparent 30%,
+		rgba(255, 255, 255, 0.2) 50%,
+		transparent 70%
+	);
+	transform: translateX(-100%);
+	transition: transform 0.5s ease;
+}
+
+.btn-primary:hover {
+	@apply bg-cyan-400;
+	box-shadow: var(--glow-cyan);
+	transform: translateY(-2px);
+}
+
+.btn-primary:hover::after {
+	transform: translateX(100%);
+}
+
+.btn-primary:active {
+	transform: translateY(0) scale(0.98);
+}
+
+/* ===== CARD HOVER LIFT EFFECT ===== */
+.card-hover-lift {
+	transition: all var(--transition-normal);
+}
+
+.card-hover-lift:hover {
+	transform: translateY(-4px);
+	box-shadow:
+		0 12px 40px rgba(0, 0, 0, 0.4),
+		0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.card-hover-lift:active {
+	transform: translateY(-2px);
+}
+
+/* ===== PULSE GLOW FOR LIVE INDICATORS ===== */
+@keyframes pulse-glow-box {
+	0%,
+	100% {
+		box-shadow:
+			0 0 4px currentColor,
+			0 0 8px currentColor;
+		opacity: 1;
+	}
+	50% {
+		box-shadow:
+			0 0 8px currentColor,
+			0 0 16px currentColor,
+			0 0 24px currentColor;
+		opacity: 0.8;
+	}
+}
+
+/* For elements like dots/indicators */
+.pulse-glow-box {
+	animation: pulse-glow-box 2s ease-in-out infinite;
+}
+
+/* For text elements - uses text-shadow for cleaner effect */
+@keyframes pulse-glow-text {
+	0%,
+	100% {
+		text-shadow:
+			0 0 4px currentColor,
+			0 0 8px currentColor;
+		opacity: 1;
+	}
+	50% {
+		text-shadow:
+			0 0 10px currentColor,
+			0 0 20px currentColor;
+		opacity: 0.85;
+	}
+}
+
+.pulse-glow {
+	animation: pulse-glow-text 2s ease-in-out infinite;
+}
+
+/* Temperature warning indicator - cleaner pulsing badge */
+@keyframes temp-warning-pulse {
+	0%,
+	100% {
+		background-color: rgba(244, 63, 94, 0.15);
+		box-shadow: inset 0 0 0 1px rgba(244, 63, 94, 0.3);
+	}
+	50% {
+		background-color: rgba(244, 63, 94, 0.25);
+		box-shadow:
+			inset 0 0 0 1px rgba(244, 63, 94, 0.5),
+			0 0 12px rgba(244, 63, 94, 0.3);
+	}
+}
+
+.temp-warning {
+	animation: temp-warning-pulse 1.5s ease-in-out infinite;
+	border-radius: 4px;
+	padding: 2px 6px;
+	margin: -2px -6px;
+}
+
+/* ===== SMOOTH NUMBER TRANSITIONS ===== */
+.tabular-nums {
+	font-variant-numeric: tabular-nums;
+}
+
+/* ===== STAGGERED FADE IN ANIMATION ===== */
+@keyframes fade-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fade-in-scale {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes slide-in-right {
+	from {
+		opacity: 0;
+		transform: translateX(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes slide-in-left {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes slide-out-left {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-100%);
+	}
+}
+
+.animate-fade-in {
+	animation: fade-in-up 0.4s ease-out forwards;
+}
+
+.animate-fade-in-scale {
+	animation: fade-in-scale 0.3s ease-out forwards;
+}
+
+.animate-slide-in-right {
+	animation: slide-in-right 0.3s ease-out forwards;
+}
+
+.animate-slide-in-left {
+	animation: slide-in-left 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-slide-out-left {
+	animation: slide-out-left 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Stagger delays for grid items */
+.stagger-1 {
+	animation-delay: 50ms;
+}
+.stagger-2 {
+	animation-delay: 100ms;
+}
+.stagger-3 {
+	animation-delay: 150ms;
+}
+.stagger-4 {
+	animation-delay: 200ms;
+}
+.stagger-5 {
+	animation-delay: 250ms;
+}
+.stagger-6 {
+	animation-delay: 300ms;
+}
+
+/* ===== SHIMMER LOADING EFFECT ===== */
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+
+.shimmer {
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0) 0%,
+		rgba(255, 255, 255, 0.05) 50%,
+		rgba(255, 255, 255, 0) 100%
+	);
+	background-size: 200% 100%;
+	animation: shimmer 2s infinite;
+}
+
+/* ===== SCROLL INDICATORS ===== */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-slate-900/50;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply rounded-full bg-slate-700/80;
+	transition: background-color var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-cyan-500/60;
+}
+
+/* Better scrollbar for touch devices */
+@media (hover: none) and (pointer: coarse) {
+	::-webkit-scrollbar {
+		width: 4px;
+		height: 4px;
+	}
+
+	::-webkit-scrollbar-thumb {
+		@apply bg-slate-600/50;
+	}
+
+	/* Enable momentum scrolling on iOS */
+	* {
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+/* ===== CHART CONTAINER ===== */
+.echarts-container {
+	width: 100%;
+	height: 100%;
+	min-height: 300px;
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+@media (max-width: 768px) {
+	.glass-card {
+		@apply backdrop-blur-sm;
+	}
+
+	.glass-card::before {
+		display: none;
+	}
+
+	/* Disable hover lift effect on mobile - it causes issues with touch */
+	.card-hover-lift:hover {
+		transform: none;
+	}
+
+	.card-hover-lift:active {
+		transform: scale(0.98);
+	}
+}
+
+/* ===== SAFE AREA UTILITIES ===== */
+.safe-top {
+	padding-top: var(--safe-area-top);
+}
+
+.safe-bottom {
+	padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-left {
+	padding-left: var(--safe-area-left);
+}
+
+.safe-right {
+	padding-right: var(--safe-area-right);
+}
+
+.safe-x {
+	padding-left: var(--safe-area-left);
+	padding-right: var(--safe-area-right);
+}
+
+.safe-y {
+	padding-top: var(--safe-area-top);
+	padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-all {
+	padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+}
+
+/* ===== VIEWPORT HEIGHT FIX FOR MOBILE ===== */
+.h-screen-safe {
+	height: 100vh;
+	height: 100dvh;
+}
+
+.min-h-screen-safe {
+	min-height: 100vh;
+	min-height: 100dvh;
+}
+
+/* ===== MOBILE MENU OVERLAY ===== */
+.mobile-nav-overlay {
+	@apply fixed inset-0 z-40 bg-black/70 backdrop-blur-md;
+}
+
+/* ===== STATUS INDICATOR GLOW ===== */
+.status-glow-ok {
+	box-shadow: var(--glow-emerald);
+}
+
+.status-glow-warning {
+	box-shadow: var(--glow-amber);
+}
+
+.status-glow-error {
+	box-shadow: var(--glow-rose);
+}
+
+/* ===== ACCESSIBILITY ===== */
+:focus-visible {
+	outline: 2px solid theme('colors.cyan.400');
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+@media (prefers-contrast: high) {
+	.glass-card {
+		border-color: theme('colors.white');
+	}
+
+	.text-slate-400 {
+		color: theme('colors.slate.300');
+	}
+}
+
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	@apply ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-950;
+	outline: none;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+	position: static;
+	width: auto;
+	height: auto;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+}
+
+/* ===== TOUCH FEEDBACK FOR MOBILE ===== */
+@media (hover: none) and (pointer: coarse) {
+	.glass-card:active {
+		transform: scale(0.98);
+		opacity: 0.9;
+	}
+
+	button:active,
+	a:active {
+		transform: scale(0.97);
+	}
+
+	/* Disable text selection on interactive elements for better touch UX */
+	button,
+	a,
+	[role='button'] {
+		-webkit-user-select: none;
+		user-select: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	/* Ensure minimum touch target size (44px recommended by Apple) */
+	.touch-target {
+		min-height: 44px;
+		min-width: 44px;
+	}
+}
+
+/* ===== PREVENT PULL-TO-REFRESH ON SCROLLABLE AREAS ===== */
+.overscroll-none {
+	overscroll-behavior: none;
+}
+
+.overscroll-contain {
+	overscroll-behavior: contain;
+}
+
+/* ===== PROGRESS BAR ANIMATION ===== */
+@keyframes progress-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.6;
+	}
+}
+
+.progress-animated {
+	animation: progress-pulse 1.5s ease-in-out infinite;
+}
+
+/* ===== FLOATING LABEL EFFECT ===== */
+.input-float-label {
+	position: relative;
+}
+
+.input-float-label input:focus + label,
+.input-float-label input:not(:placeholder-shown) + label {
+	transform: translateY(-1.5rem) scale(0.85);
+	color: theme('colors.cyan.400');
+}
+
+/* ===== RIPPLE EFFECT ===== */
+@keyframes ripple {
+	0% {
+		transform: scale(0);
+		opacity: 0.5;
+	}
+	100% {
+		transform: scale(4);
+		opacity: 0;
+	}
+}
+
+.ripple-container {
+	position: relative;
+	overflow: hidden;
+}
+
+.ripple-container::after {
+	content: '';
+	position: absolute;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.3);
+	width: 100px;
+	height: 100px;
+	margin-top: -50px;
+	margin-left: -50px;
+	top: var(--ripple-y, 50%);
+	left: var(--ripple-x, 50%);
+	animation: ripple 0.6s linear;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* ===== GRADIENT TEXT ===== */
+.gradient-text-cyan {
+	background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 50%, #0891b2 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.gradient-text-warm {
+	background: linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* ===== HIDE SCROLLBAR UTILITY ===== */
+.scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
+}
+
+/* ===== LINE CLAMP ===== */
+.line-clamp-2 {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
