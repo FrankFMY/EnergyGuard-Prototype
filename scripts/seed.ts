@@ -29,28 +29,28 @@ async function seed() {
 	const usersData = [
 		{
 			id: 'user-admin',
-			name: 'Admin User',
+			name: 'Иван Петров',
 			email: 'admin@kastor.io',
 			emailVerified: true,
 			role: 'admin' as const
 		},
 		{
 			id: 'user-operator',
-			name: 'Operator User',
+			name: 'Мария Сидорова',
 			email: 'operator@kastor.io',
 			emailVerified: true,
 			role: 'operator' as const
 		},
 		{
 			id: 'user-technician',
-			name: 'John Technician',
+			name: 'Алексей Козлов',
 			email: 'technician@kastor.io',
 			emailVerified: true,
 			role: 'technician' as const
 		},
 		{
 			id: 'user-viewer',
-			name: 'Viewer User',
+			name: 'Елена Волкова',
 			email: 'viewer@kastor.io',
 			emailVerified: true,
 			role: 'viewer' as const
@@ -164,7 +164,7 @@ async function seed() {
 	const alertRulesData = [
 		{
 			id: 'rule-1',
-			name: 'High Exhaust Temperature',
+			name: 'Высокая температура выхлопа',
 			engineId: null,
 			metric: 'temp_exhaust',
 			operator: 'gt',
@@ -178,7 +178,7 @@ async function seed() {
 		},
 		{
 			id: 'rule-2',
-			name: 'Vibration Warning',
+			name: 'Предупреждение о вибрации',
 			engineId: null,
 			metric: 'vibration',
 			operator: 'gt',
@@ -192,7 +192,7 @@ async function seed() {
 		},
 		{
 			id: 'rule-3',
-			name: 'Low Power Output',
+			name: 'Низкая выходная мощность',
 			engineId: null,
 			metric: 'power_kw',
 			operator: 'lt',
@@ -206,7 +206,7 @@ async function seed() {
 		},
 		{
 			id: 'rule-4',
-			name: 'Critical Vibration',
+			name: 'Критическая вибрация',
 			engineId: null,
 			metric: 'vibration',
 			operator: 'gt',
@@ -220,7 +220,7 @@ async function seed() {
 		},
 		{
 			id: 'rule-5',
-			name: 'Low Gas Pressure',
+			name: 'Низкое давление газа',
 			engineId: null,
 			metric: 'gas_pressure',
 			operator: 'lt',
@@ -245,8 +245,8 @@ async function seed() {
 			engineId: 'gpu-2',
 			severity: 'critical' as const,
 			status: 'active' as const,
-			title: 'Exhaust Temp Critical',
-			message: 'Exhaust temperature exceeded 530°C threshold for more than 5 minutes',
+			title: 'Критическая температура выхлопа',
+			message: 'Температура выхлопа превысила порог 530°C более 5 минут',
 			metric: 'temp_exhaust',
 			threshold: 530,
 			actualValue: 547,
@@ -257,8 +257,8 @@ async function seed() {
 			engineId: 'gpu-2',
 			severity: 'warning' as const,
 			status: 'acknowledged' as const,
-			title: 'Vibration Above Normal',
-			message: 'Vibration level at 10.4 mm/s exceeds warning threshold of 8 mm/s',
+			title: 'Повышенная вибрация',
+			message: 'Уровень вибрации 10.4 мм/с превышает предупредительный порог 8 мм/с',
 			metric: 'vibration',
 			threshold: 8,
 			actualValue: 10.4,
@@ -271,8 +271,8 @@ async function seed() {
 			engineId: 'gpu-4',
 			severity: 'warning' as const,
 			status: 'resolved' as const,
-			title: 'Power Output Low',
-			message: 'Power output dropped below 1000 kW threshold',
+			title: 'Низкая выходная мощность',
+			message: 'Выходная мощность упала ниже порога 1000 кВт',
 			metric: 'power_kw',
 			threshold: 1000,
 			actualValue: 892,
@@ -286,8 +286,8 @@ async function seed() {
 			engineId: 'gpu-1',
 			severity: 'info' as const,
 			status: 'resolved' as const,
-			title: 'Scheduled Maintenance Due',
-			message: 'Engine GPU-1 is approaching scheduled maintenance interval',
+			title: 'Приближается плановое ТО',
+			message: 'Двигатель GPU-1 приближается к интервалу планового обслуживания',
 			metric: 'total_hours',
 			threshold: 2000,
 			actualValue: 1950,
@@ -301,8 +301,8 @@ async function seed() {
 			engineId: 'gpu-3',
 			severity: 'critical' as const,
 			status: 'active' as const,
-			title: 'Gas Pressure Low',
-			message: 'Input gas pressure below minimum operating threshold',
+			title: 'Низкое давление газа',
+			message: 'Давление входного газа ниже минимального рабочего порога',
 			metric: 'gas_pressure',
 			threshold: 2.5,
 			actualValue: 2.1,
@@ -332,8 +332,8 @@ async function seed() {
 	const workOrdersData = [
 		{
 			id: 'wo-001',
-			title: 'Scheduled Oil Change',
-			description: 'Regular maintenance oil change as per 2000h service interval',
+			title: 'Плановая замена масла',
+			description: 'Регулярное техническое обслуживание с заменой масла по интервалу 2000ч',
 			engineId: 'gpu-1',
 			status: 'open' as const,
 			priority: 'medium' as const,
@@ -342,12 +342,12 @@ async function seed() {
 			createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
 			dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
 			estimatedHours: 4,
-			partsRequired: ['Oil filter', 'Engine oil 20L']
+			partsRequired: ['Масляный фильтр', 'Моторное масло 20л']
 		},
 		{
 			id: 'wo-002',
-			title: 'Spark Plug Replacement',
-			description: 'Replace all 20 spark plugs due to wear',
+			title: 'Замена свечей зажигания',
+			description: 'Заменить все 20 свечей зажигания в связи с износом',
 			engineId: 'gpu-2',
 			status: 'in_progress' as const,
 			priority: 'high' as const,
@@ -356,12 +356,12 @@ async function seed() {
 			createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
 			dueDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000),
 			estimatedHours: 6,
-			partsRequired: ['Spark plugs x20']
+			partsRequired: ['Свечи зажигания x20']
 		},
 		{
 			id: 'wo-003',
-			title: 'Air Filter Inspection',
-			description: 'Inspect and clean or replace air filter based on condition',
+			title: 'Проверка воздушного фильтра',
+			description: 'Осмотреть и очистить или заменить воздушный фильтр по состоянию',
 			engineId: 'gpu-4',
 			status: 'completed' as const,
 			priority: 'low' as const,
@@ -372,12 +372,12 @@ async function seed() {
 			completedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
 			estimatedHours: 2,
 			actualHours: 1.5,
-			partsRequired: ['Air filter (if needed)']
+			partsRequired: ['Воздушный фильтр (при необходимости)']
 		},
 		{
 			id: 'wo-004',
-			title: 'Vibration Analysis',
-			description: 'Investigate elevated vibration levels reported by monitoring system',
+			title: 'Анализ вибрации',
+			description: 'Исследовать повышенный уровень вибрации, зафиксированный системой мониторинга',
 			engineId: 'gpu-2',
 			status: 'open' as const,
 			priority: 'critical' as const,
@@ -511,31 +511,31 @@ async function seed() {
 	const eventsData = [
 		{
 			level: 'info',
-			message: 'System started',
+			message: 'Система запущена',
 			engine_id: null,
 			time: new Date(now.getTime() - 24 * 60 * 60 * 1000)
 		},
 		{
 			level: 'info',
-			message: 'GPU-1 engine started',
+			message: 'GPU-1 двигатель запущен',
 			engine_id: 'gpu-1',
 			time: new Date(now.getTime() - 23 * 60 * 60 * 1000)
 		},
 		{
 			level: 'warning',
-			message: 'GPU-2 exhaust temperature rising',
+			message: 'GPU-2 температура выхлопа растёт',
 			engine_id: 'gpu-2',
 			time: new Date(now.getTime() - 2 * 60 * 60 * 1000)
 		},
 		{
 			level: 'error',
-			message: 'GPU-2 critical temperature alert triggered',
+			message: 'GPU-2 сработал алерт критической температуры',
 			engine_id: 'gpu-2',
 			time: new Date(now.getTime() - 15 * 60 * 1000)
 		},
 		{
 			level: 'info',
-			message: 'Work order WO-003 completed',
+			message: 'Наряд-заказ WO-003 завершён',
 			engine_id: 'gpu-4',
 			time: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
 		}

@@ -284,7 +284,7 @@
 
 				<div>
 					<label for="mobile-status-filter" class="mb-1.5 block text-xs font-medium text-slate-500"
-						>{$_('alerts.status')}</label
+						>{$_('alerts.statusLabel')}</label
 					>
 					<select
 						id="mobile-status-filter"
@@ -374,7 +374,7 @@
 							<div class="mb-1 flex flex-wrap items-center gap-2">
 								<h3 class="text-sm font-semibold text-white sm:text-base">{alert.title}</h3>
 								<Badge variant={getStatusBadge(alert.status)}>
-									{alert.status}
+									{$_(`alerts.status.${alert.status}`)}
 								</Badge>
 								{#if alert.engine_id}
 									<a

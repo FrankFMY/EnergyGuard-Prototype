@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
-	import { Card, Badge, Button } from '$lib/components/ui/index.js';
+	import { Card, Badge, Button, Modal } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import { _ } from 'svelte-i18n';
 	import Shield from 'lucide-svelte/icons/shield';
@@ -19,25 +19,53 @@
 
 	let engines: Engine[] = $state([]);
 	let loading = $state(true);
-	let showAddModal = $state(false);
-	let editingEngine: Engine | null = $state(null);
 
-	// Form state
-	let formData = $state({
+	// Engine modal state
+	let showEngineModal = $state(false);
+	let editingEngine: Engine | null = $state(null);
+	let engineForm = $state({
 		id: '',
 		model: '',
-		planned_power_kw: 0,
+		planned_power_kw: 1200,
 		location: ''
 	});
 
-	const users = [
+	// User modal state
+	let showUserModal = $state(false);
+	let editingUser: (typeof users)[0] | null = $state(null);
+	let userForm = $state({
+		name: '',
+		email: '',
+		role: 'Оператор',
+		active: true
+	});
+
+	// Connection modal state
+	let showConnectionModal = $state(false);
+	let editingConnection: (typeof connections)[0] | null = $state(null);
+	let connectionForm = $state({
+		name: '',
+		type: 'Modbus TCP',
+		ip: '',
+		status: 'disconnected'
+	});
+
+	// Delete confirmation
+	let showDeleteConfirm = $state(false);
+	let deleteTarget = $state<{
+		type: 'engine' | 'user' | 'connection';
+		id: string;
+		name: string;
+	} | null>(null);
+
+	let users = $state([
 		{ id: '1', name: 'Иван Петров', role: 'Администратор', email: 'ivan@kastor.io', active: true },
 		{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@kastor.io', active: true },
 		{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@kastor.io', active: true },
 		{ id: '4', name: 'Елена Волкова', role: 'Наблюдатель', email: 'elena@kastor.io', active: false }
-	];
+	]);
 
-	const connections = [
+	let connections = $state([
 		{
 			id: '1',
 			name: 'PLC Siemens S7-1500',
@@ -47,7 +75,7 @@
 		},
 		{ id: '2', name: 'OPC UA Server', type: 'OPC UA', status: 'connected', ip: '192.168.1.20' },
 		{ id: '3', name: 'SCADA Gateway', type: 'MQTT', status: 'disconnected', ip: '192.168.1.30' }
-	];
+	]);
 
 	type TabId = 'engines' | 'users' | 'connections';
 	let activeTab: TabId = $state('engines');
@@ -64,57 +92,137 @@
 		}
 	});
 
-	function openAddModal() {
-		formData = { id: '', model: '', planned_power_kw: 0, location: '' };
+	// Engine handlers
+	function openAddEngine() {
+		engineForm = { id: '', model: '', planned_power_kw: 1200, location: '' };
 		editingEngine = null;
-		showAddModal = true;
+		showEngineModal = true;
 	}
 
-	function openEditModal(engine: Engine) {
-		formData = {
+	function openEditEngine(engine: Engine) {
+		engineForm = {
 			id: engine.id,
 			model: engine.model,
 			planned_power_kw: engine.planned_power_kw,
 			location: ''
 		};
 		editingEngine = engine;
-		showAddModal = true;
+		showEngineModal = true;
 	}
 
-	function closeModal() {
-		showAddModal = false;
-		editingEngine = null;
-	}
-
-	function handleSubmit() {
+	function handleEngineSubmit() {
 		if (editingEngine) {
-			// Update existing engine (mock)
 			const idx = engines.findIndex((e) => e.id === editingEngine!.id);
 			if (idx !== -1) {
 				engines[idx] = {
 					...engines[idx],
-					model: formData.model,
-					planned_power_kw: formData.planned_power_kw
+					model: engineForm.model,
+					planned_power_kw: engineForm.planned_power_kw
 				};
 			}
 		} else {
-			// Add new engine (mock)
 			const newEngine: Engine = {
-				id: formData.id.toLowerCase().replace(/\s+/g, '-'),
-				model: formData.model,
+				id: engineForm.id.toLowerCase().replace(/\s+/g, '-'),
+				model: engineForm.model,
 				status: 'ok',
-				planned_power_kw: formData.planned_power_kw,
+				planned_power_kw: engineForm.planned_power_kw,
 				total_hours: 0
 			};
 			engines = [...engines, newEngine];
 		}
-		closeModal();
+		showEngineModal = false;
 	}
 
-	function deleteEngine(id: string) {
-		if (confirm('Вы уверены, что хотите удалить двигатель?')) {
-			engines = engines.filter((e) => e.id !== id);
+	// User handlers
+	function openAddUser() {
+		userForm = { name: '', email: '', role: 'Оператор', active: true };
+		editingUser = null;
+		showUserModal = true;
+	}
+
+	function openEditUser(user: (typeof users)[0]) {
+		userForm = { name: user.name, email: user.email, role: user.role, active: user.active };
+		editingUser = user;
+		showUserModal = true;
+	}
+
+	function handleUserSubmit() {
+		if (editingUser) {
+			const idx = users.findIndex((u) => u.id === editingUser!.id);
+			if (idx !== -1) {
+				users[idx] = { ...users[idx], ...userForm };
+			}
+		} else {
+			const newUser = {
+				id: String(Date.now()),
+				...userForm
+			};
+			users = [...users, newUser];
 		}
+		showUserModal = false;
+	}
+
+	// Connection handlers
+	function openAddConnection() {
+		connectionForm = { name: '', type: 'Modbus TCP', ip: '', status: 'disconnected' };
+		editingConnection = null;
+		showConnectionModal = true;
+	}
+
+	function openEditConnection(conn: (typeof connections)[0]) {
+		connectionForm = { name: conn.name, type: conn.type, ip: conn.ip, status: conn.status };
+		editingConnection = conn;
+		showConnectionModal = true;
+	}
+
+	function handleConnectionSubmit() {
+		if (editingConnection) {
+			const idx = connections.findIndex((c) => c.id === editingConnection!.id);
+			if (idx !== -1) {
+				connections[idx] = { ...connections[idx], ...connectionForm };
+			}
+		} else {
+			const newConn = {
+				id: String(Date.now()),
+				...connectionForm
+			};
+			connections = [...connections, newConn];
+		}
+		showConnectionModal = false;
+	}
+
+	function toggleConnectionStatus(conn: (typeof connections)[0]) {
+		const idx = connections.findIndex((c) => c.id === conn.id);
+		if (idx !== -1) {
+			connections[idx] = {
+				...connections[idx],
+				status: connections[idx].status === 'connected' ? 'disconnected' : 'connected'
+			};
+		}
+	}
+
+	// Delete handlers
+	function confirmDelete(type: 'engine' | 'user' | 'connection', id: string, name: string) {
+		deleteTarget = { type, id, name };
+		showDeleteConfirm = true;
+	}
+
+	function executeDelete() {
+		if (!deleteTarget) return;
+
+		switch (deleteTarget.type) {
+			case 'engine':
+				engines = engines.filter((e) => e.id !== deleteTarget!.id);
+				break;
+			case 'user':
+				users = users.filter((u) => u.id !== deleteTarget!.id);
+				break;
+			case 'connection':
+				connections = connections.filter((c) => c.id !== deleteTarget!.id);
+				break;
+		}
+		showDeleteConfirm = false;
+		deleteTarget = null;
 	}
 
 	function getStatusBadge(status: string) {
@@ -150,7 +258,7 @@
 		<Badge variant="warning" class="self-start sm:self-auto">Demo Mode</Badge>
 	</div>
 
-	<!-- Tabs - Scrollable on mobile -->
+	<!-- Tabs -->
 	<div class="-mx-4 px-4 sm:mx-0 sm:px-0">
 		<div
 			class="scrollbar-hide flex gap-1 overflow-x-auto rounded-lg border border-white/5 bg-slate-900/50 p-1"
@@ -206,18 +314,16 @@
 	<!-- Engines Tab -->
 	{#if activeTab === 'engines'}
 		<div class="flex justify-end">
-			<Button class="gap-2" onclick={openAddModal}>
+			<Button class="gap-2" onclick={openAddEngine}>
 				<Plus class="h-4 w-4" />
-				Добавить двигатель
+				{$_('admin.engines.addEngine')}
 			</Button>
 		</div>
 
 		<div class="grid gap-4">
 			{#if loading}
 				{#each { length: 4 } as _item, i (i)}
-					<Card class="animate-pulse">
-						<div class="h-20"></div>
-					</Card>
+					<Card class="animate-pulse"><div class="h-20"></div></Card>
 				{/each}
 			{:else}
 				{#each engines as engine (engine.id)}
@@ -237,18 +343,17 @@
 								<div>
 									<div class="flex items-center gap-3">
 										<h3 class="font-semibold text-white uppercase">{engine.id}</h3>
-										<Badge variant={getStatusBadge(engine.status)}>
-											{engine.status}
-										</Badge>
+										<Badge variant={getStatusBadge(engine.status)}>{engine.status}</Badge>
 									</div>
 									<p class="text-sm text-slate-400">
-										{engine.model} • {engine.planned_power_kw} кВт • {engine.total_hours.toLocaleString()}
-										ч
+										{engine.model} • {engine.planned_power_kw}
+										{$_('common.kw')} • {engine.total_hours.toLocaleString()}
+										{$_('units.hours')}
 									</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-2">
-								<Button variant="ghost" size="sm" onclick={() => openEditModal(engine)}>
+								<Button variant="ghost" size="sm" onclick={() => openEditEngine(engine)}>
 									<Pencil class="h-4 w-4" />
 								</Button>
 								<Button variant="ghost" size="sm">
@@ -258,7 +363,7 @@
 									variant="ghost"
 									size="sm"
 									class="text-rose-400 hover:text-rose-300"
-									onclick={() => deleteEngine(engine.id)}
+									onclick={() => confirmDelete('engine', engine.id, engine.id.toUpperCase())}
 								>
 									<Trash2 class="h-4 w-4" />
 								</Button>
@@ -273,7 +378,7 @@
 	<!-- Users Tab -->
 	{#if activeTab === 'users'}
 		<div class="flex justify-end">
-			<Button class="gap-2">
+			<Button class="gap-2" onclick={openAddUser}>
 				<Plus class="h-4 w-4" />
 				{$_('admin.users.addUser')}
 			</Button>
@@ -299,10 +404,15 @@
 							</div>
 						</div>
 						<div class="flex shrink-0 gap-1">
-							<Button variant="ghost" size="sm">
+							<Button variant="ghost" size="sm" onclick={() => openEditUser(user)}>
 								<Pencil class="h-4 w-4" />
 							</Button>
-							<Button variant="ghost" size="sm" class="text-rose-400 hover:text-rose-300">
+							<Button
+								variant="ghost"
+								size="sm"
+								class="text-rose-400 hover:text-rose-300"
+								onclick={() => confirmDelete('user', user.id, user.name)}
+							>
 								<Trash2 class="h-4 w-4" />
 							</Button>
 						</div>
@@ -358,9 +468,9 @@
 										</div>
 									</div>
 								</td>
-								<td class="px-4 py-4">
-									<Badge variant={getRoleBadge(user.role)}>{user.role}</Badge>
-								</td>
+								<td class="px-4 py-4"
+									><Badge variant={getRoleBadge(user.role)}>{user.role}</Badge></td
+								>
 								<td class="px-4 py-4">
 									{#if user.active}
 										<Badge variant="success">{$_('admin.users.status.active')}</Badge>
@@ -369,10 +479,15 @@
 									{/if}
 								</td>
 								<td class="px-4 py-4 text-right">
-									<Button variant="ghost" size="sm">
+									<Button variant="ghost" size="sm" onclick={() => openEditUser(user)}>
 										<Pencil class="h-4 w-4" />
 									</Button>
-									<Button variant="ghost" size="sm" class="text-rose-400 hover:text-rose-300">
+									<Button
+										variant="ghost"
+										size="sm"
+										class="text-rose-400 hover:text-rose-300"
+										onclick={() => confirmDelete('user', user.id, user.name)}
+									>
 										<Trash2 class="h-4 w-4" />
 									</Button>
 								</td>
@@ -387,9 +502,9 @@
 	<!-- Connections Tab -->
 	{#if activeTab === 'connections'}
 		<div class="flex justify-end">
-			<Button class="gap-2">
+			<Button class="gap-2" onclick={openAddConnection}>
 				<Plus class="h-4 w-4" />
-				Добавить подключение
+				{$_('admin.connections.addConnection')}
 			</Button>
 		</div>
 
@@ -417,33 +532,45 @@
 
 					<div class="space-y-2 text-sm">
 						<div class="flex items-center justify-between">
-							<span class="text-slate-400">IP адрес</span>
+							<span class="text-slate-400">{$_('admin.connections.ipAddress')}</span>
 							<span class="font-mono text-white">{conn.ip}</span>
 						</div>
 						<div class="flex items-center justify-between">
-							<span class="text-slate-400">Статус</span>
+							<span class="text-slate-400">{$_('admin.connections.status')}</span>
 							{#if conn.status === 'connected'}
-								<Badge variant="success">Подключено</Badge>
+								<Badge variant="success">{$_('admin.connections.connected')}</Badge>
 							{:else}
-								<Badge variant="danger">Отключено</Badge>
+								<Badge variant="danger">{$_('admin.connections.disconnected')}</Badge>
 							{/if}
 						</div>
 					</div>
 
 					<div class="mt-4 flex gap-2">
-						<Button variant="secondary" size="sm" class="flex-1 gap-1">
+						<Button
+							variant="secondary"
+							size="sm"
+							class="flex-1 gap-1"
+							onclick={() => openEditConnection(conn)}
+						>
 							<Settings class="h-3 w-3" />
-							Настроить
+							{$_('admin.connections.configure')}
 						</Button>
-						{#if conn.status === 'connected'}
-							<Button variant="ghost" size="sm" class="text-rose-400">
-								<Power class="h-4 w-4" />
-							</Button>
-						{:else}
-							<Button variant="ghost" size="sm" class="text-emerald-400">
-								<Power class="h-4 w-4" />
-							</Button>
-						{/if}
+						<Button
+							variant="ghost"
+							size="sm"
+							class={conn.status === 'connected' ? 'text-rose-400' : 'text-emerald-400'}
+							onclick={() => toggleConnectionStatus(conn)}
+						>
+							<Power class="h-4 w-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							class="text-rose-400 hover:text-rose-300"
+							onclick={() => confirmDelete('connection', conn.id, conn.name)}
+						>
+							<Trash2 class="h-4 w-4" />
+						</Button>
 					</div>
 				</Card>
 			{/each}
@@ -454,82 +581,241 @@
 			<div class="flex gap-4">
 				<Activity class="h-5 w-5 shrink-0 text-cyan-400" />
 				<div class="text-sm text-slate-300">
-					<p class="mb-2 font-medium">Поддерживаемые протоколы</p>
-					<p class="text-slate-400">
-						Система поддерживает Modbus TCP/RTU, OPC UA, MQTT, REST API. Для подключения к ПЛК
-						Siemens, Allen-Bradley, Schneider Electric и другим контроллерам используйте
-						соответствующий драйвер.
-					</p>
+					<p class="mb-2 font-medium">{$_('admin.connections.supportedProtocols')}</p>
+					<p class="text-slate-400">{$_('admin.connections.protocolsDescription')}</p>
 				</div>
 			</div>
 		</Card>
 	{/if}
 </div>
 
-<!-- Add/Edit Modal -->
-{#if showAddModal}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-		<Card class="w-full max-w-md">
-			<h2 class="mb-4 text-lg font-semibold text-white">
-				{editingEngine ? 'Редактировать двигатель' : 'Добавить двигатель'}
-			</h2>
+<!-- Engine Modal -->
+<Modal
+	open={showEngineModal}
+	title={editingEngine ? $_('admin.engines.editEngine') : $_('admin.engines.addEngine')}
+	onclose={() => (showEngineModal = false)}
+>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleEngineSubmit();
+		}}
+		class="space-y-4"
+	>
+		{#if !editingEngine}
+			<div>
+				<label for="engine-id" class="mb-1 block text-sm font-medium text-slate-300"
+					>{$_('admin.engines.engineId')}</label
+				>
+				<input
+					id="engine-id"
+					type="text"
+					bind:value={engineForm.id}
+					placeholder="gpu-7"
+					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+					required
+				/>
+			</div>
+		{/if}
 
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					handleSubmit();
-				}}
-				class="space-y-4"
+		<div>
+			<label for="engine-model" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.engines.model')}</label
 			>
-				{#if !editingEngine}
-					<div>
-						<label for="engine-id" class="mb-1 block text-sm font-medium text-slate-300"
-							>ID двигателя</label
-						>
-						<input
-							id="engine-id"
-							type="text"
-							bind:value={formData.id}
-							placeholder="gpu-5"
-							class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
-							required
-						/>
-					</div>
-				{/if}
+			<input
+				id="engine-model"
+				type="text"
+				bind:value={engineForm.model}
+				placeholder="Jenbacher JGS 620"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
 
-				<div>
-					<label for="engine-model" class="mb-1 block text-sm font-medium text-slate-300"
-						>Модель</label
-					>
-					<input
-						id="engine-model"
-						type="text"
-						bind:value={formData.model}
-						placeholder="Jenbacher JGS 620"
-						class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
-						required
-					/>
-				</div>
+		<div>
+			<label for="engine-power" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.engines.nominalPower')}</label
+			>
+			<input
+				id="engine-power"
+				type="number"
+				bind:value={engineForm.planned_power_kw}
+				placeholder="3350"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
 
-				<div>
-					<label for="engine-power" class="mb-1 block text-sm font-medium text-slate-300"
-						>Номинальная мощность (кВт)</label
-					>
-					<input
-						id="engine-power"
-						type="number"
-						bind:value={formData.planned_power_kw}
-						placeholder="3350"
-						class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
-						required
-					/>
-				</div>
+		<div class="flex justify-end gap-3 pt-4">
+			<Button type="button" variant="secondary" onclick={() => (showEngineModal = false)}
+				>{$_('common.cancel')}</Button
+			>
+			<Button type="submit">{editingEngine ? $_('common.save') : $_('common.add')}</Button>
+		</div>
+	</form>
+</Modal>
 
-				<div class="flex justify-end gap-3 pt-4">
-					<Button type="button" variant="secondary" onclick={closeModal}>Отмена</Button>
-					<Button type="submit">{editingEngine ? 'Сохранить' : 'Добавить'}</Button>
-				</div>
-			</form>
-		</Card>
+<!-- User Modal -->
+<Modal
+	open={showUserModal}
+	title={editingUser ? $_('admin.users.editUser') : $_('admin.users.addUser')}
+	onclose={() => (showUserModal = false)}
+>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleUserSubmit();
+		}}
+		class="space-y-4"
+	>
+		<div>
+			<label for="user-name" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.users.name')}</label
+			>
+			<input
+				id="user-name"
+				type="text"
+				bind:value={userForm.name}
+				placeholder="Иван Иванов"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
+
+		<div>
+			<label for="user-email" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.users.email')}</label
+			>
+			<input
+				id="user-email"
+				type="email"
+				bind:value={userForm.email}
+				placeholder="user@kastor.io"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
+
+		<div>
+			<label for="user-role" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.users.role')}</label
+			>
+			<select
+				id="user-role"
+				bind:value={userForm.role}
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+			>
+				<option value="Администратор">{$_('admin.users.roles.admin')}</option>
+				<option value="Оператор">{$_('admin.users.roles.operator')}</option>
+				<option value="Техник">{$_('admin.users.roles.technician')}</option>
+				<option value="Наблюдатель">{$_('admin.users.roles.viewer')}</option>
+			</select>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<input
+				id="user-active"
+				type="checkbox"
+				bind:checked={userForm.active}
+				class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-cyan-500 focus:ring-cyan-500"
+			/>
+			<label for="user-active" class="text-sm text-slate-300"
+				>{$_('admin.users.activeAccount')}</label
+			>
+		</div>
+
+		<div class="flex justify-end gap-3 pt-4">
+			<Button type="button" variant="secondary" onclick={() => (showUserModal = false)}
+				>{$_('common.cancel')}</Button
+			>
+			<Button type="submit">{editingUser ? $_('common.save') : $_('common.add')}</Button>
+		</div>
+	</form>
+</Modal>
+
+<!-- Connection Modal -->
+<Modal
+	open={showConnectionModal}
+	title={editingConnection
+		? $_('admin.connections.editConnection')
+		: $_('admin.connections.addConnection')}
+	onclose={() => (showConnectionModal = false)}
+>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleConnectionSubmit();
+		}}
+		class="space-y-4"
+	>
+		<div>
+			<label for="conn-name" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.connections.name')}</label
+			>
+			<input
+				id="conn-name"
+				type="text"
+				bind:value={connectionForm.name}
+				placeholder="PLC Controller"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
+
+		<div>
+			<label for="conn-type" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.connections.protocol')}</label
+			>
+			<select
+				id="conn-type"
+				bind:value={connectionForm.type}
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+			>
+				<option value="Modbus TCP">Modbus TCP</option>
+				<option value="Modbus RTU">Modbus RTU</option>
+				<option value="OPC UA">OPC UA</option>
+				<option value="MQTT">MQTT</option>
+				<option value="REST API">REST API</option>
+			</select>
+		</div>
+
+		<div>
+			<label for="conn-ip" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('admin.connections.ipAddress')}</label
+			>
+			<input
+				id="conn-ip"
+				type="text"
+				bind:value={connectionForm.ip}
+				placeholder="192.168.1.100"
+				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+				required
+			/>
+		</div>
+
+		<div class="flex justify-end gap-3 pt-4">
+			<Button type="button" variant="secondary" onclick={() => (showConnectionModal = false)}
+				>{$_('common.cancel')}</Button
+			>
+			<Button type="submit">{editingConnection ? $_('common.save') : $_('common.add')}</Button>
+		</div>
+	</form>
+</Modal>
+
+<!-- Delete Confirmation Modal -->
+<Modal
+	open={showDeleteConfirm}
+	title={$_('common.confirmDelete')}
+	onclose={() => (showDeleteConfirm = false)}
+	size="sm"
+>
+	<p class="text-slate-300">
+		{$_('common.deleteConfirmMessage', { values: { name: deleteTarget?.name || '' } })}
+	</p>
+	<div class="mt-6 flex justify-end gap-3">
+		<Button variant="secondary" onclick={() => (showDeleteConfirm = false)}
+			>{$_('common.cancel')}</Button
+		>
+		<Button variant="danger" onclick={executeDelete}>{$_('common.delete')}</Button>
 	</div>
-{/if}
+</Modal>

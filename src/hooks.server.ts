@@ -112,16 +112,28 @@ async function createAlertFromTelemetry(
 
 	const titles: Record<string, string> = {
 		temp_exhaust:
-			severity === 'critical' ? 'Critical Exhaust Temperature' : 'High Exhaust Temperature',
-		vibration: severity === 'critical' ? 'Critical Vibration Level' : 'High Vibration Level'
+			severity === 'critical' ? 'Критическая температура выхлопа' : 'Высокая температура выхлопа',
+		vibration: severity === 'critical' ? 'Критическая вибрация' : 'Повышенная вибрация'
 	};
+
+	const metricNames: Record<string, string> = {
+		temp_exhaust: 'Температура выхлопа',
+		vibration: 'Вибрация'
+	};
+
+	const severityLabels: Record<string, string> = {
+		warning: 'предупреждения',
+		critical: 'критический'
+	};
+
+	const metricName = metricNames[metric] || metric;
 
 	await db.insert(alerts).values({
 		engineId,
 		severity,
 		status: 'active',
-		title: titles[metric] || `${metric} Alert`,
-		message: `${metric} value ${actualValue.toFixed(1)} exceeds ${severity} threshold of ${threshold}`,
+		title: titles[metric] || `Алерт: ${metric}`,
+		message: `${metricName}: значение ${actualValue.toFixed(1)} превышает ${severityLabels[severity]} порог ${threshold}`,
 		metric,
 		threshold,
 		actualValue

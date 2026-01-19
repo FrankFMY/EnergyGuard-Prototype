@@ -10,32 +10,47 @@
 	import BarChart3 from 'lucide-svelte/icons/bar-chart-3';
 	import Bell from 'lucide-svelte/icons/bell';
 	import Shield from 'lucide-svelte/icons/shield';
-	import Cable from 'lucide-svelte/icons/cable';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Zap from 'lucide-svelte/icons/zap';
 	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import FileText from 'lucide-svelte/icons/file-text';
-	import Calendar from 'lucide-svelte/icons/calendar';
-	import GitCompare from 'lucide-svelte/icons/git-compare';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import CurrencySwitcher from './CurrencySwitcher.svelte';
 
 	let open = $state(false);
 
-	const navItems = [
-		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
-		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-		{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList },
-		{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
-		{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
-		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
-		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText },
-		{ href: `${base}/calendar`, label: 'nav.calendar', icon: Calendar },
-		{ href: `${base}/comparison`, label: 'nav.comparison', icon: GitCompare },
-		{ href: `${base}/integrations`, label: 'nav.integrations', icon: Cable },
-		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield },
-		{ href: `${base}/settings`, label: 'nav.settings', icon: Settings }
+	// Organized nav sections
+	const navSections = [
+		{
+			title: null, // Primary - no title
+			items: [
+				{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
+				{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell }
+			]
+		},
+		{
+			title: 'nav.operations',
+			items: [
+				{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
+				{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList }
+			]
+		},
+		{
+			title: 'nav.analyticsGroup',
+			items: [
+				{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+				{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
+				{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
+			]
+		},
+		{
+			title: 'nav.system',
+			items: [
+				{ href: `${base}/admin`, label: 'nav.admin', icon: Shield },
+				{ href: `${base}/settings`, label: 'nav.settings', icon: Settings }
+			]
+		}
 	];
 
 	function isActive(href: string) {
@@ -85,7 +100,7 @@
 <!-- Mobile Menu Overlay -->
 {#if open}
 	<div
-		class="animate-fade-in fixed inset-0 z-[9998] bg-slate-950/90 backdrop-blur-md lg:hidden"
+		class="animate-fade-in fixed inset-0 z-overlay bg-slate-950/90 backdrop-blur-md lg:hidden"
 		style="animation-duration: 200ms;"
 		role="button"
 		tabindex="-1"
@@ -96,7 +111,7 @@
 
 	<!-- Mobile Menu Panel -->
 	<nav
-		class="animate-slide-in-left fixed inset-y-0 left-0 z-[9999] flex w-[min(18rem,85vw)] flex-col border-r border-white/10 bg-slate-950 shadow-2xl shadow-black/50 lg:hidden"
+		class="animate-slide-in-left fixed inset-y-0 left-0 z-modal flex w-[min(18rem,85vw)] flex-col border-r border-white/10 bg-slate-950 shadow-2xl shadow-black/50 lg:hidden"
 		style="height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left);"
 		aria-label={$_('nav.mainNavigation')}
 	>
@@ -120,29 +135,40 @@
 		</div>
 
 		<!-- Navigation -->
-		<div class="flex flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain p-4">
-			{#each navItems as item, i (item.href)}
-				{@const Icon = item.icon}
-				{@const active = isActive(item.href)}
-				<a
-					href={item.href}
-					onclick={close}
-					class={cn(
-						'animate-fade-in flex min-h-[48px] items-center gap-3.5 rounded-xl px-4 py-3 text-base font-medium opacity-0 transition-all duration-200',
-						active
-							? 'bg-cyan-500/15 text-cyan-400 ring-1 ring-cyan-500/20'
-							: 'text-slate-300 hover:bg-white/5 hover:text-white active:scale-[0.98] active:bg-white/10'
-					)}
-					style="animation-delay: {i * 40}ms; animation-fill-mode: forwards;"
-					aria-current={active ? 'page' : undefined}
-				>
-					<Icon class={cn('h-5 w-5 shrink-0 transition-transform', active && 'scale-110')} />
-					<span class="flex-1">{$_(item.label)}</span>
-					{#if active}
-						<span class="h-2 w-2 shrink-0 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"
-						></span>
-					{/if}
-				</a>
+		<div class="flex flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-4">
+			{#each navSections as section, sectionIndex (sectionIndex)}
+				{#if section.title}
+					<div class="mt-2 mb-1 px-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+						{$_(section.title)}
+					</div>
+				{/if}
+
+				<div class="flex flex-col gap-1">
+					{#each section.items as item, i (item.href)}
+						{@const Icon = item.icon}
+						{@const active = isActive(item.href)}
+						{@const delay = sectionIndex * 50 + i * 40}
+						<a
+							href={item.href}
+							onclick={close}
+							class={cn(
+								'animate-fade-in flex min-h-[48px] items-center gap-3.5 rounded-xl px-4 py-3 text-base font-medium opacity-0 transition-all duration-200',
+								active
+									? 'bg-cyan-500/15 text-cyan-400 ring-1 ring-cyan-500/20'
+									: 'text-slate-300 hover:bg-white/5 hover:text-white active:scale-[0.98] active:bg-white/10'
+							)}
+							style="animation-delay: {delay}ms; animation-fill-mode: forwards;"
+							aria-current={active ? 'page' : undefined}
+						>
+							<Icon class={cn('h-5 w-5 shrink-0 transition-transform', active && 'scale-110')} />
+							<span class="flex-1">{$_(item.label)}</span>
+							{#if active}
+								<span class="h-2 w-2 shrink-0 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"
+								></span>
+							{/if}
+						</a>
+					{/each}
+				</div>
 			{/each}
 		</div>
 

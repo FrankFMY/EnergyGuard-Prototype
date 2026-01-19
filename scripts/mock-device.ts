@@ -57,7 +57,7 @@ function simulate() {
 			if (cycleTime < 30) {
 				vibration = 2.5 + (cycleTime / 30) * (15 - 2.5); // Ramp to 15 mm/s
 				if (cycleTime === 15) {
-					publishEvent('warning', 'GPU-2: Vibration rising above 10mm/s', 'gpu-2');
+					publishEvent('warning', 'GPU-2: Вибрация превысила 10 мм/с', 'gpu-2');
 				}
 			}
 			// Phase 2: Overheat (30-60s)
@@ -65,7 +65,7 @@ function simulate() {
 				vibration = 15;
 				temp = 480 + ((cycleTime - 30) / 30) * (560 - 480); // Ramp to 560°C
 				if (cycleTime === 45) {
-					publishEvent('error', 'GPU-2: Exhaust Temp Critical (>530°C)', 'gpu-2');
+					publishEvent('error', 'GPU-2: Критическая температура выхлопа (>530°C)', 'gpu-2');
 				}
 			}
 			// Phase 3: Auto-Derating (60-90s)
@@ -74,7 +74,7 @@ function simulate() {
 				temp = 560;
 				power = 1000 - ((cycleTime - 60) / 30) * (1000 - 600); // Drop to 600kW
 				if (cycleTime === 65) {
-					publishEvent('info', 'GPU-2: Auto-derating active to protect engine', 'gpu-2');
+					publishEvent('info', 'GPU-2: Автоснижение мощности для защиты двигателя', 'gpu-2');
 				}
 			}
 			// Phase 4: Recovery (90-120s)
@@ -115,13 +115,13 @@ function simulate() {
 	if (Math.random() < 0.1 && cycleTime % 10 === 0) {
 		const randomEngine = engines[Math.floor(Math.random() * engines.length)];
 		const messages = [
-			'System health check OK',
-			'Data sync completed',
-			'Fuel pump pressure nominal',
-			'Cooling fan cycle started',
-			'Voltage stability confirmed',
-			'Network latency check: 12ms',
-			'Backup battery verified'
+			'Проверка состояния системы: ОК',
+			'Синхронизация данных завершена',
+			'Давление топливного насоса в норме',
+			'Цикл охлаждающего вентилятора запущен',
+			'Стабильность напряжения подтверждена',
+			'Задержка сети: 12мс',
+			'Резервная батарея проверена'
 		];
 		const msg = messages[Math.floor(Math.random() * messages.length)];
 		// Don't associate system messages with a specific engine sometimes

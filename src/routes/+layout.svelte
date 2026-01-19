@@ -15,6 +15,7 @@
 	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import FileText from 'lucide-svelte/icons/file-text';
+	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import CurrencySwitcher from '$lib/components/CurrencySwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
@@ -24,18 +25,40 @@
 
 	const { children } = $props();
 
-	const navItems = [
+	// Primary nav items (always visible)
+	const primaryNavItems = [
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
-		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-		{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList },
-		{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
-		{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
-		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
-		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText },
-		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield }
+		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell }
 	];
 
+	// Grouped nav items with dropdowns
+	const navGroups = [
+		{
+			id: 'operations',
+			label: 'nav.operations',
+			icon: Wrench,
+			items: [
+				{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
+				{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList }
+			]
+		},
+		{
+			id: 'analytics',
+			label: 'nav.analyticsGroup',
+			icon: BarChart3,
+			items: [
+				{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+				{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
+				{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
+			]
+		}
+	];
+
+	// Secondary nav items
+	const secondaryNavItems = [{ href: `${base}/admin`, label: 'nav.admin', icon: Shield }];
+
 	let mounted = $state(false);
+	let openDropdown = $state<string | null>(null);
 
 	// Determine active route
 	function isActive(href: string) {
@@ -46,6 +69,27 @@
 		return currentPath.startsWith(href);
 	}
 
+	// Check if any item in group is active
+	function isGroupActive(items: { href: string }[]) {
+		return items.some((item) => isActive(item.href));
+	}
+
+	function toggleDropdown(id: string) {
+		openDropdown = openDropdown === id ? null : id;
+	}
+
+	function closeDropdowns() {
+		openDropdown = null;
+	}
+
+	// Close dropdown when clicking outside
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		if (!target.closest('.nav-dropdown')) {
+			closeDropdowns();
+		}
+	}
+
 	// Register service worker for PWA
 	onMount(() => {
 		mounted = true;
@@ -54,6 +98,11 @@
 				console.warn('Service worker registration failed:', err);
 			});
 		}
+
+		document.addEventListener('click', handleClickOutside);
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
 	});
 </script>
 
@@ -91,7 +140,7 @@
 			aria-label="Main navigation"
 		>
 			<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
-				<div class="flex items-center gap-3 md:gap-6">
+				<div class="flex items-center gap-3 lg:gap-4">
 					<!-- Mobile Menu -->
 					<MobileNav />
 
@@ -115,24 +164,99 @@
 					</a>
 
 					<!-- Desktop Navigation -->
-					<div class="hidden gap-0.5 lg:flex">
-						{#each navItems as item (item.href)}
+					<div class="hidden items-center gap-1 lg:flex">
+						<!-- Primary Items -->
+						{#each primaryNavItems as item (item.href)}
 							{@const Icon = item.icon}
 							{@const active = isActive(item.href)}
 							<a
 								href={item.href}
 								class={cn(
-									'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+									'relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
 									active
 										? 'bg-cyan-500/10 text-cyan-400'
 										: 'text-slate-400 hover:bg-white/5 hover:text-white'
 								)}
 							>
-								<Icon class={cn('h-4 w-4 transition-transform', active && 'scale-110')} />
+								<Icon class={cn('h-4 w-4 shrink-0', active && 'scale-110')} />
 								<span class="whitespace-nowrap">{$_(item.label)}</span>
 								{#if active}
 									<span
-										class="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-cyan-400"
+										class="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-cyan-400"
+									></span>
+								{/if}
+							</a>
+						{/each}
+
+						<!-- Dropdown Groups -->
+						{#each navGroups as group (group.id)}
+							{@const GroupIcon = group.icon}
+							{@const groupActive = isGroupActive(group.items)}
+							<div class="nav-dropdown relative">
+								<button
+									type="button"
+									onclick={() => toggleDropdown(group.id)}
+									class={cn(
+										'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+										groupActive
+											? 'bg-cyan-500/10 text-cyan-400'
+											: 'text-slate-400 hover:bg-white/5 hover:text-white'
+									)}
+								>
+									<GroupIcon class={cn('h-4 w-4 shrink-0', groupActive && 'scale-110')} />
+									<span class="whitespace-nowrap">{$_(group.label)}</span>
+									<ChevronDown
+										class={cn(
+											'h-3.5 w-3.5 transition-transform duration-200',
+											openDropdown === group.id && 'rotate-180'
+										)}
+									/>
+								</button>
+
+								{#if openDropdown === group.id}
+									<div
+										class="animate-fade-in absolute top-full left-0 z-50 mt-1 min-w-[180px] rounded-lg border border-white/10 bg-slate-900/95 p-1 shadow-xl backdrop-blur-xl"
+									>
+										{#each group.items as item (item.href)}
+											{@const Icon = item.icon}
+											{@const active = isActive(item.href)}
+											<a
+												href={item.href}
+												onclick={closeDropdowns}
+												class={cn(
+													'flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+													active
+														? 'bg-cyan-500/15 text-cyan-400'
+														: 'text-slate-300 hover:bg-white/5 hover:text-white'
+												)}
+											>
+												<Icon class="h-4 w-4 shrink-0" />
+												<span>{$_(item.label)}</span>
+											</a>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/each}
+
+						<!-- Secondary Items (Admin) -->
+						{#each secondaryNavItems as item (item.href)}
+							{@const Icon = item.icon}
+							{@const active = isActive(item.href)}
+							<a
+								href={item.href}
+								class={cn(
+									'relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+									active
+										? 'bg-cyan-500/10 text-cyan-400'
+										: 'text-slate-400 hover:bg-white/5 hover:text-white'
+								)}
+							>
+								<Icon class={cn('h-4 w-4 shrink-0', active && 'scale-110')} />
+								<span class="whitespace-nowrap">{$_(item.label)}</span>
+								{#if active}
+									<span
+										class="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-cyan-400"
 									></span>
 								{/if}
 							</a>
@@ -140,10 +264,10 @@
 					</div>
 				</div>
 
-				<div class="flex items-center gap-3">
+				<div class="flex shrink-0 items-center gap-2 md:gap-3">
 					<!-- System Status -->
 					<div
-						class="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-[11px] leading-none font-medium whitespace-nowrap text-emerald-400 md:flex"
+						class="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1.5 text-[10px] leading-none font-medium whitespace-nowrap text-emerald-400 lg:flex lg:px-3 lg:text-[11px]"
 					>
 						<span class="relative flex h-1.5 w-1.5 shrink-0">
 							<span
@@ -151,7 +275,8 @@
 							></span>
 							<span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
 						</span>
-						{$_('app.systemOnline')}
+						<span class="hidden xl:inline">{$_('app.systemOnline')}</span>
+						<span class="xl:hidden">OK</span>
 					</div>
 
 					<!-- Language Switcher -->

@@ -345,12 +345,14 @@
 		class="max-h-[70vh] space-y-4 overflow-y-auto px-1"
 	>
 		<div>
-			<label for="wo-title" class="mb-1 block text-sm font-medium text-slate-300">Title *</label>
+			<label for="wo-title" class="mb-1 block text-sm font-medium text-slate-300"
+				>{$_('workOrders.form.title')} *</label
+			>
 			<input
 				id="wo-title"
 				type="text"
 				bind:value={newWorkOrder.title}
-				placeholder="Enter work order title"
+				placeholder={$_('workOrders.form.titlePlaceholder')}
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				required
 			/>
@@ -358,12 +360,12 @@
 
 		<div>
 			<label for="wo-description" class="mb-1 block text-sm font-medium text-slate-300"
-				>Description *</label
+				>{$_('workOrders.form.description')} *</label
 			>
 			<textarea
 				id="wo-description"
 				bind:value={newWorkOrder.description}
-				placeholder="Describe the work to be done"
+				placeholder={$_('workOrders.form.descriptionPlaceholder')}
 				rows="3"
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				required
@@ -372,13 +374,15 @@
 
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
-				<label for="wo-engine" class="mb-1 block text-sm font-medium text-slate-300">Engine</label>
+				<label for="wo-engine" class="mb-1 block text-sm font-medium text-slate-300"
+					>{$_('workOrders.form.engine')}</label
+				>
 				<select
 					id="wo-engine"
 					bind:value={newWorkOrder.engine_id}
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 				>
-					<option value="">Not assigned</option>
+					<option value="">{$_('workOrders.form.notAssigned')}</option>
 					<option value="gpu-1">GPU-1</option>
 					<option value="gpu-2">GPU-2</option>
 					<option value="gpu-3">GPU-3</option>
@@ -388,7 +392,7 @@
 
 			<div>
 				<label for="wo-priority" class="mb-1 block text-sm font-medium text-slate-300"
-					>Priority *</label
+					>{$_('workOrders.form.priority')} *</label
 				>
 				<select
 					id="wo-priority"
@@ -396,10 +400,10 @@
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 					required
 				>
-					<option value="low">Low</option>
-					<option value="medium">Medium</option>
-					<option value="high">High</option>
-					<option value="critical">Critical</option>
+					<option value="low">{$_('workOrders.priority.low')}</option>
+					<option value="medium">{$_('workOrders.priority.medium')}</option>
+					<option value="high">{$_('workOrders.priority.high')}</option>
+					<option value="critical">{$_('workOrders.priority.critical')}</option>
 				</select>
 			</div>
 		</div>
@@ -407,19 +411,21 @@
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
 				<label for="wo-assigned" class="mb-1 block text-sm font-medium text-slate-300"
-					>Assigned To</label
+					>{$_('workOrders.form.assignedTo')}</label
 				>
 				<input
 					id="wo-assigned"
 					type="text"
 					bind:value={newWorkOrder.assigned_to}
-					placeholder="Technician name"
+					placeholder={$_('workOrders.form.assignedToPlaceholder')}
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				/>
 			</div>
 
 			<div>
-				<label for="wo-due" class="mb-1 block text-sm font-medium text-slate-300">Due Date</label>
+				<label for="wo-due" class="mb-1 block text-sm font-medium text-slate-300"
+					>{$_('workOrders.form.dueDate')}</label
+				>
 				<input
 					id="wo-due"
 					type="date"
@@ -432,7 +438,7 @@
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
 				<label for="wo-hours" class="mb-1 block text-sm font-medium text-slate-300"
-					>Estimated Hours</label
+					>{$_('workOrders.form.estimatedHours')}</label
 				>
 				<input
 					id="wo-hours"
@@ -446,16 +452,16 @@
 
 			<div>
 				<label for="wo-parts" class="mb-1 block text-sm font-medium text-slate-300"
-					>Parts Required</label
+					>{$_('workOrders.form.partsRequired')}</label
 				>
 				<input
 					id="wo-parts"
 					type="text"
 					bind:value={newWorkOrder.parts_required}
-					placeholder="Oil filter, Spark plugs..."
+					placeholder={$_('workOrders.form.partsPlaceholder')}
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				/>
-				<p class="mt-1 text-xs text-slate-500">Separate with commas</p>
+				<p class="mt-1 text-xs text-slate-500">{$_('workOrders.form.partsHint')}</p>
 			</div>
 		</div>
 	</form>

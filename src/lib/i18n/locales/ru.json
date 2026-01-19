@@ -20,6 +20,9 @@
 		"calendar": "Календарь",
 		"comparison": "Сравнение",
 		"dashboards": "Дашборды",
+		"operations": "Операции",
+		"analyticsGroup": "Аналитика",
+		"system": "Система",
 		"openMenu": "Открыть меню",
 		"closeMenu": "Закрыть меню",
 		"mainNavigation": "Главная навигация"
@@ -192,6 +195,11 @@
 			"warning": "Предупреждение",
 			"critical": "Критический"
 		},
+		"status": {
+			"active": "Активен",
+			"acknowledged": "Подтвержден",
+			"resolved": "Решён"
+		},
 		"noAlerts": "Нет алертов по выбранным фильтрам",
 		"acknowledge": "Подтвердить",
 		"resolve": "Решить",
@@ -210,7 +218,7 @@
 		"last6Hours": "Последние 6 часов",
 		"last24Hours": "Последние 24 часа",
 		"last7Days": "Последние 7 дней",
-		"status": "Статус",
+		"statusLabel": "Статус",
 		"period": "Период",
 		"value": "Значение",
 		"threshold": "Порог",
@@ -244,7 +252,23 @@
 		"unassigned": "Не назначен",
 		"estimated": "Оценка",
 		"start": "Начать",
-		"complete": "Завершить"
+		"complete": "Завершить",
+		"form": {
+			"title": "Название",
+			"titlePlaceholder": "Введите название наряд-заказа",
+			"description": "Описание",
+			"descriptionPlaceholder": "Опишите работы, которые необходимо выполнить",
+			"engine": "Двигатель",
+			"notAssigned": "Не назначен",
+			"priority": "Приоритет",
+			"assignedTo": "Исполнитель",
+			"assignedToPlaceholder": "Имя техника",
+			"dueDate": "Срок выполнения",
+			"estimatedHours": "Оценка времени (часы)",
+			"partsRequired": "Необходимые ЗИП",
+			"partsPlaceholder": "Масляный фильтр, Свечи зажигания...",
+			"partsHint": "Разделяйте запятыми"
+		}
 	},
 	"analytics": {
 		"title": "Бизнес-аналитика",
@@ -313,12 +337,20 @@
 			"addEngine": "Добавить двигатель",
 			"editEngine": "Редактировать двигатель",
 			"deleteEngine": "Удалить двигатель",
-			"confirmDelete": "Вы уверены, что хотите удалить этот двигатель?"
+			"confirmDelete": "Вы уверены, что хотите удалить этот двигатель?",
+			"engineId": "ID двигателя",
+			"model": "Модель",
+			"nominalPower": "Номинальная мощность (кВт)"
 		},
 		"users": {
 			"addUser": "Добавить пользователя",
+			"editUser": "Редактировать пользователя",
 			"editRole": "Изменить роль",
 			"deleteUser": "Удалить пользователя",
+			"name": "Имя",
+			"email": "Email",
+			"role": "Роль",
+			"activeAccount": "Активный аккаунт",
 			"roles": {
 				"admin": "Администратор",
 				"operator": "Оператор",
@@ -335,6 +367,19 @@
 				"status": "Статус",
 				"actions": "Действия"
 			}
+		},
+		"connections": {
+			"addConnection": "Добавить подключение",
+			"editConnection": "Редактировать подключение",
+			"name": "Название",
+			"protocol": "Протокол",
+			"ipAddress": "IP адрес",
+			"status": "Статус",
+			"connected": "Подключено",
+			"disconnected": "Отключено",
+			"configure": "Настроить",
+			"supportedProtocols": "Поддерживаемые протоколы",
+			"protocolsDescription": "Система поддерживает Modbus TCP/RTU, OPC UA, MQTT, REST API. Для подключения к ПЛК Siemens, Allen-Bradley, Schneider Electric и другим контроллерам используйте соответствующий драйвер."
 		}
 	},
 	"auth": {
@@ -508,13 +553,14 @@
 		"view": "Просмотр",
 		"back": "Назад",
 		"next": "Далее",
+		"confirmDelete": "Подтверждение удаления",
+		"deleteConfirmMessage": "Вы уверены, что хотите удалить \"{name}\"? Это действие нельзя отменить.",
 		"previous": "Назад",
 		"submit": "Отправить",
 		"reset": "Сбросить",
 		"clear": "Очистить",
 		"selectAll": "Выбрать все",
 		"noData": "Нет данных",
-		"confirmDelete": "Вы уверены, что хотите удалить этот элемент?",
 		"skipToContent": "Перейти к основному содержимому",
 		"openMenu": "Открыть меню навигации",
 		"closeMenu": "Закрыть меню навигации",

@@ -143,10 +143,12 @@
 				borderColor: '#334155',
 				textStyle: { color: '#f8fafc' }
 			},
-			grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+			grid: { left: '3%', right: '4%', top: '15%', bottom: '3%', containLabel: true },
 			legend: {
 				data: [costLabel, productionLabel],
-				textStyle: { color: '#94a3b8' }
+				textStyle: { color: '#94a3b8' },
+				top: 0,
+				left: 'center'
 			},
 			xAxis: {
 				type: 'category',
