@@ -16,6 +16,9 @@
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import FileText from 'lucide-svelte/icons/file-text';
 	import ChevronDown from 'lucide-svelte/icons/chevron-down';
+	import Calendar from 'lucide-svelte/icons/calendar';
+	import GitCompare from 'lucide-svelte/icons/git-compare';
+	import Cable from 'lucide-svelte/icons/cable';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import CurrencySwitcher from '$lib/components/CurrencySwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
@@ -39,7 +42,8 @@
 			icon: Wrench,
 			items: [
 				{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-				{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList }
+				{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList },
+				{ href: `${base}/calendar`, label: 'nav.calendar', icon: Calendar }
 			]
 		},
 		{
@@ -48,14 +52,24 @@
 			icon: BarChart3,
 			items: [
 				{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+				{ href: `${base}/comparison`, label: 'nav.comparison', icon: GitCompare },
 				{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
 				{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
+			]
+		},
+		{
+			id: 'system',
+			label: 'nav.system',
+			icon: Shield,
+			items: [
+				{ href: `${base}/admin`, label: 'nav.admin', icon: Shield },
+				{ href: `${base}/integrations`, label: 'nav.integrations', icon: Cable }
 			]
 		}
 	];
 
-	// Secondary nav items
-	const secondaryNavItems = [{ href: `${base}/admin`, label: 'nav.admin', icon: Shield }];
+	// Secondary nav items (none needed now, all in groups)
+	const secondaryNavItems: { href: string; label: string; icon: typeof Shield }[] = [];
 
 	let mounted = $state(false);
 	let openDropdown = $state<string | null>(null);

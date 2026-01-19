@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _, isLoading } from 'svelte-i18n';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import Cable from 'lucide-svelte/icons/cable';
@@ -21,7 +22,7 @@
 		{
 			id: 'modbus',
 			name: 'Modbus TCP/RTU',
-			description: 'Промышленный протокол для связи с ПЛК',
+			descKey: 'integrations.sources.modbus',
 			icon: Cable,
 			status: 'connected',
 			devices: 4,
@@ -30,7 +31,7 @@
 		{
 			id: 'opcua',
 			name: 'OPC UA',
-			description: 'Унифицированная архитектура OPC',
+			descKey: 'integrations.sources.opcua',
 			icon: Server,
 			status: 'connected',
 			devices: 2,
@@ -39,7 +40,7 @@
 		{
 			id: 'mqtt',
 			name: 'MQTT Broker',
-			description: 'Легковесный протокол IoT',
+			descKey: 'integrations.sources.mqtt',
 			icon: Wifi,
 			status: 'disconnected',
 			devices: 0,
@@ -48,7 +49,7 @@
 		{
 			id: 'database',
 			name: 'PostgreSQL',
-			description: 'Хранение исторических данных',
+			descKey: 'integrations.sources.database',
 			icon: Database,
 			status: 'connected',
 			devices: 1,
@@ -57,7 +58,7 @@
 		{
 			id: 'cloud',
 			name: 'Cloud Sync',
-			description: 'Синхронизация с облачным хранилищем',
+			descKey: 'integrations.sources.cloud',
 			icon: Cloud,
 			status: 'pending',
 			devices: 0,
@@ -66,18 +67,48 @@
 	];
 
 	const recentData = [
-		{ tag: 'GPU1_TEMP_EXHAUST', value: '485.2', unit: '°C', timestamp: '2 сек назад' },
-		{ tag: 'GPU1_POWER_KW', value: '3128', unit: 'кВт', timestamp: '2 сек назад' },
-		{ tag: 'GPU2_VIBRATION', value: '2.34', unit: 'мм/с', timestamp: '2 сек назад' },
-		{ tag: 'GPU3_GAS_PRESSURE', value: '1.85', unit: 'бар', timestamp: '2 сек назад' },
-		{ tag: 'GPU4_OIL_TEMP', value: '78.5', unit: '°C', timestamp: '3 сек назад' }
+		{
+			id: 'gpu1_exhaust',
+			tagKey: 'integrations.tags.gpu1Exhaust',
+			value: '485.2',
+			unit: '°C',
+			secondsAgo: 2
+		},
+		{
+			id: 'gpu1_power',
+			tagKey: 'integrations.tags.gpu1Power',
+			value: '3128',
+			unitKey: 'units.kw',
+			secondsAgo: 2
+		},
+		{
+			id: 'gpu2_vib',
+			tagKey: 'integrations.tags.gpu2Vibration',
+			value: '2.34',
+			unitKey: 'units.mms',
+			secondsAgo: 2
+		},
+		{
+			id: 'gpu3_pressure',
+			tagKey: 'integrations.tags.gpu3Pressure',
+			value: '1.85',
+			unitKey: 'units.bar',
+			secondsAgo: 2
+		},
+		{
+			id: 'gpu4_oil',
+			tagKey: 'integrations.tags.gpu4OilTemp',
+			value: '78.5',
+			unit: '°C',
+			secondsAgo: 3
+		}
 	];
 
 	const apiEndpoints = [
-		{ method: 'GET', path: '/api/status', description: 'Текущий статус всех двигателей' },
-		{ method: 'GET', path: '/api/history/:id', description: 'История телеметрии двигателя' },
-		{ method: 'GET', path: '/api/events', description: 'SSE поток событий в реальном времени' },
-		{ method: 'POST', path: '/api/telemetry', description: 'Отправка данных телеметрии' }
+		{ method: 'GET', path: '/api/status', descKey: 'integrations.api.statusDesc' },
+		{ method: 'GET', path: '/api/history/:id', descKey: 'integrations.api.historyDesc' },
+		{ method: 'GET', path: '/api/events', descKey: 'integrations.api.eventsDesc' },
+		{ method: 'POST', path: '/api/telemetry', descKey: 'integrations.api.telemetryDesc' }
 	];
 
 	let copiedEndpoint = $state<string | null>(null);
@@ -88,16 +119,16 @@
 		setTimeout(() => (copiedEndpoint = null), 2000);
 	}
 
-	function getStatusBadge(status: string) {
+	function getStatusVariant(status: string): 'success' | 'danger' | 'warning' | 'secondary' {
 		switch (status) {
 			case 'connected':
-				return { variant: 'success' as const, text: 'Подключено' };
+				return 'success';
 			case 'disconnected':
-				return { variant: 'danger' as const, text: 'Отключено' };
+				return 'danger';
 			case 'pending':
-				return { variant: 'warning' as const, text: 'Ожидание' };
+				return 'warning';
 			default:
-				return { variant: 'secondary' as const, text: status };
+				return 'secondary';
 		}
 	}
 </script>
@@ -108,55 +139,63 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<Cable class="h-7 w-7 text-cyan-400" />
-				Интеграции
+				{#if !$isLoading}{$_('integrations.title')}{:else}Интеграции{/if}
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">
-				Подключения к оборудованию, базам данных и внешним системам
+				{#if !$isLoading}{$_('integrations.subtitle')}{:else}Подключения к оборудованию{/if}
 			</p>
 		</div>
 		<Button class="gap-2">
 			<RefreshCw class="h-4 w-4" />
-			Обновить статус
+			{#if !$isLoading}{$_('integrations.refreshStatus')}{:else}Обновить статус{/if}
 		</Button>
 	</div>
 
 	<!-- Stats -->
 	<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
 		<Card>
-			<div class="text-sm text-slate-400">Активных подключений</div>
+			<div class="text-sm text-slate-400">
+				{#if !$isLoading}{$_('integrations.stats.activeConnections')}{:else}Активных подключений{/if}
+			</div>
 			<div class="mt-1 text-2xl font-bold text-emerald-400">3 / 5</div>
 		</Card>
 		<Card>
-			<div class="text-sm text-slate-400">Устройств онлайн</div>
+			<div class="text-sm text-slate-400">
+				{#if !$isLoading}{$_('integrations.stats.devicesOnline')}{:else}Устройств онлайн{/if}
+			</div>
 			<div class="mt-1 text-2xl font-bold text-cyan-400">7</div>
 		</Card>
 		<Card>
-			<div class="text-sm text-slate-400">Точек данных</div>
+			<div class="text-sm text-slate-400">
+				{#if !$isLoading}{$_('integrations.stats.dataPoints')}{:else}Точек данных{/if}
+			</div>
 			<div class="mt-1 text-2xl font-bold text-purple-400">384</div>
 		</Card>
 		<Card>
-			<div class="text-sm text-slate-400">Сообщений/сек</div>
+			<div class="text-sm text-slate-400">
+				{#if !$isLoading}{$_('integrations.stats.messagesPerSec')}{:else}Сообщений/сек{/if}
+			</div>
 			<div class="mt-1 text-2xl font-bold text-amber-400">~250</div>
 		</Card>
 	</div>
 
 	<div class="grid gap-6 lg:grid-cols-3">
 		<!-- Integrations List -->
-		<div class="space-y-4 lg:col-span-2">
+		<div class="flex flex-col gap-4 lg:col-span-2">
 			<h2 class="flex items-center gap-2 text-lg font-semibold text-white">
 				<Server class="h-5 w-5 text-cyan-400" />
-				Источники данных
+				{#if !$isLoading}{$_('integrations.dataSources')}{:else}Источники данных{/if}
 			</h2>
 
 			{#each integrations as integration (integration.id)}
 				{@const Icon = integration.icon}
-				{@const status = getStatusBadge(integration.status)}
+				{@const statusVariant = getStatusVariant(integration.status)}
 				<Card class={cn('transition', integration.status === 'disconnected' && 'opacity-60')}>
 					<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<div class="flex items-center gap-4">
 							<div
 								class={cn(
-									'flex h-12 w-12 items-center justify-center rounded-lg',
+									'flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
 									integration.status === 'connected'
 										? 'bg-cyan-500/20 text-cyan-400'
 										: 'bg-slate-700 text-slate-400'
@@ -164,28 +203,36 @@
 							>
 								<Icon class="h-6 w-6" />
 							</div>
-							<div>
-								<div class="flex items-center gap-3">
+							<div class="min-w-0">
+								<div class="flex flex-wrap items-center gap-2">
 									<h3 class="font-semibold text-white">{integration.name}</h3>
-									<Badge variant={status.variant}>{status.text}</Badge>
+									<Badge variant={statusVariant}>
+										{#if !$isLoading}{$_(
+												`integrations.status.${integration.status}`
+											)}{:else}{integration.status}{/if}
+									</Badge>
 								</div>
-								<p class="text-sm text-slate-400">{integration.description}</p>
+								<p class="text-sm text-slate-400">
+									{#if !$isLoading}{$_(integration.descKey)}{:else}—{/if}
+								</p>
 								{#if integration.devices > 0}
 									<p class="mt-1 text-xs text-slate-500">
-										{integration.devices} устройств • {integration.dataPoints} точек данных
+										{integration.devices}
+										{#if !$isLoading}{$_('integrations.devices')}{:else}устройств{/if} • {integration.dataPoints}
+										{#if !$isLoading}{$_('integrations.dataPointsLabel')}{:else}точек данных{/if}
 									</p>
 								{/if}
 							</div>
 						</div>
-						<div class="flex items-center gap-2">
+						<div class="flex shrink-0 items-center gap-2">
 							<Button variant="secondary" size="sm" class="gap-1">
 								<Settings class="h-3 w-3" />
-								Настройки
+								{#if !$isLoading}{$_('integrations.settings')}{:else}Настройки{/if}
 							</Button>
 							{#if integration.status === 'disconnected'}
 								<Button size="sm" class="gap-1">
 									<Play class="h-3 w-3" />
-									Подключить
+									{#if !$isLoading}{$_('integrations.connect')}{:else}Подключить{/if}
 								</Button>
 							{/if}
 						</div>
@@ -195,13 +242,13 @@
 		</div>
 
 		<!-- Live Data Feed -->
-		<div class="space-y-4">
+		<div class="flex flex-col gap-4">
 			<h2 class="flex items-center gap-2 text-lg font-semibold text-white">
 				<Activity class="h-5 w-5 text-emerald-400" />
-				Поток данных
+				{#if !$isLoading}{$_('integrations.dataStream')}{:else}Поток данных{/if}
 			</h2>
 
-			<Card class="p-0">
+			<Card class="flex flex-1 flex-col overflow-hidden p-0">
 				<div class="border-b border-white/5 bg-slate-900/50 px-4 py-2">
 					<span class="flex items-center gap-2 text-xs text-slate-400">
 						<span class="relative flex h-2 w-2">
@@ -210,19 +257,30 @@
 							></span>
 							<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
 						</span>
-						Live Feed
+						{#if !$isLoading}{$_('integrations.liveFeed')}{:else}Прямой эфир{/if}
 					</span>
 				</div>
-				<div class="max-h-80 divide-y divide-white/5 overflow-y-auto">
-					{#each recentData as data (data.tag)}
+				<div class="flex-1 divide-y divide-white/5 overflow-y-auto">
+					{#each recentData as data (data.id)}
 						<div class="px-4 py-3 transition hover:bg-white/5">
 							<div class="flex items-center justify-between">
-								<span class="font-mono text-xs text-cyan-400">{data.tag}</span>
-								<span class="text-xs text-slate-500">{data.timestamp}</span>
+								<span class="text-xs font-medium text-cyan-400">
+									{#if !$isLoading}{$_(data.tagKey)}{:else}—{/if}
+								</span>
+								<span class="text-xs text-slate-500">
+									{data.secondsAgo}
+									{#if !$isLoading}{$_('integrations.secAgo')}{:else}сек назад{/if}
+								</span>
 							</div>
 							<div class="mt-1 flex items-baseline gap-1">
 								<span class="text-lg font-bold text-white">{data.value}</span>
-								<span class="text-sm text-slate-400">{data.unit}</span>
+								<span class="text-sm text-slate-400">
+									{#if data.unitKey}
+										{#if !$isLoading}{$_(data.unitKey)}{:else}{data.unitKey}{/if}
+									{:else}
+										{data.unit}
+									{/if}
+								</span>
 							</div>
 						</div>
 					{/each}
@@ -266,7 +324,9 @@
 						</Button>
 					</div>
 					<div class="mb-1 font-mono text-xs break-all text-cyan-400">{endpoint.path}</div>
-					<div class="text-sm text-slate-400">{endpoint.description}</div>
+					<div class="text-sm text-slate-400">
+						{#if !$isLoading}{$_(endpoint.descKey)}{:else}—{/if}
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -276,13 +336,15 @@
 			<table class="w-full">
 				<thead>
 					<tr class="border-b border-white/5">
-						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">Метод</th>
-						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase"
-							>Endpoint</th
-						>
-						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase"
-							>Описание</th
-						>
+						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">
+							{#if !$isLoading}{$_('integrations.api.method')}{:else}Метод{/if}
+						</th>
+						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">
+							Endpoint
+						</th>
+						<th class="px-4 py-2 text-left text-xs font-medium text-slate-400 uppercase">
+							{#if !$isLoading}{$_('integrations.api.description')}{:else}Описание{/if}
+						</th>
 						<th class="px-4 py-2 text-right text-xs font-medium text-slate-400 uppercase"></th>
 					</tr>
 				</thead>
@@ -301,7 +363,9 @@
 								</Badge>
 							</td>
 							<td class="px-4 py-3 font-mono text-sm text-cyan-400">{endpoint.path}</td>
-							<td class="px-4 py-3 text-sm text-slate-400">{endpoint.description}</td>
+							<td class="px-4 py-3 text-sm text-slate-400">
+								{#if !$isLoading}{$_(endpoint.descKey)}{:else}—{/if}
+							</td>
 							<td class="px-4 py-3 text-right">
 								<Button
 									variant="ghost"
@@ -329,7 +393,7 @@
 			</Button>
 			<Button variant="ghost" class="gap-2">
 				<ExternalLink class="h-4 w-4" />
-				Документация
+				{#if !$isLoading}{$_('integrations.documentation')}{:else}Документация{/if}
 			</Button>
 		</div>
 	</Card>
@@ -339,12 +403,19 @@
 		<div class="flex gap-4">
 			<Cpu class="h-5 w-5 shrink-0 text-emerald-400" />
 			<div class="text-sm text-slate-300">
-				<p class="mb-2 font-medium">Совместимое оборудование</p>
+				<p class="mb-2 font-medium">
+					{#if !$isLoading}{$_('integrations.compatibleEquipment')}{:else}Совместимое оборудование{/if}
+				</p>
 				<p class="text-slate-400">
-					<strong class="text-white">ПЛК:</strong> Siemens S7-300/400/1200/1500, Allen-Bradley
-					ControlLogix/CompactLogix, Schneider Electric M340/M580, ОВЕН ПЛК, Delta DVP<br />
+					<strong class="text-white"
+						>{#if !$isLoading}{$_('integrations.plc')}{:else}ПЛК{/if}:</strong
+					>
+					Siemens S7-300/400/1200/1500, Allen-Bradley ControlLogix/CompactLogix, Schneider Electric M340/M580,
+					ОВЕН ПЛК, Delta DVP<br />
 					<strong class="text-white">SCADA:</strong> Wonderware, Ignition, WinCC, Genesis64<br />
-					<strong class="text-white">Газопоршневые:</strong> Jenbacher, MWM, Caterpillar, Wärtsilä, MTU
+					<strong class="text-white"
+						>{#if !$isLoading}{$_('integrations.gasEngines')}{:else}Газопоршневые{/if}:</strong
+					> Jenbacher, MWM, Caterpillar, Wärtsilä, MTU
 				</p>
 			</div>
 		</div>

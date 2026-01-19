@@ -45,6 +45,7 @@
 		}
 
 		const selected = engines.filter((e) => selectedEngines.includes(e.id));
+		const isMobile = window.innerWidth < 640;
 
 		chartInstance?.setOption({
 			tooltip: {
@@ -56,22 +57,40 @@
 			},
 			legend: {
 				data: selected.map((e) => e.id.toUpperCase()),
-				textStyle: { color: '#94a3b8' }
+				textStyle: { color: '#94a3b8' },
+				top: 0
 			},
-			grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+			grid: {
+				left: isMobile ? '8%' : '3%',
+				right: '4%',
+				bottom: isMobile ? '15%' : '3%',
+				top: '15%',
+				containLabel: true
+			},
 			xAxis: {
 				type: 'category',
-				data: [
-					$_('comparison.powerOutput'),
-					$_('engine.temp'),
-					$_('engine.vibration'),
-					$_('engine.efficiency')
-				],
-				axisLabel: { color: '#64748b' }
+				data: isMobile
+					? [
+							$_('comparison.powerShort'),
+							$_('comparison.tempShort'),
+							$_('comparison.vibShort'),
+							$_('comparison.effShort')
+						]
+					: [
+							$_('comparison.powerOutput'),
+							$_('engine.temp'),
+							$_('engine.vibration'),
+							$_('engine.efficiency')
+						],
+				axisLabel: {
+					color: '#64748b',
+					rotate: isMobile ? 30 : 0,
+					fontSize: isMobile ? 10 : 12
+				}
 			},
 			yAxis: {
 				type: 'value',
-				axisLabel: { color: '#64748b' },
+				axisLabel: { color: '#64748b', fontSize: isMobile ? 10 : 12 },
 				splitLine: { lineStyle: { color: '#1e293b' } }
 			},
 			series: selected.map((engine, i) => ({
@@ -85,7 +104,8 @@
 				],
 				itemStyle: {
 					color: ['#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'][i % 4]
-				}
+				},
+				barMaxWidth: isMobile ? 30 : 50
 			}))
 		});
 	}
@@ -115,6 +135,8 @@
 
 	function handleResize() {
 		chartInstance?.resize();
+		// Redraw chart with new mobile/desktop settings
+		updateChart();
 	}
 
 	const selectedEngineData = $derived(engines.filter((e) => selectedEngines.includes(e.id)));
@@ -134,17 +156,17 @@
 	<div>
 		<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 			<BarChart class="h-7 w-7 text-cyan-400" />
-			{#if !$isLoading}{$_('comparison.title')}{:else}Engine Comparison{/if}
+			{#if !$isLoading}{$_('comparison.title')}{:else}Сравнение двигателей{/if}
 		</h1>
 		<p class="mt-1 text-sm text-slate-400">
-			{#if !$isLoading}{$_('comparison.subtitle')}{:else}Compare performance metrics across engines{/if}
+			{#if !$isLoading}{$_('comparison.subtitle')}{:else}Сравнение метрик производительности{/if}
 		</p>
 	</div>
 
 	<!-- Engine Selection -->
 	<Card class="p-4">
 		<div class="mb-3 text-sm text-slate-400">
-			{#if !$isLoading}{$_('comparison.selectEngines')}{:else}Select engines to compare (max 4){/if}:
+			{#if !$isLoading}{$_('comparison.selectEngines')}{:else}Выберите двигатели (макс 4){/if}:
 		</div>
 		<div class="flex flex-wrap gap-2">
 			{#each engines as engine (engine.id)}
@@ -172,25 +194,108 @@
 	<!-- Comparison Chart -->
 	<Card>
 		<h3 class="mb-4 text-lg font-semibold text-white">
-			{#if !$isLoading}{$_('comparison.performanceComparison')}{:else}Performance Comparison{/if}
+			{#if !$isLoading}{$_('comparison.performanceComparison')}{:else}Сравнение производительности{/if}
 		</h3>
-		<div class="h-80 w-full" bind:this={chartContainer}></div>
+		<div class="h-64 w-full sm:h-80" bind:this={chartContainer}></div>
 	</Card>
 
-	<!-- Metrics Table -->
-	<Card class="overflow-hidden p-0">
+	<!-- Metrics - Mobile Card View -->
+	<div class="space-y-4 md:hidden">
+		<h3 class="text-lg font-semibold text-white">
+			{#if !$isLoading}{$_('comparison.metrics')}{:else}Метрики{/if}
+		</h3>
+		{#each selectedEngineData as engine (engine.id)}
+			<Card class="p-4">
+				<h4 class="mb-3 text-lg font-bold text-cyan-400">{engine.id.toUpperCase()}</h4>
+				<div class="grid grid-cols-2 gap-3">
+					<div class="rounded-lg bg-slate-800/50 p-3">
+						<div class="mb-1 flex items-center gap-2 text-xs text-slate-400">
+							<Activity class="h-3 w-3 text-cyan-400" />
+							{#if !$isLoading}{$_('comparison.powerOutput')}{:else}Мощность{/if}
+						</div>
+						<div class="font-mono text-lg text-white">
+							{engine.power_kw.toFixed(0)}
+							{$_('units.kw')}
+						</div>
+					</div>
+					<div class="rounded-lg bg-slate-800/50 p-3">
+						<div class="mb-1 flex items-center gap-2 text-xs text-slate-400">
+							<Thermometer class="h-3 w-3 text-rose-400" />
+							{#if !$isLoading}{$_('comparison.exhaustTemp')}{:else}Температура{/if}
+						</div>
+						<div class="font-mono text-lg {engine.temp > 500 ? 'text-rose-400' : 'text-white'}">
+							{engine.temp.toFixed(0)}{$_('units.celsius')}
+						</div>
+					</div>
+					<div class="rounded-lg bg-slate-800/50 p-3">
+						<div class="mb-1 flex items-center gap-2 text-xs text-slate-400">
+							<Gauge class="h-3 w-3 text-amber-400" />
+							{#if !$isLoading}{$_('engine.vibration')}{:else}Вибрация{/if}
+						</div>
+						<div class="font-mono text-lg {engine.vibration > 8 ? 'text-amber-400' : 'text-white'}">
+							{engine.vibration.toFixed(1)}
+							{$_('units.mms')}
+						</div>
+					</div>
+					<div class="rounded-lg bg-slate-800/50 p-3">
+						<div class="mb-1 flex items-center gap-2 text-xs text-slate-400">
+							<Zap class="h-3 w-3 text-emerald-400" />
+							{#if !$isLoading}{$_('comparison.profitability')}{:else}Прибыль{/if}
+						</div>
+						<div
+							class="font-mono text-lg {engine.profit_rate > 0
+								? 'text-emerald-400'
+								: 'text-rose-400'}"
+						>
+							{engine.profit_rate > 0 ? '+' : ''}{engine.profit_rate.toFixed(0)}
+						</div>
+					</div>
+				</div>
+			</Card>
+		{/each}
+
+		<!-- Fleet Average Card Mobile -->
+		<Card class="border-slate-700 bg-slate-800/30 p-4">
+			<h4 class="mb-3 text-sm font-semibold text-slate-400">
+				{#if !$isLoading}{$_('comparison.fleetAvg')}{:else}Среднее по парку{/if}
+			</h4>
+			<div class="grid grid-cols-3 gap-2 text-center">
+				<div>
+					<div class="text-xs text-slate-500">
+						{#if !$isLoading}{$_('comparison.powerShort')}{:else}Мощн.{/if}
+					</div>
+					<div class="font-mono text-sm text-slate-300">{fleetAverage.power.toFixed(0)}</div>
+				</div>
+				<div>
+					<div class="text-xs text-slate-500">
+						{#if !$isLoading}{$_('comparison.tempShort')}{:else}Темп.{/if}
+					</div>
+					<div class="font-mono text-sm text-slate-300">{fleetAverage.temp.toFixed(0)}°</div>
+				</div>
+				<div>
+					<div class="text-xs text-slate-500">
+						{#if !$isLoading}{$_('comparison.vibShort')}{:else}Вибр.{/if}
+					</div>
+					<div class="font-mono text-sm text-slate-300">{fleetAverage.vibration.toFixed(1)}</div>
+				</div>
+			</div>
+		</Card>
+	</div>
+
+	<!-- Metrics Table - Desktop -->
+	<Card class="hidden overflow-hidden p-0 md:block">
 		<div class="overflow-x-auto">
 			<table class="w-full text-left text-sm">
 				<thead class="border-b border-white/5 bg-slate-800/50">
 					<tr>
 						<th class="p-4 font-semibold text-slate-300">
-							{#if !$isLoading}{$_('comparison.metric')}{:else}Metric{/if}
+							{#if !$isLoading}{$_('comparison.metric')}{:else}Метрика{/if}
 						</th>
 						{#each selectedEngineData as engine (engine.id)}
 							<th class="p-4 font-semibold text-slate-300">{engine.id.toUpperCase()}</th>
 						{/each}
 						<th class="p-4 font-semibold text-slate-400">
-							{#if !$isLoading}{$_('comparison.fleetAvg')}{:else}Fleet Avg{/if}
+							{#if !$isLoading}{$_('comparison.fleetAvg')}{:else}Среднее{/if}
 						</th>
 					</tr>
 				</thead>
@@ -199,7 +304,7 @@
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Activity class="h-4 w-4 text-cyan-400" />
-								{#if !$isLoading}{$_('comparison.powerOutput')}{:else}Power Output{/if}
+								{#if !$isLoading}{$_('comparison.powerOutput')}{:else}Выходная мощность{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
@@ -214,7 +319,7 @@
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Thermometer class="h-4 w-4 text-rose-400" />
-								{#if !$isLoading}{$_('comparison.exhaustTemp')}{:else}Exhaust Temp{/if}
+								{#if !$isLoading}{$_('comparison.exhaustTemp')}{:else}Температура выхлопа{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
@@ -230,7 +335,7 @@
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Gauge class="h-4 w-4 text-amber-400" />
-								{#if !$isLoading}{$_('engine.vibration')}{:else}Vibration{/if}
+								{#if !$isLoading}{$_('engine.vibration')}{:else}Вибрация{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
@@ -247,7 +352,7 @@
 						<td class="p-4">
 							<div class="flex items-center gap-2 text-slate-300">
 								<Zap class="h-4 w-4 text-emerald-400" />
-								{#if !$isLoading}{$_('comparison.profitability')}{:else}Profitability{/if}
+								{#if !$isLoading}{$_('comparison.profitability')}{:else}Рентабельность{/if}
 							</div>
 						</td>
 						{#each selectedEngineData as engine (engine.id)}
@@ -273,14 +378,14 @@
 	<!-- Ranking -->
 	<Card>
 		<h3 class="mb-4 text-lg font-semibold text-white">
-			{#if !$isLoading}{$_('comparison.efficiencyRanking')}{:else}Efficiency Ranking{/if}
+			{#if !$isLoading}{$_('comparison.efficiencyRanking')}{:else}Рейтинг эффективности{/if}
 		</h3>
 		<div class="space-y-3">
 			{#each [...engines].sort((a, b) => b.profit_rate - a.profit_rate) as engine, i (engine.id)}
-				<div class="flex items-center gap-4 rounded-lg bg-slate-800/50 p-3">
+				<div class="flex items-center gap-3 rounded-lg bg-slate-800/50 p-3 sm:gap-4">
 					<div
 						class={cn(
-							'flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold',
+							'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm',
 							i === 0
 								? 'bg-amber-500 text-black'
 								: i === 1
@@ -292,14 +397,14 @@
 					>
 						{i + 1}
 					</div>
-					<div class="flex-1">
+					<div class="min-w-0 flex-1">
 						<div class="font-medium text-white">{engine.id.toUpperCase()}</div>
-						<div class="text-xs text-slate-400">{engine.model}</div>
+						<div class="truncate text-xs text-slate-400">{engine.model}</div>
 					</div>
 					<div class="text-right">
-						<div class="font-mono text-lg text-emerald-400">
+						<div class="font-mono text-base text-emerald-400 sm:text-lg">
 							+{engine.profit_rate.toFixed(0)}
-							{$_('units.rubPerHour')}
+							<span class="hidden sm:inline">{$_('units.rubPerHour')}</span>
 						</div>
 						<div class="text-xs text-slate-500">{engine.power_kw.toFixed(0)} {$_('units.kw')}</div>
 					</div>

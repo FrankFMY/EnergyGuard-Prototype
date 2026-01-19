@@ -15,6 +15,9 @@
 	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import FileText from 'lucide-svelte/icons/file-text';
+	import Calendar from 'lucide-svelte/icons/calendar';
+	import GitCompare from 'lucide-svelte/icons/git-compare';
+	import Cable from 'lucide-svelte/icons/cable';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import CurrencySwitcher from './CurrencySwitcher.svelte';
 
@@ -33,13 +36,15 @@
 			title: 'nav.operations',
 			items: [
 				{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-				{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList }
+				{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList },
+				{ href: `${base}/calendar`, label: 'nav.calendar', icon: Calendar }
 			]
 		},
 		{
 			title: 'nav.analyticsGroup',
 			items: [
 				{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+				{ href: `${base}/comparison`, label: 'nav.comparison', icon: GitCompare },
 				{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
 				{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
 			]
@@ -48,6 +53,7 @@
 			title: 'nav.system',
 			items: [
 				{ href: `${base}/admin`, label: 'nav.admin', icon: Shield },
+				{ href: `${base}/integrations`, label: 'nav.integrations', icon: Cable },
 				{ href: `${base}/settings`, label: 'nav.settings', icon: Settings }
 			]
 		}
