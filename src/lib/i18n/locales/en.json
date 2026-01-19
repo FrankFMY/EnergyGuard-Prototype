@@ -220,6 +220,7 @@
 	},
 	"workOrders": {
 		"title": "Work Orders",
+		"subtitle": "Manage maintenance tasks and assignments",
 		"create": "Create Work Order",
 		"status": {
 			"open": "Open",
@@ -233,9 +234,17 @@
 			"high": "High",
 			"critical": "Critical"
 		},
+		"stats": {
+			"total": "Total"
+		},
 		"assignedTo": "Assigned To",
-		"dueDate": "Due Date",
-		"noWorkOrders": "No work orders found"
+		"dueDate": "Due",
+		"noWorkOrders": "No work orders found",
+		"overdue": "Overdue",
+		"unassigned": "Unassigned",
+		"estimated": "Est",
+		"start": "Start",
+		"complete": "Complete"
 	},
 	"analytics": {
 		"title": "Business Analytics",
@@ -527,6 +536,11 @@
 		"exhaustTemp": "Exhaust Temperature",
 		"lostRevenuePerHour": "Lost Revenue per Hour",
 		"powerDeficit": "Power Deficit",
-		"title": "Demo: Gas Quality Impact"
+		"title": "Demo: Gas Quality Impact",
+		"subtitle": "Interactive simulation demonstrating the impact of gas quality on engine performance and financial results.",
+		"engineeringModel": "Engineering Model",
+		"engineeringModelDesc": "This simulation uses a polynomial regression model based on Jenbacher J420 technical data. It accounts for methane number variations and their direct effect on thermodynamic efficiency.",
+		"financialImpact": "Financial Impact",
+		"financialImpactDesc": "Losses are calculated in real-time based on the current market tariff and the deficit between nominal and actual power output. This highlights the business risk of using low-quality fuel."
 	}
 }

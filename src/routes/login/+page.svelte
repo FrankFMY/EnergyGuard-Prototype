@@ -131,7 +131,9 @@
 						/>
 						Remember me
 					</label>
-					<a href="/forgot-password" class="text-cyan-400 hover:underline">Forgot password?</a>
+					<span class="cursor-not-allowed text-slate-500" title="Contact administrator"
+						>Forgot password?</span
+					>
 				</div>
 
 				<Button type="submit" class="w-full" disabled={loading} {loading}>

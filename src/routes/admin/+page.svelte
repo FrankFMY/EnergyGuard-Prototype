@@ -147,6 +147,7 @@
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">{$_('admin.subtitle')}</p>
 		</div>
+		<Badge variant="warning" class="self-start sm:self-auto">Demo Mode</Badge>
 	</div>
 
 	<!-- Tabs - Scrollable on mobile -->
@@ -179,6 +180,9 @@
 			>
 				<Users class="h-4 w-4" />
 				<span class="whitespace-nowrap">{$_('admin.tabs.users')}</span>
+				<span class="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
+					>Demo</span
+				>
 			</button>
 			<button
 				type="button"
@@ -192,6 +196,9 @@
 			>
 				<Link class="h-4 w-4" />
 				<span class="whitespace-nowrap">{$_('admin.tabs.connections')}</span>
+				<span class="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
+					>Demo</span
+				>
 			</button>
 		</div>
 	</div>

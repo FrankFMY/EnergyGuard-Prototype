@@ -1,20 +1,75 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { Card, Button } from '$lib/components/ui/index.js';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Bell from 'lucide-svelte/icons/bell';
 	import Monitor from 'lucide-svelte/icons/monitor';
 	import Save from 'lucide-svelte/icons/save';
+	import Check from 'lucide-svelte/icons/check';
+
+	const STORAGE_KEY = 'kastor_settings';
 
 	let emailNotifications = $state(true);
 	let smsNotifications = $state(false);
 	let pushNotifications = $state(true);
 	let refreshRate = $state(2);
 	let language = $state('ru');
+	let saveStatus = $state<'idle' | 'saving' | 'saved'>('idle');
+	let lastSavedTime = $state<string | null>(null);
+
+	// Load settings from localStorage on mount
+	onMount(() => {
+		const stored = localStorage.getItem(STORAGE_KEY);
+		if (stored) {
+			try {
+				const settings = JSON.parse(stored);
+				emailNotifications = settings.emailNotifications ?? true;
+				smsNotifications = settings.smsNotifications ?? false;
+				pushNotifications = settings.pushNotifications ?? true;
+				refreshRate = settings.refreshRate ?? 2;
+				language = settings.language ?? 'ru';
+				lastSavedTime = settings.savedAt ?? null;
+			} catch {
+				// Ignore parse errors, use defaults
+			}
+		}
+	});
 
 	function saveSettings() {
-		// Mock save
-		alert('Settings saved successfully!');
+		saveStatus = 'saving';
+
+		const settings = {
+			emailNotifications,
+			smsNotifications,
+			pushNotifications,
+			refreshRate,
+			language,
+			savedAt: new Date().toISOString()
+		};
+
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+		lastSavedTime = settings.savedAt;
+
+		// Show saved status briefly
+		setTimeout(() => {
+			saveStatus = 'saved';
+			setTimeout(() => {
+				saveStatus = 'idle';
+			}, 2000);
+		}, 300);
+	}
+
+	function formatLastSaved(isoString: string | null): string {
+		if (!isoString) return $_('settings.justNow');
+		const date = new Date(isoString);
+		const now = new Date();
+		const diffMs = now.getTime() - date.getTime();
+		const diffMins = Math.floor(diffMs / 60000);
+
+		if (diffMins < 1) return $_('settings.justNow');
+		if (diffMins < 60) return `${diffMins} ${$_('alerts.minutesAgo')}`;
+		return date.toLocaleTimeString();
 	}
 </script>
 
@@ -167,10 +222,22 @@
 	<div
 		class="flex items-center justify-end gap-4 rounded-xl border border-white/5 bg-slate-900/50 p-4"
 	>
-		<span class="text-sm text-slate-500">{$_('settings.lastSaved')}: {$_('settings.justNow')}</span>
-		<Button onclick={saveSettings} class="gap-2">
-			<Save class="h-4 w-4" />
-			{$_('settings.saveChanges')}
+		<span class="text-sm text-slate-500"
+			>{$_('settings.lastSaved')}: {formatLastSaved(lastSavedTime)}</span
+		>
+		<Button onclick={saveSettings} class="gap-2" disabled={saveStatus === 'saving'}>
+			{#if saveStatus === 'saved'}
+				<Check class="h-4 w-4 text-emerald-400" />
+				<span class="text-emerald-400">{$_('settings.saved')}</span>
+			{:else if saveStatus === 'saving'}
+				<div
+					class="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white"
+				></div>
+				{$_('common.loading')}
+			{:else}
+				<Save class="h-4 w-4" />
+				{$_('settings.saveChanges')}
+			{/if}
 		</Button>
 	</div>
 </div>

@@ -12,6 +12,9 @@
 	import Bell from 'lucide-svelte/icons/bell';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Shield from 'lucide-svelte/icons/shield';
+	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
+	import DollarSign from 'lucide-svelte/icons/dollar-sign';
+	import FileText from 'lucide-svelte/icons/file-text';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import CurrencySwitcher from '$lib/components/CurrencySwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
@@ -24,8 +27,11 @@
 	const navItems = [
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
 		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
+		{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList },
 		{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+		{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
 		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
+		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText },
 		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield }
 	];
 

@@ -25,8 +25,7 @@
 				{$_('demo.title')}
 			</h1>
 			<p class="mt-2 text-slate-400">
-				Interactive simulation demonstrating the impact of gas quality on engine performance and
-				financial results.
+				{$_('demo.subtitle')}
 			</p>
 		</div>
 	</div>
@@ -37,19 +36,15 @@
 	<!-- Info Section -->
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div class="rounded-xl border border-slate-800 bg-slate-900/30 p-6">
-			<h3 class="mb-3 font-semibold text-white">Engineering Model</h3>
+			<h3 class="mb-3 font-semibold text-white">{$_('demo.engineeringModel')}</h3>
 			<p class="text-sm leading-relaxed text-slate-400">
-				This simulation uses a polynomial regression model based on Jenbacher J420 technical data.
-				It accounts for methane number variations and their direct effect on thermodynamic
-				efficiency.
+				{$_('demo.engineeringModelDesc')}
 			</p>
 		</div>
 		<div class="rounded-xl border border-slate-800 bg-slate-900/30 p-6">
-			<h3 class="mb-3 font-semibold text-white">Financial Impact</h3>
+			<h3 class="mb-3 font-semibold text-white">{$_('demo.financialImpact')}</h3>
 			<p class="text-sm leading-relaxed text-slate-400">
-				Losses are calculated in real-time based on the current market tariff and the deficit
-				between nominal and actual power output. This highlights the business risk of using
-				low-quality fuel.
+				{$_('demo.financialImpactDesc')}
 			</p>
 		</div>
 	</div>

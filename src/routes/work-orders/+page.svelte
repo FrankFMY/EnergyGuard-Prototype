@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
+	import { _ } from 'svelte-i18n';
 	import { Card, Badge, Button, Modal } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
@@ -141,13 +142,13 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<ClipboardList class="h-7 w-7 text-cyan-400" />
-				Work Orders
+				{$_('workOrders.title')}
 			</h1>
-			<p class="mt-1 text-sm text-slate-400">Manage maintenance tasks and assignments</p>
+			<p class="mt-1 text-sm text-slate-400">{$_('workOrders.subtitle')}</p>
 		</div>
 		<Button class="gap-2" onclick={() => (showCreateModal = true)}>
 			<Plus class="h-4 w-4" />
-			New Work Order
+			{$_('workOrders.create')}
 		</Button>
 	</div>
 
@@ -161,7 +162,7 @@
 			}}
 		>
 			<div class="text-3xl font-bold text-white">{stats.total}</div>
-			<div class="text-xs text-slate-400">Total</div>
+			<div class="text-xs text-slate-400">{$_('workOrders.stats.total')}</div>
 		</Card>
 		<Card
 			class="cursor-pointer text-center transition hover:bg-white/5"
@@ -171,7 +172,7 @@
 			}}
 		>
 			<div class="text-3xl font-bold text-blue-400">{stats.open}</div>
-			<div class="text-xs text-slate-400">Open</div>
+			<div class="text-xs text-slate-400">{$_('workOrders.status.open')}</div>
 		</Card>
 		<Card
 			class="cursor-pointer text-center transition hover:bg-white/5"
@@ -181,7 +182,7 @@
 			}}
 		>
 			<div class="text-3xl font-bold text-amber-400">{stats.in_progress}</div>
-			<div class="text-xs text-slate-400">In Progress</div>
+			<div class="text-xs text-slate-400">{$_('workOrders.status.in_progress')}</div>
 		</Card>
 		<Card
 			class="cursor-pointer text-center transition hover:bg-white/5"
@@ -191,11 +192,11 @@
 			}}
 		>
 			<div class="text-3xl font-bold text-emerald-400">{stats.completed}</div>
-			<div class="text-xs text-slate-400">Completed</div>
+			<div class="text-xs text-slate-400">{$_('workOrders.status.completed')}</div>
 		</Card>
 		<Card class="text-center">
 			<div class="text-3xl font-bold text-rose-400">{stats.critical}</div>
-			<div class="text-xs text-slate-400">Critical</div>
+			<div class="text-xs text-slate-400">{$_('workOrders.priority.critical')}</div>
 		</Card>
 	</div>
 
@@ -203,17 +204,17 @@
 	<Card class="flex flex-wrap items-center gap-4 p-4">
 		<div class="flex items-center gap-2 text-sm text-slate-400">
 			<Filter class="h-4 w-4" />
-			Filter:
+			{$_('common.filter')}:
 		</div>
 		<select
 			bind:value={statusFilter}
 			onchange={loadData}
 			class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white"
 		>
-			<option value="">All Statuses</option>
-			<option value="open">Open</option>
-			<option value="in_progress">In Progress</option>
-			<option value="completed">Completed</option>
+			<option value="">{$_('alerts.allStatuses')}</option>
+			<option value="open">{$_('workOrders.status.open')}</option>
+			<option value="in_progress">{$_('workOrders.status.in_progress')}</option>
+			<option value="completed">{$_('workOrders.status.completed')}</option>
 		</select>
 	</Card>
 
@@ -228,7 +229,7 @@
 		{:else if workOrders.length === 0}
 			<Card class="py-12 text-center">
 				<CheckCircle class="mx-auto mb-4 h-12 w-12 text-emerald-400/50" />
-				<p class="text-slate-400">No work orders match your filters</p>
+				<p class="text-slate-400">{$_('workOrders.noWorkOrders')}</p>
 			</Card>
 		{:else}
 			{#each workOrders as wo (wo.id)}
@@ -247,7 +248,7 @@
 								{#if isOverdue(wo.due_date, wo.status)}
 									<Badge variant="danger">
 										<AlertTriangle class="h-3 w-3" />
-										Overdue
+										{$_('workOrders.overdue')}
 									</Badge>
 								{/if}
 							</div>
@@ -266,7 +267,7 @@
 								{/if}
 								<span class="flex items-center gap-1">
 									<Clock class="h-3 w-3" />
-									Due: {formatDate(wo.due_date)}
+									{$_('workOrders.dueDate')}: {formatDate(wo.due_date)}
 								</span>
 								{#if wo.assigned_to}
 									<span class="flex items-center gap-1">
@@ -276,11 +277,11 @@
 								{:else}
 									<span class="flex items-center gap-1 text-amber-400">
 										<User class="h-3 w-3" />
-										Unassigned
+										{$_('workOrders.unassigned')}
 									</span>
 								{/if}
 								{#if wo.estimated_hours}
-									<span>Est: {wo.estimated_hours}h</span>
+									<span>{$_('workOrders.estimated')}: {wo.estimated_hours}{$_('units.hours')}</span>
 								{/if}
 							</div>
 
@@ -306,7 +307,7 @@
 										class="gap-1"
 									>
 										<Play class="h-3 w-3" />
-										Start
+										{$_('workOrders.start')}
 									</Button>
 								{/if}
 								{#if wo.status === 'in_progress'}
@@ -317,7 +318,7 @@
 										class="gap-1"
 									>
 										<CheckCircle class="h-3 w-3" />
-										Complete
+										{$_('workOrders.complete')}
 									</Button>
 								{/if}
 							</div>
@@ -332,7 +333,7 @@
 <!-- Create Work Order Modal -->
 <Modal
 	open={showCreateModal}
-	title="New Work Order"
+	title={$_('workOrders.create')}
 	onclose={() => (showCreateModal = false)}
 	size="lg"
 >
@@ -468,8 +469,8 @@
 				resetForm();
 			}}
 		>
-			Cancel
+			{$_('common.cancel')}
 		</Button>
-		<Button type="submit" onclick={handleCreateWorkOrder}>Create Work Order</Button>
+		<Button type="submit" onclick={handleCreateWorkOrder}>{$_('workOrders.create')}</Button>
 	</div>
 </Modal>

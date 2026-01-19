@@ -13,6 +13,11 @@
 	import Cable from 'lucide-svelte/icons/cable';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Zap from 'lucide-svelte/icons/zap';
+	import ClipboardList from 'lucide-svelte/icons/clipboard-list';
+	import DollarSign from 'lucide-svelte/icons/dollar-sign';
+	import FileText from 'lucide-svelte/icons/file-text';
+	import Calendar from 'lucide-svelte/icons/calendar';
+	import GitCompare from 'lucide-svelte/icons/git-compare';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import CurrencySwitcher from './CurrencySwitcher.svelte';
 
@@ -21,8 +26,13 @@
 	const navItems = [
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
 		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
+		{ href: `${base}/work-orders`, label: 'nav.workOrders', icon: ClipboardList },
 		{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+		{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
 		{ href: `${base}/alerts`, label: 'nav.alerts', icon: Bell },
+		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText },
+		{ href: `${base}/calendar`, label: 'nav.calendar', icon: Calendar },
+		{ href: `${base}/comparison`, label: 'nav.comparison', icon: GitCompare },
 		{ href: `${base}/integrations`, label: 'nav.integrations', icon: Cable },
 		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield },
 		{ href: `${base}/settings`, label: 'nav.settings', icon: Settings }

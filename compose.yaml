@@ -11,7 +11,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U root -d local']
+      test: ["CMD-SHELL", "pg_isready -U root -d local"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,21 +39,17 @@ services:
       - 8883:8883
       - 18083:18083 # Dashboard
     environment:
-      # Disable anonymous access - require authentication
-      EMQX_ALLOW_ANONYMOUS: 'true'
-      # Authentication via built-in database
-      EMQX_AUTHENTICATION__1__MECHANISM: 'password_based'
-      EMQX_AUTHENTICATION__1__BACKEND: 'built_in_database'
-      EMQX_AUTHENTICATION__1__PASSWORD_HASH_ALGORITHM__NAME: 'bcrypt'
-      # Default admin user (change in production!)
-      EMQX_DASHBOARD__DEFAULT_USERNAME: 'admin'
-      EMQX_DASHBOARD__DEFAULT_PASSWORD: '${MQTT_ADMIN_PASSWORD:-kastor_mqtt_admin}'
-      # Loaded plugins
-      EMQX_LOADED_PLUGINS: 'emqx_retained,emqx_rule_engine,emqx_bridge_mqtt'
+      # Allow anonymous connections for demo/development
+      EMQX_ALLOW_ANONYMOUS: "true"
+      # Disable authentication for demo (enable in production!)
+      EMQX_AUTHENTICATION: "[]"
+      # Default admin user for dashboard
+      EMQX_DASHBOARD__DEFAULT_USERNAME: "admin"
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: "${MQTT_ADMIN_PASSWORD:-kastor_mqtt_admin}"
     volumes:
       - emqxdata:/opt/emqx/data
     healthcheck:
-      test: ['CMD', 'emqx', 'ping']
+      test: ["CMD", "emqx", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
