@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { Card, Badge, Button, Modal } from '$lib/components/ui/index.js';
+	import { toastStore } from '$lib/state/toast.svelte.js';
 	import { cn } from '$lib/utils.js';
 	import { _ } from 'svelte-i18n';
 	import Shield from 'lucide-svelte/icons/shield';
@@ -15,6 +16,8 @@
 	import Power from 'lucide-svelte/icons/power';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Link from 'lucide-svelte/icons/link';
+	import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
+	import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
 	import type { Engine } from '$lib/types/index.js';
 
 	let engines: Engine[] = $state([]);
@@ -79,6 +82,10 @@
 
 	type TabId = 'engines' | 'users' | 'connections';
 	let activeTab: TabId = $state('engines');
+
+	// Demo reset state
+	let showResetModal = $state(false);
+	let resetting = $state(false);
 
 	onMount(async () => {
 		try {
@@ -243,6 +250,49 @@
 		};
 		return map[role] || 'secondary';
 	}
+
+	async function handleDemoReset() {
+		resetting = true;
+
+		// Simulate reset process
+		await new Promise((resolve) => setTimeout(resolve, 2000));
+
+		// Reset local state
+		users = [
+			{
+				id: '1',
+				name: 'Иван Петров',
+				role: 'Администратор',
+				email: 'ivan@kastor.io',
+				active: true
+			},
+			{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@kastor.io', active: true },
+			{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@kastor.io', active: true },
+			{
+				id: '4',
+				name: 'Елена Волкова',
+				role: 'Наблюдатель',
+				email: 'elena@kastor.io',
+				active: false
+			}
+		];
+
+		connections = [
+			{
+				id: '1',
+				name: 'PLC Siemens S7-1500',
+				type: 'Modbus TCP',
+				status: 'connected',
+				ip: '192.168.1.10'
+			},
+			{ id: '2', name: 'OPC UA Server', type: 'OPC UA', status: 'connected', ip: '192.168.1.20' },
+			{ id: '3', name: 'SCADA Gateway', type: 'MQTT', status: 'disconnected', ip: '192.168.1.30' }
+		];
+
+		resetting = false;
+		showResetModal = false;
+		toastStore.success('Demo Reset Complete', 'All demo data has been reset to initial state.');
+	}
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6">
@@ -255,7 +305,17 @@
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">{$_('admin.subtitle')}</p>
 		</div>
-		<Badge variant="warning" class="self-start sm:self-auto">Demo Mode</Badge>
+		<div class="flex items-center gap-3 self-start sm:self-auto">
+			<Button
+				variant="outline"
+				class="gap-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+				onclick={() => (showResetModal = true)}
+			>
+				<RotateCcw class="h-4 w-4" />
+				Reset Demo
+			</Button>
+			<Badge variant="warning">Demo Mode</Badge>
+		</div>
 	</div>
 
 	<!-- Tabs -->
@@ -817,5 +877,50 @@
 			>{$_('common.cancel')}</Button
 		>
 		<Button variant="danger" onclick={executeDelete}>{$_('common.delete')}</Button>
+	</div>
+</Modal>
+
+<!-- Demo Reset Modal -->
+<Modal
+	open={showResetModal}
+	title="Reset Demo Data"
+	onclose={() => (showResetModal = false)}
+	size="md"
+>
+	<div class="space-y-4">
+		<div class="flex items-start gap-4 rounded-lg bg-amber-500/10 p-4">
+			<AlertTriangle class="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+			<div class="text-sm text-slate-300">
+				<p class="mb-2 font-medium text-amber-400">Warning</p>
+				<p>This action will reset all demo data to its initial state. This includes:</p>
+				<ul class="mt-2 list-disc pl-4 text-slate-400">
+					<li>All alerts will be cleared</li>
+					<li>User accounts will be reset to defaults</li>
+					<li>Connection settings will be restored</li>
+					<li>Recent activity history will be cleared</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="text-sm text-slate-400">
+			This is useful before starting a new demo presentation to ensure clean, consistent data.
+		</p>
+
+		<div class="flex justify-end gap-3 border-t border-white/5 pt-4">
+			<Button variant="secondary" onclick={() => (showResetModal = false)} disabled={resetting}>
+				Cancel
+			</Button>
+			<Button variant="danger" class="gap-2" onclick={handleDemoReset} disabled={resetting}>
+				{#if resetting}
+					<div
+						class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+					></div>
+					Resetting...
+				{:else}
+					<RotateCcw class="h-4 w-4" />
+					Reset Demo Data
+				{/if}
+			</Button>
+		</div>
 	</div>
 </Modal>

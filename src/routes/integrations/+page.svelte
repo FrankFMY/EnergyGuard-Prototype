@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _, isLoading } from 'svelte-i18n';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
+	import { toastStore } from '$lib/state/toast.svelte.js';
 	import { cn } from '$lib/utils.js';
 	import Cable from 'lucide-svelte/icons/cable';
 	import Server from 'lucide-svelte/icons/server';
@@ -11,6 +12,7 @@
 	import CheckCircle from 'lucide-svelte/icons/check-circle';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Play from 'lucide-svelte/icons/play';
+	import Pause from 'lucide-svelte/icons/pause';
 	import RefreshCw from 'lucide-svelte/icons/refresh-cw';
 	import Activity from 'lucide-svelte/icons/activity';
 	import Code from 'lucide-svelte/icons/code';
@@ -18,7 +20,17 @@
 	import Copy from 'lucide-svelte/icons/copy';
 	import ExternalLink from 'lucide-svelte/icons/external-link';
 
-	const integrations = [
+	interface Integration {
+		id: string;
+		name: string;
+		descKey: string;
+		icon: typeof Cable;
+		status: 'connected' | 'disconnected' | 'pending';
+		devices: number;
+		dataPoints: number;
+	}
+
+	let integrations = $state<Integration[]>([
 		{
 			id: 'modbus',
 			name: 'Modbus TCP/RTU',
@@ -64,9 +76,10 @@
 			devices: 0,
 			dataPoints: 0
 		}
-	];
+	]);
 
-	const recentData = [
+	// Live data with real-time updates simulation
+	let recentData = $state([
 		{
 			id: 'gpu1_exhaust',
 			tagKey: 'integrations.tags.gpu1Exhaust',
@@ -102,7 +115,7 @@
 			unit: '°C',
 			secondsAgo: 3
 		}
-	];
+	]);
 
 	const apiEndpoints = [
 		{ method: 'GET', path: '/api/status', descKey: 'integrations.api.statusDesc' },
@@ -112,10 +125,41 @@
 	];
 
 	let copiedEndpoint = $state<string | null>(null);
+	let connecting = $state<string | null>(null);
+	let refreshing = $state(false);
+
+	// Simulate live data updates
+	$effect(() => {
+		const interval = setInterval(() => {
+			recentData = recentData.map((d) => ({
+				...d,
+				secondsAgo: d.secondsAgo + 1,
+				// Add small random variations to values
+				value:
+					d.id === 'gpu1_exhaust'
+						? (485 + Math.random() * 2 - 1).toFixed(1)
+						: d.id === 'gpu1_power'
+							? Math.floor(3100 + Math.random() * 60).toString()
+							: d.id === 'gpu2_vib'
+								? (2.3 + Math.random() * 0.1).toFixed(2)
+								: d.id === 'gpu3_pressure'
+									? (1.8 + Math.random() * 0.1).toFixed(2)
+									: (78 + Math.random() * 1).toFixed(1)
+			}));
+
+			// Reset seconds ago every 3 seconds
+			if (recentData[0].secondsAgo > 3) {
+				recentData = recentData.map((d) => ({ ...d, secondsAgo: 1 }));
+			}
+		}, 1000);
+
+		return () => clearInterval(interval);
+	});
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
 		copiedEndpoint = text;
+		toastStore.success('Copied!', `Endpoint ${text} copied to clipboard.`);
 		setTimeout(() => (copiedEndpoint = null), 2000);
 	}
 
@@ -131,6 +175,51 @@
 				return 'secondary';
 		}
 	}
+
+	function toggleConnection(integration: Integration) {
+		connecting = integration.id;
+
+		setTimeout(() => {
+			const idx = integrations.findIndex((i) => i.id === integration.id);
+			if (idx !== -1) {
+				const wasConnected = integrations[idx].status === 'connected';
+				integrations[idx] = {
+					...integrations[idx],
+					status: wasConnected ? 'disconnected' : 'connected',
+					devices: wasConnected ? 0 : integration.id === 'mqtt' ? 3 : integration.devices || 1,
+					dataPoints: wasConnected
+						? 0
+						: integration.id === 'mqtt'
+							? 64
+							: integration.dataPoints || 32
+				};
+
+				if (wasConnected) {
+					toastStore.warning('Disconnected', `${integration.name} has been disconnected.`);
+				} else {
+					toastStore.success(
+						'Connected',
+						`${integration.name} is now connected and receiving data.`
+					);
+				}
+			}
+			connecting = null;
+		}, 1500);
+	}
+
+	function refreshStatus() {
+		refreshing = true;
+
+		setTimeout(() => {
+			refreshing = false;
+			toastStore.info('Status Updated', 'All integration statuses have been refreshed.');
+		}, 1000);
+	}
+
+	// Calculate stats dynamically
+	const activeConnections = $derived(integrations.filter((i) => i.status === 'connected').length);
+	const totalDevices = $derived(integrations.reduce((sum, i) => sum + i.devices, 0));
+	const totalDataPoints = $derived(integrations.reduce((sum, i) => sum + i.dataPoints, 0));
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6">
@@ -145,37 +234,41 @@
 				{#if !$isLoading}{$_('integrations.subtitle')}{:else}Подключения к оборудованию{/if}
 			</p>
 		</div>
-		<Button class="gap-2">
-			<RefreshCw class="h-4 w-4" />
+		<Button class="gap-2" onclick={refreshStatus} disabled={refreshing}>
+			<RefreshCw class={cn('h-4 w-4', refreshing && 'animate-spin')} />
 			{#if !$isLoading}{$_('integrations.refreshStatus')}{:else}Обновить статус{/if}
 		</Button>
 	</div>
 
 	<!-- Stats -->
-	<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+	<div class="animate-stagger-grid grid grid-cols-2 gap-4 md:grid-cols-4">
 		<Card>
 			<div class="text-sm text-slate-400">
 				{#if !$isLoading}{$_('integrations.stats.activeConnections')}{:else}Активных подключений{/if}
 			</div>
-			<div class="mt-1 text-2xl font-bold text-emerald-400">3 / 5</div>
+			<div class="mt-1 text-2xl font-bold text-emerald-400">
+				{activeConnections} / {integrations.length}
+			</div>
 		</Card>
 		<Card>
 			<div class="text-sm text-slate-400">
 				{#if !$isLoading}{$_('integrations.stats.devicesOnline')}{:else}Устройств онлайн{/if}
 			</div>
-			<div class="mt-1 text-2xl font-bold text-cyan-400">7</div>
+			<div class="mt-1 text-2xl font-bold text-cyan-400">{totalDevices}</div>
 		</Card>
 		<Card>
 			<div class="text-sm text-slate-400">
 				{#if !$isLoading}{$_('integrations.stats.dataPoints')}{:else}Точек данных{/if}
 			</div>
-			<div class="mt-1 text-2xl font-bold text-purple-400">384</div>
+			<div class="mt-1 text-2xl font-bold text-purple-400">{totalDataPoints}</div>
 		</Card>
 		<Card>
 			<div class="text-sm text-slate-400">
 				{#if !$isLoading}{$_('integrations.stats.messagesPerSec')}{:else}Сообщений/сек{/if}
 			</div>
-			<div class="mt-1 text-2xl font-bold text-amber-400">~250</div>
+			<div class="mt-1 text-2xl font-bold text-amber-400">
+				~{Math.floor(totalDataPoints * 0.65)}
+			</div>
 		</Card>
 	</div>
 
@@ -229,8 +322,26 @@
 								<Settings class="h-3 w-3" />
 								{#if !$isLoading}{$_('integrations.settings')}{:else}Настройки{/if}
 							</Button>
-							{#if integration.status === 'disconnected'}
-								<Button size="sm" class="gap-1">
+							{#if connecting === integration.id}
+								<Button size="sm" class="min-w-[100px] gap-1" disabled>
+									<div
+										class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+									></div>
+									{integration.status === 'connected' ? 'Disconnecting...' : 'Connecting...'}
+								</Button>
+							{:else if integration.status === 'connected'}
+								<Button
+									variant="outline"
+									size="sm"
+									class="gap-1 border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+									onclick={() => toggleConnection(integration)}
+								>
+									<Pause class="h-3 w-3" />
+									{#if !$isLoading}{$_('integrations.disconnect') ||
+											'Disconnect'}{:else}Отключить{/if}
+								</Button>
+							{:else}
+								<Button size="sm" class="gap-1" onclick={() => toggleConnection(integration)}>
 									<Play class="h-3 w-3" />
 									{#if !$isLoading}{$_('integrations.connect')}{:else}Подключить{/if}
 								</Button>

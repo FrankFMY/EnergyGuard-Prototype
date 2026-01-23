@@ -1,25 +1,53 @@
 <script lang="ts">
 	import { _, isLoading } from 'svelte-i18n';
-	import { Card } from '$lib/components/ui/index.js';
+	import { Card, Modal, Button, Badge } from '$lib/components/ui/index.js';
+	import { toastStore } from '$lib/state/toast.svelte.js';
 	import { cn } from '$lib/utils.js';
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Clock from 'lucide-svelte/icons/clock';
 	import Plus from 'lucide-svelte/icons/plus';
+	import Wrench from 'lucide-svelte/icons/wrench';
+	import Search from 'lucide-svelte/icons/search';
+	import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
+	import Settings from 'lucide-svelte/icons/settings';
+	import User from 'lucide-svelte/icons/user';
+	import MapPin from 'lucide-svelte/icons/map-pin';
+	import FileText from 'lucide-svelte/icons/file-text';
+	import CheckCircle from 'lucide-svelte/icons/check-circle';
+
+	interface CalendarEvent {
+		id: string;
+		title: string;
+		titleEn: string;
+		date: Date;
+		type: 'maintenance' | 'inspection' | 'overhaul' | 'downtime';
+		engine_id: string;
+		description?: string;
+		descriptionEn?: string;
+		assignee?: string;
+		priority?: 'low' | 'medium' | 'high';
+		estimatedDuration?: string;
+	}
 
 	// Mock scheduled events - use current year
 	const currentYear = new Date().getFullYear();
 	const currentMonthNum = new Date().getMonth();
 
-	const events = [
+	const events: CalendarEvent[] = [
 		{
 			id: '1',
 			title: 'GPU-1 Замена масла',
 			titleEn: 'GPU-1 Oil Change',
 			date: new Date(currentYear, currentMonthNum, 22),
 			type: 'maintenance',
-			engine_id: 'gpu-1'
+			engine_id: 'gpu-1',
+			description: 'Плановая замена моторного масла и масляного фильтра',
+			descriptionEn: 'Scheduled engine oil and filter replacement',
+			assignee: 'Алексей Козлов',
+			priority: 'medium',
+			estimatedDuration: '2 hours'
 		},
 		{
 			id: '2',
@@ -27,7 +55,12 @@
 			titleEn: 'GPU-2 Spark Plugs',
 			date: new Date(currentYear, currentMonthNum, 25),
 			type: 'maintenance',
-			engine_id: 'gpu-2'
+			engine_id: 'gpu-2',
+			description: 'Замена свечей зажигания (комплект 24 шт)',
+			descriptionEn: 'Spark plug replacement (set of 24)',
+			assignee: 'Иван Петров',
+			priority: 'high',
+			estimatedDuration: '4 hours'
 		},
 		{
 			id: '3',
@@ -35,7 +68,12 @@
 			titleEn: 'GPU-4 Inspection',
 			date: new Date(currentYear, currentMonthNum, 28),
 			type: 'inspection',
-			engine_id: 'gpu-4'
+			engine_id: 'gpu-4',
+			description: 'Визуальный осмотр и диагностика после 8000 моточасов',
+			descriptionEn: 'Visual inspection and diagnostics after 8000 operating hours',
+			assignee: 'Мария Сидорова',
+			priority: 'low',
+			estimatedDuration: '3 hours'
 		},
 		{
 			id: '4',
@@ -43,7 +81,12 @@
 			titleEn: 'GPU-3 Overhaul',
 			date: new Date(currentYear, currentMonthNum + 1, 5),
 			type: 'overhaul',
-			engine_id: 'gpu-3'
+			engine_id: 'gpu-3',
+			description: 'Капитальный ремонт после 24000 моточасов',
+			descriptionEn: 'Major overhaul after 24000 operating hours',
+			assignee: 'Сервисная бригада',
+			priority: 'high',
+			estimatedDuration: '5 days'
 		},
 		{
 			id: '5',
@@ -51,7 +94,11 @@
 			titleEn: 'GPU-2 Downtime',
 			date: new Date(currentYear, currentMonthNum, 20),
 			type: 'downtime',
-			engine_id: 'gpu-2'
+			engine_id: 'gpu-2',
+			description: 'Плановый простой для профилактики',
+			descriptionEn: 'Scheduled downtime for preventive maintenance',
+			priority: 'medium',
+			estimatedDuration: '8 hours'
 		},
 		{
 			id: '6',
@@ -59,7 +106,12 @@
 			titleEn: 'GPU-5 Scheduled Maintenance',
 			date: new Date(currentYear, currentMonthNum, 19),
 			type: 'maintenance',
-			engine_id: 'gpu-5'
+			engine_id: 'gpu-5',
+			description: 'Регулярное техническое обслуживание каждые 2000 моточасов',
+			descriptionEn: 'Regular maintenance every 2000 operating hours',
+			assignee: 'Алексей Козлов',
+			priority: 'medium',
+			estimatedDuration: '6 hours'
 		},
 		{
 			id: '7',
@@ -67,7 +119,12 @@
 			titleEn: 'GPU-1 Vibration Check',
 			date: new Date(currentYear, currentMonthNum, 21),
 			type: 'inspection',
-			engine_id: 'gpu-1'
+			engine_id: 'gpu-1',
+			description: 'Анализ вибрации и балансировка',
+			descriptionEn: 'Vibration analysis and balancing',
+			assignee: 'Мария Сидорова',
+			priority: 'low',
+			estimatedDuration: '1 hour'
 		},
 		{
 			id: '8',
@@ -75,7 +132,12 @@
 			titleEn: 'GPU-6 Startup',
 			date: new Date(currentYear, currentMonthNum, 23),
 			type: 'maintenance',
-			engine_id: 'gpu-6'
+			engine_id: 'gpu-6',
+			description: 'Ввод в эксплуатацию после планового ремонта',
+			descriptionEn: 'Commissioning after scheduled repair',
+			assignee: 'Иван Петров',
+			priority: 'high',
+			estimatedDuration: '2 hours'
 		}
 	];
 
@@ -161,6 +223,86 @@
 			.sort((a, b) => a.date.getTime() - b.date.getTime())
 			.slice(0, 5)
 	);
+
+	// Modal state
+	let showEventModal = $state(false);
+	let selectedEvent = $state<CalendarEvent | null>(null);
+
+	function openEventModal(event: CalendarEvent) {
+		selectedEvent = event;
+		showEventModal = true;
+	}
+
+	function closeEventModal() {
+		showEventModal = false;
+		selectedEvent = null;
+	}
+
+	function getEventTypeIcon(type: string) {
+		switch (type) {
+			case 'maintenance':
+				return Wrench;
+			case 'inspection':
+				return Search;
+			case 'overhaul':
+				return Settings;
+			case 'downtime':
+				return AlertTriangle;
+			default:
+				return CalendarIcon;
+		}
+	}
+
+	function getEventTypeLabel(type: string) {
+		switch (type) {
+			case 'maintenance':
+				return 'Maintenance';
+			case 'inspection':
+				return 'Inspection';
+			case 'overhaul':
+				return 'Overhaul';
+			case 'downtime':
+				return 'Downtime';
+			default:
+				return type;
+		}
+	}
+
+	function getPriorityVariant(priority: string): 'danger' | 'warning' | 'secondary' {
+		switch (priority) {
+			case 'high':
+				return 'danger';
+			case 'medium':
+				return 'warning';
+			default:
+				return 'secondary';
+		}
+	}
+
+	function getStatusVariant(type: string): 'info' | 'success' | 'warning' | 'danger' {
+		switch (type) {
+			case 'maintenance':
+				return 'info';
+			case 'inspection':
+				return 'success';
+			case 'overhaul':
+				return 'warning';
+			case 'downtime':
+				return 'danger';
+			default:
+				return 'info';
+		}
+	}
+
+	function markAsCompleted() {
+		if (selectedEvent) {
+			toastStore.success(
+				'Event Completed',
+				`${selectedEvent.titleEn} has been marked as completed.`
+			);
+			closeEventModal();
+		}
+	}
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6">
@@ -280,15 +422,17 @@
 							</div>
 							<div class="space-y-0.5 sm:space-y-1">
 								{#each dayEvents.slice(0, 2) as event (event.id)}
-									<div
-										class="truncate rounded px-1 py-0.5 text-[10px] text-white sm:px-1.5 sm:text-xs {getEventColor(
+									<button
+										type="button"
+										class="w-full truncate rounded px-1 py-0.5 text-left text-[10px] text-white transition hover:opacity-80 sm:px-1.5 sm:text-xs {getEventColor(
 											event.type
 										)}"
 										title={event.title}
+										onclick={() => openEventModal(event)}
 									>
 										<span class="hidden sm:inline">{event.title}</span>
 										<span class="sm:hidden">{event.engine_id.toUpperCase()}</span>
-									</div>
+									</button>
 								{/each}
 								{#if dayEvents.length > 2}
 									<div class="text-[10px] text-slate-500 sm:text-xs">+{dayEvents.length - 2}</div>
@@ -343,7 +487,11 @@
 				</h3>
 				<div class="space-y-3">
 					{#each upcomingEvents as event (event.id)}
-						<div class="rounded-lg bg-slate-800/50 p-3">
+						<button
+							type="button"
+							class="w-full rounded-lg bg-slate-800/50 p-3 text-left transition hover:bg-slate-800"
+							onclick={() => openEventModal(event)}
+						>
 							<div class="mb-1 flex items-center gap-2">
 								<div class="h-2 w-2 rounded-full {getEventColor(event.type)}"></div>
 								<span class="text-sm font-medium text-white">{event.title}</span>
@@ -355,7 +503,7 @@
 									year: 'numeric'
 								})}
 							</div>
-						</div>
+						</button>
 					{:else}
 						<p class="text-sm text-slate-500">
 							{#if !$isLoading}{$_('calendar.noEvents')}{:else}Нет предстоящих событий{/if}
@@ -366,3 +514,112 @@
 		</div>
 	</div>
 </div>
+
+<!-- Event Detail Modal -->
+<Modal
+	open={showEventModal}
+	title={selectedEvent?.titleEn || 'Event Details'}
+	onclose={closeEventModal}
+	size="lg"
+>
+	{#if selectedEvent}
+		{@const TypeIcon = getEventTypeIcon(selectedEvent.type)}
+		<div class="space-y-4">
+			<!-- Event Type & Priority -->
+			<div class="flex flex-wrap items-center gap-2">
+				<Badge variant={getStatusVariant(selectedEvent.type)} class="gap-1">
+					<TypeIcon class="h-3 w-3" />
+					{getEventTypeLabel(selectedEvent.type)}
+				</Badge>
+				{#if selectedEvent.priority}
+					<Badge variant={getPriorityVariant(selectedEvent.priority)}>
+						{selectedEvent.priority.charAt(0).toUpperCase() + selectedEvent.priority.slice(1)} Priority
+					</Badge>
+				{/if}
+			</div>
+
+			<!-- Engine ID -->
+			<div class="flex items-center gap-3 rounded-lg bg-slate-800/50 p-3">
+				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/20">
+					<Settings class="h-5 w-5 text-cyan-400" />
+				</div>
+				<div>
+					<div class="text-xs text-slate-500">Engine</div>
+					<div class="font-semibold text-white uppercase">{selectedEvent.engine_id}</div>
+				</div>
+			</div>
+
+			<!-- Description -->
+			{#if selectedEvent.descriptionEn}
+				<div class="space-y-1">
+					<div class="flex items-center gap-2 text-sm text-slate-400">
+						<FileText class="h-4 w-4" />
+						Description
+					</div>
+					<p class="text-sm text-slate-300">{selectedEvent.descriptionEn}</p>
+				</div>
+			{/if}
+
+			<!-- Details Grid -->
+			<div class="grid grid-cols-2 gap-4">
+				<!-- Date -->
+				<div class="space-y-1">
+					<div class="flex items-center gap-2 text-xs text-slate-500">
+						<CalendarIcon class="h-3 w-3" />
+						Scheduled Date
+					</div>
+					<div class="text-sm font-medium text-white">
+						{selectedEvent.date.toLocaleDateString('en-US', {
+							weekday: 'long',
+							month: 'long',
+							day: 'numeric',
+							year: 'numeric'
+						})}
+					</div>
+				</div>
+
+				<!-- Duration -->
+				{#if selectedEvent.estimatedDuration}
+					<div class="space-y-1">
+						<div class="flex items-center gap-2 text-xs text-slate-500">
+							<Clock class="h-3 w-3" />
+							Estimated Duration
+						</div>
+						<div class="text-sm font-medium text-white">{selectedEvent.estimatedDuration}</div>
+					</div>
+				{/if}
+
+				<!-- Assignee -->
+				{#if selectedEvent.assignee}
+					<div class="space-y-1">
+						<div class="flex items-center gap-2 text-xs text-slate-500">
+							<User class="h-3 w-3" />
+							Assignee
+						</div>
+						<div class="text-sm font-medium text-white">{selectedEvent.assignee}</div>
+					</div>
+				{/if}
+
+				<!-- Location -->
+				<div class="space-y-1">
+					<div class="flex items-center gap-2 text-xs text-slate-500">
+						<MapPin class="h-3 w-3" />
+						Location
+					</div>
+					<div class="text-sm font-medium text-white">
+						Engine Hall, Bay {selectedEvent.engine_id.split('-')[1]}
+					</div>
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="flex justify-end gap-3 border-t border-white/5 pt-4">
+				<Button variant="secondary" onclick={closeEventModal}>Close</Button>
+				<Button class="gap-2" onclick={markAsCompleted}>
+					<CheckCircle class="h-4 w-4" />
+					Mark as Completed
+				</Button>
+			</div>
+		</div>
+	{/if}
+</Modal>

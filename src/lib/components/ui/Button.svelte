@@ -9,6 +9,7 @@
 		loading?: boolean;
 		href?: string;
 		type?: 'button' | 'submit' | 'reset';
+		title?: string;
 		onclick?: (e: MouseEvent) => void;
 		children: import('svelte').Snippet;
 	}
@@ -21,6 +22,7 @@
 		loading = false,
 		href,
 		type = 'button',
+		title,
 		onclick,
 		children
 	}: Props = $props();
@@ -57,7 +59,7 @@
 </script>
 
 {#if href}
-	<a {href} class={baseClass}>
+	<a {href} {title} class={baseClass}>
 		{#if loading}
 			<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 			></span>
@@ -65,7 +67,7 @@
 		{@render children()}
 	</a>
 {:else}
-	<button {type} disabled={disabled || loading} {onclick} class={baseClass}>
+	<button {type} disabled={disabled || loading} {onclick} {title} class={baseClass}>
 		{#if loading}
 			<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 			></span>

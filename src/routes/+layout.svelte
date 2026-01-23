@@ -24,6 +24,8 @@
 	import CurrencySwitcher from '$lib/components/CurrencySwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
+	import ToastContainer from '$lib/components/ToastContainer.svelte';
+	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { SkipLink } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 
@@ -329,5 +331,7 @@
 		</main>
 
 		<CommandPalette />
+		<ToastContainer />
+		<ConnectionStatus />
 	</div>
 {/if}

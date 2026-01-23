@@ -628,3 +628,197 @@ textarea:focus-visible {
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
+
+/* ===== VIEW TRANSITIONS API ===== */
+@view-transition {
+	navigation: auto;
+}
+
+::view-transition-old(root) {
+	animation: 300ms ease-out fade-out-scale;
+}
+
+::view-transition-new(root) {
+	animation: 300ms ease-out fade-in-scale;
+}
+
+@keyframes fade-out-scale {
+	from {
+		opacity: 1;
+		transform: scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.98);
+	}
+}
+
+/* ===== ENHANCED CARD ANIMATIONS ===== */
+@keyframes card-appear {
+	from {
+		opacity: 0;
+		transform: translateY(16px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+.animate-card-appear {
+	animation: card-appear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	opacity: 0;
+}
+
+/* Grid children staggered animation */
+.animate-stagger-grid > * {
+	opacity: 0;
+	animation: card-appear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-stagger-grid > *:nth-child(1) {
+	animation-delay: 0ms;
+}
+.animate-stagger-grid > *:nth-child(2) {
+	animation-delay: 50ms;
+}
+.animate-stagger-grid > *:nth-child(3) {
+	animation-delay: 100ms;
+}
+.animate-stagger-grid > *:nth-child(4) {
+	animation-delay: 150ms;
+}
+.animate-stagger-grid > *:nth-child(5) {
+	animation-delay: 200ms;
+}
+.animate-stagger-grid > *:nth-child(6) {
+	animation-delay: 250ms;
+}
+.animate-stagger-grid > *:nth-child(7) {
+	animation-delay: 300ms;
+}
+.animate-stagger-grid > *:nth-child(8) {
+	animation-delay: 350ms;
+}
+.animate-stagger-grid > *:nth-child(9) {
+	animation-delay: 400ms;
+}
+.animate-stagger-grid > *:nth-child(10) {
+	animation-delay: 450ms;
+}
+
+/* ===== COUNTER ANIMATION ===== */
+@keyframes count-up-reveal {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-count {
+	animation: count-up-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ===== HOVER SCALE EFFECT ===== */
+.hover-scale {
+	transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-scale:hover {
+	transform: scale(1.02);
+}
+
+.hover-scale:active {
+	transform: scale(0.98);
+}
+
+/* ===== SMOOTH ICON ROTATION ===== */
+.hover-rotate {
+	transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-rotate:hover {
+	transform: rotate(15deg);
+}
+
+/* ===== BADGE PULSE ===== */
+@keyframes badge-pulse {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.05);
+	}
+}
+
+.badge-pulse {
+	animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* ===== BUTTON SHINE EFFECT ===== */
+.btn-shine {
+	position: relative;
+	overflow: hidden;
+}
+
+.btn-shine::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+	transition: 0.5s;
+}
+
+.btn-shine:hover::before {
+	left: 100%;
+}
+
+/* ===== SKELETON LOADING ===== */
+@keyframes skeleton-pulse {
+	0%,
+	100% {
+		opacity: 0.4;
+	}
+	50% {
+		opacity: 0.8;
+	}
+}
+
+.skeleton-loading {
+	animation: skeleton-pulse 1.5s ease-in-out infinite;
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0.05) 0%,
+		rgba(255, 255, 255, 0.1) 50%,
+		rgba(255, 255, 255, 0.05) 100%
+	);
+	background-size: 200% 100%;
+}
+
+/* ===== MICRO-INTERACTIONS FOR INPUTS ===== */
+input:focus,
+select:focus,
+textarea:focus {
+	transition:
+		box-shadow 200ms ease,
+		border-color 200ms ease;
+}
+
+/* ===== SMOOTH SCROLL ===== */
+html {
+	scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}

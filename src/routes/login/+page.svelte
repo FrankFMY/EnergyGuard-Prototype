@@ -138,7 +138,10 @@
 						/>
 						{#if !$isLoading}{$_('login.rememberMe')}{:else}Запомнить меня{/if}
 					</label>
-					<span class="cursor-not-allowed text-slate-500" title="{$isLoading ? 'Свяжитесь с администратором' : $_('login.contactAdmin')}">
+					<span
+						class="cursor-not-allowed text-slate-500"
+						title={$isLoading ? 'Свяжитесь с администратором' : $_('login.contactAdmin')}
+					>
 						{#if !$isLoading}{$_('login.forgotPassword')}{:else}Забыли пароль?{/if}
 					</span>
 				</div>
@@ -146,9 +149,7 @@
 				<Button type="submit" class="w-full" disabled={loading} {loading}>
 					{#if loading}
 						{#if !$isLoading}{$_('login.signingIn')}{:else}Вход...{/if}
-					{:else}
-						{#if !$isLoading}{$_('login.signIn')}{:else}Войти{/if}
-					{/if}
+					{:else if !$isLoading}{$_('login.signIn')}{:else}Войти{/if}
 				</Button>
 
 				<p class="text-center text-sm text-slate-400">

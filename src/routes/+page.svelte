@@ -219,7 +219,7 @@
 		<!-- Main Content (Left) -->
 		<div class="space-y-4 sm:space-y-6 xl:col-span-3">
 			<!-- Hero Stats -->
-			<div class="grid grid-cols-2 gap-2 xs:gap-3 sm:gap-4 lg:grid-cols-4">
+			<div class="animate-stagger-grid grid grid-cols-2 gap-2 xs:gap-3 sm:gap-4 lg:grid-cols-4">
 				<!-- Fleet Status Card -->
 				<Card class="group relative overflow-hidden p-3 sm:p-4 lg:p-6">
 					<div
