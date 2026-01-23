@@ -6,6 +6,13 @@ import { building } from '$app/environment';
 
 if (!building && !env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 
-const client = building ? ({} as postgres.Sql) : postgres(env.DATABASE_URL!);
+const client = building
+	? ({} as postgres.Sql)
+	: postgres(env.DATABASE_URL!, {
+			max: 10, // Maximum 10 connections in pool
+			idle_timeout: 20, // Close idle connections after 20 seconds
+			connect_timeout: 10, // Connection timeout 10 seconds
+			max_lifetime: 60 * 30 // Max connection lifetime 30 minutes
+		});
 
 export const db = drizzle(client, { schema });

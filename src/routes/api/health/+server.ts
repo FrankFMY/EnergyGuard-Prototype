@@ -7,11 +7,19 @@ export const GET: RequestHandler = async () => {
 	const checks: Record<string, { status: 'ok' | 'error'; message?: string; latency?: number }> = {};
 	let overallStatus: 'ok' | 'degraded' | 'error' = 'ok';
 
-	// Database check
-	const dbStart = Date.now();
-	try {
+	// Database check with timeout
+	const dbCheck = async (): Promise<number> => {
+		const start = Date.now();
 		await db.execute(sql`SELECT 1`);
-		checks.database = { status: 'ok', latency: Date.now() - dbStart };
+		return Date.now() - start;
+	};
+
+	const timeout = (ms: number): Promise<never> =>
+		new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), ms));
+
+	try {
+		const latency = await Promise.race([dbCheck(), timeout(5000)]);
+		checks.database = { status: 'ok', latency };
 	} catch (error) {
 		checks.database = {
 			status: 'error',
