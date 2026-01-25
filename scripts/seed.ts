@@ -58,29 +58,54 @@ async function seed() {
 		}
 	];
 
-	// Insert users, ignore conflicts (they may already exist)
-	await db.insert(schema.users).values(usersData).onConflictDoNothing();
+	// Ensure users exist - handle email conflicts by finding existing user
+	const userIdMap = new Map<string, string>(); // email -> actual user id
 
-	// Update existing users with latest data (except email to avoid conflicts)
 	for (const user of usersData) {
-		await db
-			.update(schema.users)
-			.set({
-				name: user.name,
-				emailVerified: user.emailVerified,
-				role: user.role
-			})
-			.where(eq(schema.users.id, user.id));
+		// Try to find existing user by email
+		const existingUser = await db
+			.select()
+			.from(schema.users)
+			.where(eq(schema.users.email, user.email))
+			.limit(1);
+
+		if (existingUser.length > 0) {
+			// User exists - use existing id and update
+			const existingId = existingUser[0].id;
+			userIdMap.set(user.email, existingId);
+			await db
+				.update(schema.users)
+				.set({
+					name: user.name,
+					emailVerified: user.emailVerified,
+					role: user.role
+				})
+				.where(eq(schema.users.id, existingId));
+		} else {
+			// User doesn't exist - try to insert with desired id
+			try {
+				await db.insert(schema.users).values(user);
+				userIdMap.set(user.email, user.id);
+			} catch (e) {
+				// If id conflict, insert without id and get generated id
+				const { id: _, ...userWithoutId } = user;
+				const [inserted] = await db.insert(schema.users).values(userWithoutId).returning();
+				userIdMap.set(user.email, inserted.id);
+			}
+		}
 	}
 
-	// Create accounts for password auth
-	const accountsData = usersData.map((user) => ({
-		id: `account-${user.id}`,
-		userId: user.id,
-		accountId: user.id,
-		providerId: 'credential',
-		password: passwordHash
-	}));
+	// Create accounts for password auth using actual user ids
+	const accountsData = usersData.map((user) => {
+		const actualUserId = userIdMap.get(user.email) || user.id;
+		return {
+			id: `account-${actualUserId}`,
+			userId: actualUserId,
+			accountId: actualUserId,
+			providerId: 'credential',
+			password: passwordHash
+		};
+	});
 
 	// Use upsert for accounts too
 	for (const account of accountsData) {
