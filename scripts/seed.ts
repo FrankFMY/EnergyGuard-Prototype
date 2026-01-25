@@ -86,11 +86,28 @@ async function seed() {
 			try {
 				await db.insert(schema.users).values(user);
 				userIdMap.set(user.email, user.id);
-			} catch (e) {
-				// If id conflict, insert without id and get generated id
-				const { id: _, ...userWithoutId } = user;
-				const [inserted] = await db.insert(schema.users).values(userWithoutId).returning();
-				userIdMap.set(user.email, inserted.id);
+			} catch (_e) {
+				// If id conflict, user with this id already exists - use it
+				const existingById = await db
+					.select()
+					.from(schema.users)
+					.where(eq(schema.users.id, user.id))
+					.limit(1);
+				if (existingById.length > 0) {
+					userIdMap.set(user.email, existingById[0].id);
+					// Update existing user
+					await db
+						.update(schema.users)
+						.set({
+							name: user.name,
+							emailVerified: user.emailVerified,
+							role: user.role
+						})
+						.where(eq(schema.users.id, user.id));
+				} else {
+					// Unexpected error - rethrow
+					throw _e;
+				}
 			}
 		}
 	}
