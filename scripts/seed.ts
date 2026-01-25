@@ -58,6 +58,7 @@ async function seed() {
 	];
 
 	// Use upsert to ensure users exist
+	// Don't update email in conflict to avoid unique constraint violation
 	for (const user of usersData) {
 		await db
 			.insert(schema.users)
@@ -66,9 +67,9 @@ async function seed() {
 				target: schema.users.id,
 				set: {
 					name: user.name,
-					email: user.email,
 					emailVerified: user.emailVerified,
 					role: user.role
+					// Don't update email - it might conflict with unique constraint
 				}
 			});
 	}
