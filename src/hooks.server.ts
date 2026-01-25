@@ -14,9 +14,11 @@ let client: mqtt.MqttClient;
 // Rate limiting store (in-memory, use Redis in production for multiple instances)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 100; // 100 requests per minute
+// DEMO MODE: Increased limit for presentations (100 → 500 requests per minute)
+const RATE_LIMIT_MAX = env.DEMO_MODE === 'true' || env.NODE_ENV === 'development' ? 500 : 100;
 
 // Public routes that don't require authentication
+// DEMO MODE: All routes are public for presentation
 const PUBLIC_ROUTES = [
 	'/api/auth',
 	'/api/health',
@@ -25,10 +27,27 @@ const PUBLIC_ROUTES = [
 	'/api/history',
 	'/api/alerts',
 	'/api/metrics',
+	'/api/downtimes',
+	'/api/workorders',
+	'/api/engines',
 	'/login',
 	'/register',
 	'/forgot-password',
-	'/' // Main dashboard
+	'/', // Main dashboard
+	'/comparison', // Engine comparison
+	'/analytics', // Analytics
+	'/economics', // Economics
+	'/alerts', // Alerts page
+	'/work-orders', // Work orders
+	'/maintenance', // Maintenance
+	'/dashboards', // Dashboards
+	'/reports', // Reports
+	'/calendar', // Calendar
+	'/integrations', // Integrations
+	'/settings', // Settings
+	'/admin', // Admin (for demo)
+	'/demo', // Demo pages
+	'/engine' // Engine detail pages
 ];
 
 // Rate limiting function
@@ -377,11 +396,14 @@ const authHandler: Handle = async ({ event, resolve }) => {
 	const isPublicRoute = PUBLIC_ROUTES.some((route) => event.url.pathname.startsWith(route));
 	const isApiRoute = event.url.pathname.startsWith('/api/');
 
+	// DEMO MODE: Auto-inject demo user for all requests
+	const isDemoMode = env.DEMO_MODE === 'true' || env.NODE_ENV === 'development';
+	
 	// Protected routes check
 	if (!isPublicRoute && !session) {
-		// Check for demo session cookie
+		// Check for demo session cookie or demo mode
 		const cookies = event.request.headers.get('cookie');
-		const isDemo = cookies?.includes('demo_session=true');
+		const isDemo = isDemoMode || cookies?.includes('demo_session=true');
 
 		if (isDemo) {
 			// Inject mock user for demo session
@@ -415,8 +437,11 @@ const authHandler: Handle = async ({ event, resolve }) => {
 			});
 		}
 		// For page routes, redirect to login
-		// Temporarily disabled for development - enable in production
-		throw redirect(302, '/login');
+		// DEMO MODE: Disabled redirect for presentations
+		if (!isDemoMode) {
+			throw redirect(302, '/login');
+		}
+		// In demo mode, allow access without redirect
 	}
 
 	return resolve(event);
