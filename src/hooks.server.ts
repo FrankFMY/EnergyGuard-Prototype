@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 import { db } from '$lib/server/db/index.js';
 import { telemetry, engines, events, alerts } from '$lib/server/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { auth } from '$lib/server/auth.js';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { type Handle, redirect } from '@sveltejs/kit';
@@ -59,6 +59,34 @@ setInterval(() => {
 	}
 }, 60 * 1000);
 
+// Periodic cleanup of old data (runs every hour)
+async function cleanupOldData() {
+	try {
+		// Delete resolved alerts older than 7 days
+		await db.execute(sql`
+			DELETE FROM alerts 
+			WHERE status = 'resolved' 
+			AND resolved_at < NOW() - INTERVAL '7 days'
+		`);
+
+		// Delete old events older than 7 days
+		await db.execute(sql`
+			DELETE FROM events 
+			WHERE time < NOW() - INTERVAL '7 days'
+		`);
+
+		console.log('[KASTOR] Old data cleanup completed');
+	} catch (e) {
+		console.error('[KASTOR] Error during data cleanup:', e);
+	}
+}
+
+// Run cleanup every hour
+setInterval(cleanupOldData, 60 * 60 * 1000);
+
+// Run initial cleanup after 1 minute of startup
+setTimeout(cleanupOldData, 60 * 1000);
+
 async function seedEngines() {
 	const engineList = [
 		{ id: 'gpu-1', model: 'Weichai 16VCN', hours: 8500 },
@@ -91,7 +119,28 @@ async function seedEngines() {
 
 // Track recent alerts to prevent flooding (engine:metric -> timestamp)
 const recentAlerts = new Map<string, number>();
-const ALERT_COOLDOWN_MS = 60_000; // 1 minute cooldown between same alerts
+const ALERT_COOLDOWN_MS = 300_000; // 5 minutes cooldown between same alerts
+
+// Auto-resolve alerts when metric returns to normal
+async function autoResolveAlerts(engineId: string, metric: string) {
+	try {
+		await db
+			.update(alerts)
+			.set({
+				status: 'resolved',
+				resolvedAt: new Date()
+			})
+			.where(
+				and(
+					eq(alerts.engineId, engineId),
+					eq(alerts.metric, metric),
+					eq(alerts.status, 'active')
+				)
+			);
+	} catch (e) {
+		console.error('[KASTOR] Error auto-resolving alerts:', e);
+	}
+}
 
 // Create alert from telemetry threshold violation (with deduplication)
 async function createAlertFromTelemetry(
@@ -224,6 +273,9 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 							500,
 							'warning'
 						);
+					} else {
+						// Temperature is normal - auto-resolve any active alerts
+						await autoResolveAlerts(payload.engine_id, 'temp_exhaust');
 					}
 
 					// Vibration checks
@@ -245,6 +297,9 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 							10,
 							'warning'
 						);
+					} else {
+						// Vibration is normal - auto-resolve any active alerts
+						await autoResolveAlerts(payload.engine_id, 'vibration');
 					}
 
 					await db.update(engines).set({ status }).where(eq(engines.id, payload.engine_id));
