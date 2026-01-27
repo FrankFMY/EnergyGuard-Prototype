@@ -76,7 +76,7 @@ TTL: 300
 
 ```bash
 nano .env
-# TRUSTED_ORIGINS=https://energyguard.totsoft.net
+TRUSTED_ORIGINS=https://energyguard.totsoft.net
 docker restart energyguard-app
 ```
 
