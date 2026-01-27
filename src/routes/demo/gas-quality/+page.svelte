@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>{$_('demo.title')} | KASTOR</title>
+	<title>{$_('demo.title')} | EnergyGuard</title>
 </svelte:head>
 
 <div class="mx-auto max-w-4xl space-y-8 p-6">

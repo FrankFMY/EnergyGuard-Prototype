@@ -1,4 +1,4 @@
--- TimescaleDB Optimization for KASTOR IoT
+-- TimescaleDB Optimization for EnergyGuard IoT
 -- This script should be run after the base migrations
 
 -- Enable TimescaleDB extension (usually already enabled)

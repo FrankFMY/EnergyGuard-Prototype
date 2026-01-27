@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                    KASTOR IoT - Makefile                                  ║
+# ║                    EnergyGuard IoT - Makefile                                  ║
 # ║                                                                            ║
 # ║  Простые команды для управления проектом                                  ║
 # ║  Использование: make [команда]                                            ║
@@ -21,7 +21,7 @@ COMPOSE := docker compose -f $(COMPOSE_FILE)
 help: ## Показать эту справку
 	@echo ""
 	@echo "$(CYAN)╔═══════════════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║              KASTOR IoT - Доступные команды                   ║$(NC)"
+	@echo "$(CYAN)║              EnergyGuard IoT - Доступные команды                   ║$(NC)"
 	@echo "$(CYAN)╚═══════════════════════════════════════════════════════════════╝$(NC)"
 	@echo ""
 	@awk 'BEGIN {FS = ":.*##"; printf ""} /^[a-zA-Z_-]+:.*?##/ { printf "  $(GREEN)%-15s$(NC) %s\n", $$1, $$2 } /^##@/ { printf "\n$(YELLOW)%s$(NC)\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -80,7 +80,7 @@ seed: ## Заполнить демо-данными
 	$(COMPOSE) exec app bun run scripts/seed.ts
 
 db-shell: ## Подключиться к PostgreSQL
-	$(COMPOSE) exec db psql -U kastor -d kastor
+	$(COMPOSE) exec db psql -U energyguard -d energyguard
 
 ##@ Утилиты
 clean: ## Удалить все контейнеры и данные
@@ -109,5 +109,5 @@ info: ## Показать ссылки на сервисы
 	@echo "$(CYAN)Учётные данные:$(NC)"
 	@echo ""
 	@echo "  Веб: admin / admin"
-	@echo "  EMQX: admin / kastor_admin_demo"
+	@echo "  EMQX: admin / energyguard_admin_demo"
 	@echo ""

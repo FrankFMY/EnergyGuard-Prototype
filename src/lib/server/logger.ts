@@ -110,7 +110,7 @@ function log(
 }
 
 /**
- * Structured logger for KASTOR IoT
+ * Structured logger for EnergyGuard IoT
  */
 export const logger = {
 	debug: (message: string, options?: Parameters<typeof log>[2]) => log('debug', message, options),

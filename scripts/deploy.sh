@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                    KASTOR IoT - Deployment Script                         ║
+# ║                    EnergyGuard IoT - Deployment Script                         ║
 # ║                                                                            ║
 # ║  Скрипт для развертывания проекта на VPS                                 ║
 # ║  Использование: ./scripts/deploy.sh [demo|production]                    ║
@@ -135,15 +135,15 @@ MAX_WAIT=120
 WAITED=0
 while true; do
     # Проверяем статус контейнеров
-    APP_STATUS=$(docker inspect --format='{{.State.Health.Status}}' kastor-app 2>/dev/null || echo "starting")
-    DB_STATUS=$(docker inspect --format='{{.State.Health.Status}}' kastor-db 2>/dev/null || echo "starting")
+    APP_STATUS=$(docker inspect --format='{{.State.Health.Status}}' energyguard-app 2>/dev/null || echo "starting")
+    DB_STATUS=$(docker inspect --format='{{.State.Health.Status}}' energyguard-db 2>/dev/null || echo "starting")
     
     if [[ "$APP_STATUS" == "healthy" && "$DB_STATUS" == "healthy" ]]; then
         break
     fi
     
     if [ $WAITED -ge $MAX_WAIT ]; then
-        log_warning "Превышено время ожидания. Проверьте логи: docker logs kastor-app"
+        log_warning "Превышено время ожидания. Проверьте логи: docker logs energyguard-app"
         break
     fi
     
@@ -188,7 +188,7 @@ echo -e "     Пароль: ${GREEN}admin${NC}"
 echo ""
 echo -e "  ${YELLOW}EMQX Dashboard:${NC}"
 echo -e "     Логин: ${GREEN}admin${NC}"
-echo -e "     Пароль: ${GREEN}${MQTT_ADMIN_PASSWORD:-kastor_admin_demo}${NC}"
+echo -e "     Пароль: ${GREEN}${MQTT_ADMIN_PASSWORD:-energyguard_admin_demo}${NC}"
 echo ""
 echo -e "${CYAN}Полезные команды:${NC}"
 echo ""

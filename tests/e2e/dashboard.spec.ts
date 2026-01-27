@@ -7,7 +7,7 @@ test.describe('Dashboard', () => {
 
 	test('loads and displays main dashboard', async ({ page }) => {
 		// Wait for page to load
-		await expect(page).toHaveTitle(/KASTOR/);
+		await expect(page).toHaveTitle(/EnergyGuard/);
 
 		// Check main dashboard elements
 		await expect(page.locator('h1')).toBeVisible();

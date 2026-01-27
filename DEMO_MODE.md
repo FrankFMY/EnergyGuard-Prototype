@@ -1,4 +1,4 @@
-# 🎭 DEMO режим KASTOR IoT
+# 🎭 DEMO режим EnergyGuard IoT
 
 ## 📋 Что такое DEMO режим?
 
@@ -29,8 +29,8 @@ curl http://localhost:3000/api/health | jq .demoMode
 ### Способ 3: Проверка переменных окружения
 
 ```bash
-docker exec kastor-app printenv | grep DEMO_MODE
-docker exec kastor-app printenv | grep NODE_ENV
+docker exec energyguard-app printenv | grep DEMO_MODE
+docker exec energyguard-app printenv | grep NODE_ENV
 ```
 
 ## ⚙️ Как включить/выключить DEMO режим?
@@ -102,7 +102,7 @@ DEMO режим активен если:
 curl http://localhost:3000/api/health | jq '{demoMode, status}'
 
 # 2. Проверить переменные в контейнере
-docker exec kastor-app printenv | grep -E "DEMO_MODE|NODE_ENV"
+docker exec energyguard-app printenv | grep -E "DEMO_MODE|NODE_ENV"
 
 # 3. Попробовать открыть страницу без авторизации
 curl -I http://localhost:3000/comparison

@@ -8,7 +8,7 @@
 	import Save from 'lucide-svelte/icons/save';
 	import Check from 'lucide-svelte/icons/check';
 
-	const STORAGE_KEY = 'kastor_settings';
+	const STORAGE_KEY = 'energyguard_settings';
 
 	let emailNotifications = $state(true);
 	let smsNotifications = $state(false);

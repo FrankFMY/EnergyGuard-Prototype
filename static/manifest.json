@@ -1,6 +1,6 @@
 {
-	"name": "KASTOR IoT",
-	"short_name": "KASTOR",
+	"name": "EnergyGuard",
+	"short_name": "EnergyGuard",
 	"description": "Industrial IoT monitoring platform for gas engine power plants",
 	"start_url": "/",
 	"display": "standalone",

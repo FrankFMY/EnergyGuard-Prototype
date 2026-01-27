@@ -177,7 +177,7 @@
 						<span
 							class="hidden bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent sm:inline"
 						>
-							KASTOR <span class="font-normal text-slate-500">IoT</span>
+							EnergyGuard
 						</span>
 					</a>
 

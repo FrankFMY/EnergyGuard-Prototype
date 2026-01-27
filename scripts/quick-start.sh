@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                    KASTOR IoT - Quick Start                               ║
+# ║                    EnergyGuard IoT - Quick Start                               ║
 # ║                                                                            ║
 # ║  Запуск демо в один клик                                                  ║
 # ║  Использование: curl -fsSL ... | bash                                    ║
@@ -10,7 +10,7 @@
 set -e
 
 echo ""
-echo "🚀 KASTOR IoT - Быстрый старт"
+echo "🚀 EnergyGuard IoT - Быстрый старт"
 echo "═══════════════════════════════════════"
 echo ""
 
@@ -28,8 +28,8 @@ fi
 # Клонирование репозитория (если нужно)
 if [ ! -f "docker-compose.production.yaml" ]; then
     echo "📦 Клонирование репозитория..."
-    git clone https://github.com/FrankFMY/kastor-IoT.git kastor-iot
-    cd kastor-iot
+    git clone https://github.com/FrankFMY/energyguard-IoT.git energyguard-iot
+    cd energyguard-iot
 fi
 
 # Копирование .env
@@ -48,7 +48,7 @@ sleep 30
 
 # Информация
 echo ""
-echo "✅ KASTOR IoT запущен!"
+echo "✅ EnergyGuard IoT запущен!"
 echo ""
 echo "🌐 Веб-приложение: http://localhost:3000"
 echo "   Логин: admin"
@@ -56,5 +56,5 @@ echo "   Пароль: admin"
 echo ""
 echo "📊 EMQX Dashboard: http://localhost:18083"
 echo "   Логин: admin"
-echo "   Пароль: kastor_admin_demo"
+echo "   Пароль: energyguard_admin_demo"
 echo ""

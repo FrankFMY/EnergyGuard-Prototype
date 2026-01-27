@@ -1,5 +1,5 @@
 {
-	"name": "kastor-iot",
+	"name": "energyguard",
 	"version": "0.0.1",
 	"private": true,
 	"license": "UNLICENSED",
@@ -104,11 +104,11 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/FrankFMY/kastor-IoT"
+		"url": "https://github.com/FrankFMY/energyguard"
 	},
-	"homepage": "https://github.com/FrankFMY/kastor-IoT#readme",
+	"homepage": "https://github.com/FrankFMY/energyguard#readme",
 	"bugs": {
-		"url": "https://github.com/FrankFMY/kastor-IoT/issues"
+		"url": "https://github.com/FrankFMY/energyguard/issues"
 	},
 	"dependencies": {
 		"@node-rs/argon2": "^2.0.2",

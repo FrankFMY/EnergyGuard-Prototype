@@ -25,7 +25,7 @@
 		size: 'small' | 'medium' | 'large';
 	}
 
-	const STORAGE_KEY = 'kastor_dashboard_widgets';
+	const STORAGE_KEY = 'energyguard_dashboard_widgets';
 
 	const availableWidgets: Omit<Widget, 'id'>[] = [
 		{ type: 'power', titleKey: 'dashboards.widgets.power', size: 'small' },
@@ -151,7 +151,7 @@
 </script>
 
 <svelte:head>
-	<title>{$isLoading ? 'Дашборды' : $_('dashboards.pageTitle')} - KASTOR IoT</title>
+	<title>{$isLoading ? 'Дашборды' : $_('dashboards.pageTitle')} - EnergyGuard</title>
 </svelte:head>
 
 <div class="mx-auto max-w-7xl space-y-6">

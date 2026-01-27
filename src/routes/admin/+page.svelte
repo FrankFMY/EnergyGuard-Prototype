@@ -75,10 +75,10 @@
 	} | null>(null);
 
 	let users = $state([
-		{ id: '1', name: 'Иван Петров', role: 'Администратор', email: 'ivan@kastor.io', active: true },
-		{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@kastor.io', active: true },
-		{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@kastor.io', active: true },
-		{ id: '4', name: 'Елена Волкова', role: 'Наблюдатель', email: 'elena@kastor.io', active: false }
+		{ id: '1', name: 'Иван Петров', role: 'Администратор', email: 'ivan@energyguard.io', active: true },
+		{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@energyguard.io', active: true },
+		{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@energyguard.io', active: true },
+		{ id: '4', name: 'Елена Волкова', role: 'Наблюдатель', email: 'elena@energyguard.io', active: false }
 	]);
 
 	let connections = $state([
@@ -264,16 +264,16 @@
 				id: '1',
 				name: 'Иван Петров',
 				role: 'Администратор',
-				email: 'ivan@kastor.io',
+				email: 'ivan@energyguard.io',
 				active: true
 			},
-			{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@kastor.io', active: true },
-			{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@kastor.io', active: true },
+			{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@energyguard.io', active: true },
+			{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@energyguard.io', active: true },
 			{
 				id: '4',
 				name: 'Елена Волкова',
 				role: 'Наблюдатель',
-				email: 'elena@kastor.io',
+				email: 'elena@energyguard.io',
 				active: false
 			}
 		];
@@ -764,7 +764,7 @@
 				id="user-email"
 				type="email"
 				bind:value={userForm.email}
-				placeholder="user@kastor.io"
+				placeholder="user@energyguard.io"
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				required
 			/>

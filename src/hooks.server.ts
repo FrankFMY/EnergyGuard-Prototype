@@ -94,9 +94,9 @@ async function cleanupOldData() {
 			WHERE time < NOW() - INTERVAL '7 days'
 		`);
 
-		console.log('[KASTOR] Old data cleanup completed');
+		console.log('[EnergyGuard] Old data cleanup completed');
 	} catch (e) {
-		console.error('[KASTOR] Error during data cleanup:', e);
+		console.error('[EnergyGuard] Error during data cleanup:', e);
 	}
 }
 
@@ -133,7 +133,7 @@ export async function seedEngines() {
 				}
 			});
 	}
-	console.log('[KASTOR] Engines seeded and synced');
+	console.log('[EnergyGuard] Engines seeded and synced');
 }
 
 // Startup initialization - seed data if database is empty
@@ -142,7 +142,7 @@ if (!building) {
 		try {
 			const existingEngines = await db.select().from(engines).limit(1);
 			if (existingEngines.length === 0) {
-				console.log('[KASTOR] Database empty, seeding engines on startup...');
+				console.log('[EnergyGuard] Database empty, seeding engines on startup...');
 				await seedEngines();
 			}
 
@@ -150,12 +150,12 @@ if (!building) {
 			const { seedSpareParts } = await import('$lib/server/services/maintenance.service.js');
 			await seedSpareParts();
 
-			console.log('[KASTOR] Startup seeding complete');
+			console.log('[EnergyGuard] Startup seeding complete');
 		} catch (error) {
-			console.error('[KASTOR] CRITICAL - Startup seeding failed:', error);
+			console.error('[EnergyGuard] CRITICAL - Startup seeding failed:', error);
 			if (error instanceof Error) {
-				console.error('[KASTOR] Error details:', error.message);
-				console.error('[KASTOR] Stack trace:', error.stack);
+				console.error('[EnergyGuard] Error details:', error.message);
+				console.error('[EnergyGuard] Stack trace:', error.stack);
 			}
 		}
 	})();
@@ -182,7 +182,7 @@ async function autoResolveAlerts(engineId: string, metric: string) {
 				)
 			);
 	} catch (e) {
-		console.error('[KASTOR] Error auto-resolving alerts:', e);
+		console.error('[EnergyGuard] Error auto-resolving alerts:', e);
 	}
 }
 
@@ -254,7 +254,7 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 	if (building) return resolve(event);
 
 	if (!client && env.MQTT_URL) {
-		console.log('[KASTOR] Initializing MQTT Client...');
+		console.log('[EnergyGuard] Initializing MQTT Client...');
 		seedEngines().catch(console.error);
 
 		client = mqtt.connect(env.MQTT_URL, {
@@ -264,13 +264,13 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 		});
 
 		client.on('connect', () => {
-			console.log('[KASTOR] MQTT Client Connected');
+			console.log('[EnergyGuard] MQTT Client Connected');
 			client.subscribe('factory/telemetry');
 			client.subscribe('factory/events');
 		});
 
 		client.on('error', (error) => {
-			console.error('[KASTOR] MQTT Error:', error.message);
+			console.error('[EnergyGuard] MQTT Error:', error.message);
 		});
 
 		client.on('message', async (topic, message) => {
@@ -280,13 +280,13 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 
 					// Validate engine_id exists
 					if (!payload.engine_id || typeof payload.engine_id !== 'string') {
-						console.warn('[KASTOR] Invalid telemetry: missing engine_id');
+						console.warn('[EnergyGuard] Invalid telemetry: missing engine_id');
 						return;
 					}
 
 					// Validate required values
 					if (!payload.values || typeof payload.values.power !== 'number') {
-						console.warn('[KASTOR] Invalid telemetry: missing values');
+						console.warn('[EnergyGuard] Invalid telemetry: missing values');
 						return;
 					}
 
@@ -353,7 +353,7 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 
 					await db.update(engines).set({ status }).where(eq(engines.id, payload.engine_id));
 				} catch (e) {
-					console.error('[KASTOR] Error processing telemetry:', e);
+					console.error('[EnergyGuard] Error processing telemetry:', e);
 				}
 			} else if (topic === 'factory/events') {
 				try {
@@ -366,7 +366,7 @@ const mqttHandler: Handle = async ({ event, resolve }) => {
 						engine_id: payload.engine_id
 					});
 				} catch (e) {
-					console.error('[KASTOR] Error processing event:', e);
+					console.error('[EnergyGuard] Error processing event:', e);
 				}
 			}
 		});
@@ -434,7 +434,7 @@ const authHandler: Handle = async ({ event, resolve }) => {
 			// Inject mock user for demo session
 			event.locals.user = {
 				id: 'demo-user',
-				email: 'admin@kastor.io',
+				email: 'admin@energyguard.io',
 				emailVerified: true,
 				name: 'Admin User',
 				createdAt: new Date(),

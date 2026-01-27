@@ -120,66 +120,66 @@ function createHistogram(name: string, _help: string, buckets: number[]): Histog
 
 // HTTP metrics
 export const httpRequestsTotal = createCounter(
-	'kastor_http_requests_total',
+	'energyguard_http_requests_total',
 	'Total number of HTTP requests'
 );
 
 export const httpRequestDuration = createHistogram(
-	'kastor_http_request_duration_seconds',
+	'energyguard_http_request_duration_seconds',
 	'HTTP request duration in seconds',
 	[0.01, 0.05, 0.1, 0.5, 1, 5]
 );
 
 // SSE metrics
 export const sseConnectionsActive = createGauge(
-	'kastor_sse_connections_active',
+	'energyguard_sse_connections_active',
 	'Number of active SSE connections'
 );
 
 export const sseMessagesTotal = createCounter(
-	'kastor_sse_messages_total',
+	'energyguard_sse_messages_total',
 	'Total number of SSE messages sent'
 );
 
 // MQTT metrics
 export const mqttMessagesTotal = createCounter(
-	'kastor_mqtt_messages_total',
+	'energyguard_mqtt_messages_total',
 	'Total number of MQTT messages received'
 );
 
 export const mqttConnectionStatus = createGauge(
-	'kastor_mqtt_connection_status',
+	'energyguard_mqtt_connection_status',
 	'MQTT connection status (1 = connected, 0 = disconnected)'
 );
 
 // Database metrics
 export const dbQueryDuration = createHistogram(
-	'kastor_db_query_duration_seconds',
+	'energyguard_db_query_duration_seconds',
 	'Database query duration in seconds',
 	[0.001, 0.01, 0.1, 0.5, 1]
 );
 
 // Cache metrics
 export const cacheHitsTotal = createCounter(
-	'kastor_cache_hits_total',
+	'energyguard_cache_hits_total',
 	'Total number of cache hits'
 );
 
 export const cacheMissesTotal = createCounter(
-	'kastor_cache_misses_total',
+	'energyguard_cache_misses_total',
 	'Total number of cache misses'
 );
 
 // Engine metrics
-export const enginesTotalCount = createGauge('kastor_engines_total', 'Total number of engines');
+export const enginesTotalCount = createGauge('energyguard_engines_total', 'Total number of engines');
 
-export const enginesOnlineCount = createGauge('kastor_engines_online', 'Number of online engines');
+export const enginesOnlineCount = createGauge('energyguard_engines_online', 'Number of online engines');
 
 // Alert metrics
-export const alertsActiveCount = createGauge('kastor_alerts_active', 'Number of active alerts');
+export const alertsActiveCount = createGauge('energyguard_alerts_active', 'Number of active alerts');
 
 export const alertsCreatedTotal = createCounter(
-	'kastor_alerts_created_total',
+	'energyguard_alerts_created_total',
 	'Total number of alerts created'
 );
 

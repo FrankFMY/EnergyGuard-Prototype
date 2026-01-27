@@ -1,5 +1,5 @@
 -- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                    KASTOR IoT - Database Initialization                   ║
+-- ║                    EnergyGuard IoT - Database Initialization                   ║
 -- ║                                                                            ║
 -- ║  This script runs automatically when the database container starts        ║
 -- ║  It creates all necessary tables, types, and demo data                    ║
@@ -273,9 +273,9 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Admin user (for demo login)
 INSERT INTO users (id, name, email, email_verified, role) VALUES
-    ('admin-user-1', 'Администратор', 'admin@kastor.io', true, 'admin'),
-    ('operator-user-1', 'Оператор Иванов', 'operator@kastor.io', true, 'operator'),
-    ('tech-user-1', 'Техник Петров', 'tech@kastor.io', true, 'technician')
+    ('admin-user-1', 'Администратор', 'admin@energyguard.io', true, 'admin'),
+    ('operator-user-1', 'Оператор Иванов', 'operator@energyguard.io', true, 'operator'),
+    ('tech-user-1', 'Техник Петров', 'tech@energyguard.io', true, 'technician')
 ON CONFLICT (id) DO NOTHING;
 
 -- Spare parts
@@ -297,4 +297,4 @@ INSERT INTO alert_rules (id, name, metric, operator, threshold, severity, enable
 ON CONFLICT (id) DO NOTHING;
 
 -- Done!
-SELECT 'KASTOR IoT Database initialized successfully!' AS status;
+SELECT 'EnergyGuard IoT Database initialized successfully!' AS status;

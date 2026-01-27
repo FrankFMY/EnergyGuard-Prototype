@@ -27,7 +27,7 @@ class CurrencyState {
 	set current(code: CurrencyCode) {
 		this.#current = code;
 		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('kastor_currency', code);
+			localStorage.setItem('energyguard_currency', code);
 		}
 	}
 
@@ -37,7 +37,7 @@ class CurrencyState {
 
 	constructor() {
 		if (typeof localStorage !== 'undefined') {
-			const saved = localStorage.getItem('kastor_currency') as CurrencyCode;
+			const saved = localStorage.getItem('energyguard_currency') as CurrencyCode;
 			if (saved && SUPPORTED_CURRENCIES[saved]) {
 				this.#current = saved;
 			}

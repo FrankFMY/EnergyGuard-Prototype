@@ -21,7 +21,7 @@ function getRedis(): Redis | null {
 				lazyConnect: true,
 				retryStrategy(times: number) {
 					if (times > 3) {
-						console.warn('[KASTOR] Redis connection failed, falling back to memory cache');
+						console.warn('[EnergyGuard] Redis connection failed, falling back to memory cache');
 						return null; // Stop retrying
 					}
 					return Math.min(times * 100, 3000);
@@ -29,14 +29,14 @@ function getRedis(): Redis | null {
 			});
 
 			redis.on('error', (err: Error) => {
-				console.warn('[KASTOR] Redis error:', err.message);
+				console.warn('[EnergyGuard] Redis error:', err.message);
 			});
 
 			redis.on('connect', () => {
-				console.log('[KASTOR] Redis connected');
+				console.log('[EnergyGuard] Redis connected');
 			});
 		} catch (err) {
-			console.warn('[KASTOR] Failed to create Redis client:', err);
+			console.warn('[EnergyGuard] Failed to create Redis client:', err);
 			return null;
 		}
 	}
@@ -76,7 +76,7 @@ export const cache = {
 					return JSON.parse(value) as T;
 				}
 			} catch (err) {
-				console.warn('[KASTOR] Redis get error:', err);
+				console.warn('[EnergyGuard] Redis get error:', err);
 			}
 		}
 
@@ -101,7 +101,7 @@ export const cache = {
 			try {
 				await redisClient.setex(key, ttl, serialized);
 			} catch (err) {
-				console.warn('[KASTOR] Redis set error:', err);
+				console.warn('[EnergyGuard] Redis set error:', err);
 			}
 		}
 
@@ -122,7 +122,7 @@ export const cache = {
 			try {
 				await redisClient.del(key);
 			} catch (err) {
-				console.warn('[KASTOR] Redis del error:', err);
+				console.warn('[EnergyGuard] Redis del error:', err);
 			}
 		}
 
@@ -142,7 +142,7 @@ export const cache = {
 					await redisClient.del(...keys);
 				}
 			} catch (err) {
-				console.warn('[KASTOR] Redis delPattern error:', err);
+				console.warn('[EnergyGuard] Redis delPattern error:', err);
 			}
 		}
 
@@ -172,15 +172,15 @@ export const cache = {
 
 // Cache keys
 export const CACHE_KEYS = {
-	DASHBOARD_DATA: 'kastor:dashboard:data',
-	ENGINES_LIST: 'kastor:engines:list',
-	ENGINES_WITH_METRICS: 'kastor:engines:metrics',
-	MAINTENANCE_FORECASTS: 'kastor:maintenance:forecasts',
-	EVENTS_LATEST: (limit: number) => `kastor:events:latest:${limit}`,
-	ALERTS_ACTIVE: 'kastor:alerts:active',
-	ALERTS_STATS: 'kastor:alerts:stats',
-	ENGINE_DETAIL: (id: string) => `kastor:engine:${id}`,
-	ENGINE_TELEMETRY: (id: string) => `kastor:engine:${id}:telemetry`
+	DASHBOARD_DATA: 'energyguard:dashboard:data',
+	ENGINES_LIST: 'energyguard:engines:list',
+	ENGINES_WITH_METRICS: 'energyguard:engines:metrics',
+	MAINTENANCE_FORECASTS: 'energyguard:maintenance:forecasts',
+	EVENTS_LATEST: (limit: number) => `energyguard:events:latest:${limit}`,
+	ALERTS_ACTIVE: 'energyguard:alerts:active',
+	ALERTS_STATS: 'energyguard:alerts:stats',
+	ENGINE_DETAIL: (id: string) => `energyguard:engine:${id}`,
+	ENGINE_TELEMETRY: (id: string) => `energyguard:engine:${id}:telemetry`
 } as const;
 
 // Default TTLs (in seconds)

@@ -55,7 +55,7 @@
 </script>
 
 <svelte:head>
-	<title>{$isLoading ? 'Регистрация' : $_('register.pageTitle')} - KASTOR IoT</title>
+	<title>{$isLoading ? 'Регистрация' : $_('register.pageTitle')} - EnergyGuard</title>
 </svelte:head>
 
 <div class="flex min-h-screen items-center justify-center bg-slate-950 px-4">
@@ -68,7 +68,7 @@
 				<Zap class="h-8 w-8 fill-current" />
 			</div>
 			<h1 class="text-3xl font-bold text-white">
-				KASTOR <span class="font-normal text-slate-500">IoT</span>
+				EnergyGuard
 			</h1>
 			<p class="mt-2 text-sm text-slate-400">
 				{#if !$isLoading}{$_('login.subtitle')}{:else}Платформа IoT-мониторинга{/if}
@@ -126,7 +126,7 @@
 								bind:value={email}
 								required
 								autocomplete="email"
-								placeholder="operator@kastor.io"
+								placeholder="operator@energyguard.io"
 								class="w-full rounded-lg border border-slate-700 bg-slate-800 py-2.5 pr-3 pl-10 text-white placeholder-slate-500 transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none"
 							/>
 						</div>

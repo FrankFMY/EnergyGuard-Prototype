@@ -21,7 +21,7 @@ services:
     restart: always
     ports:
       - 6379:6379
-    command: redis-server --requirepass ${REDIS_PASSWORD:-kastor_redis_secret}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-energyguard_redis_secret}
     volumes:
       - redisdata:/data
     healthcheck:
@@ -45,7 +45,7 @@ services:
       EMQX_AUTHENTICATION: '[]'
       # Default admin user for dashboard
       EMQX_DASHBOARD__DEFAULT_USERNAME: 'admin'
-      EMQX_DASHBOARD__DEFAULT_PASSWORD: '${MQTT_ADMIN_PASSWORD:-kastor_mqtt_admin}'
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: '${MQTT_ADMIN_PASSWORD:-energyguard_mqtt_admin}'
     volumes:
       - emqxdata:/opt/emqx/data
     healthcheck:

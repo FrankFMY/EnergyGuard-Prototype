@@ -1,4 +1,4 @@
-# KASTOR IoT - Production Docker Compose (HOST NETWORKING MODE)
+# EnergyGuard IoT - Production Docker Compose (HOST NETWORKING MODE)
 # Оптимизированная версия для VPS (TimeWeb, Beget, DigitalOcean, etc.)
 #
 # Быстрый старт:
@@ -14,19 +14,19 @@ services:
   # ═══════════════════════════════════════════════════════════════
   db:
     image: timescale/timescaledb:latest-pg17
-    container_name: kastor-db
+    container_name: energyguard-db
     restart: always
     network_mode: host
     environment:
-      POSTGRES_USER: ${DB_USER:-kastor}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-kastor_secure_password_2026}
-      POSTGRES_DB: ${DB_NAME:-kastor}
+      POSTGRES_USER: ${DB_USER:-energyguard}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-energyguard_secure_password_2026}
+      POSTGRES_DB: ${DB_NAME:-energyguard}
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Автоматическая инициализация БД при первом запуске
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-kastor} -d ${DB_NAME:-kastor}']
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-energyguard} -d ${DB_NAME:-energyguard}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,7 +36,7 @@ services:
   # ═══════════════════════════════════════════════════════════════
   emqx:
     image: emqx/emqx:6.0.1
-    container_name: kastor-emqx
+    container_name: energyguard-emqx
     restart: always
     network_mode: host
     environment:
@@ -45,7 +45,7 @@ services:
       EMQX_LISTENERS__WS__DEFAULT__BIND: '0.0.0.0:8083'
       EMQX_DASHBOARD__LISTENERS__HTTP__BIND: '0.0.0.0:18083'
       EMQX_DASHBOARD__DEFAULT_USERNAME: 'admin'
-      EMQX_DASHBOARD__DEFAULT_PASSWORD: '${MQTT_ADMIN_PASSWORD:-kastor_mqtt_2026}'
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: '${MQTT_ADMIN_PASSWORD:-energyguard_mqtt_2026}'
     volumes:
       - emqxdata:/opt/emqx/data
     healthcheck:
@@ -55,13 +55,13 @@ services:
       retries: 5
 
   # ═══════════════════════════════════════════════════════════════
-  # APPLICATION - KASTOR IoT SvelteKit App
+  # APPLICATION - EnergyGuard IoT SvelteKit App
   # ═══════════════════════════════════════════════════════════════
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: kastor-app
+    container_name: energyguard-app
     restart: always
     network_mode: host
     environment:
@@ -69,14 +69,14 @@ services:
       PORT: 3000
       HOST: 0.0.0.0
       # Database - подключение через localhost (host networking)
-      DATABASE_URL: postgres://${DB_USER:-kastor}:${DB_PASSWORD:-kastor_secure_password_2026}@127.0.0.1:5432/${DB_NAME:-kastor}
+      DATABASE_URL: postgres://${DB_USER:-energyguard}:${DB_PASSWORD:-energyguard_secure_password_2026}@127.0.0.1:5432/${DB_NAME:-energyguard}
       # MQTT - подключение через localhost
       MQTT_URL: mqtt://127.0.0.1:1883
-      MQTT_USERNAME: ${MQTT_USERNAME:-kastor_app}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-kastor_mqtt_app_2026}
+      MQTT_USERNAME: ${MQTT_USERNAME:-energyguard_app}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-energyguard_mqtt_app_2026}
       # Auth
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-kastor-demo-secret-change-in-production-32chars}
-      AUTH_SECRET: ${AUTH_SECRET:-kastor-demo-secret-change-in-production-32chars}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-energyguard-demo-secret-change-in-production-32chars}
+      AUTH_SECRET: ${AUTH_SECRET:-energyguard-demo-secret-change-in-production-32chars}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:3000}
       # Demo mode - disable real alerts, use mocked data from seed
       DEMO_MODE: ${DEMO_MODE:-true}
@@ -100,13 +100,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.simulator
-    container_name: kastor-simulator
+    container_name: energyguard-simulator
     restart: unless-stopped
     network_mode: host
     environment:
       MQTT_URL: mqtt://127.0.0.1:1883
-      MQTT_USERNAME: ${MQTT_USERNAME:-kastor_app}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-kastor_mqtt_app_2026}
+      MQTT_USERNAME: ${MQTT_USERNAME:-energyguard_app}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-energyguard_mqtt_app_2026}
     profiles:
       - demo
     depends_on:

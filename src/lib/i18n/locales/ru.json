@@ -1,10 +1,10 @@
 {
 	"app": {
-		"name": "KASTOR",
-		"tagline": "IoT",
+		"name": "EnergyGuard",
+		"tagline": "",
 		"systemOnline": "Система онлайн",
 		"systemOffline": "Система офлайн",
-		"loading": "Загрузка KASTOR IoT..."
+		"loading": "Загрузка EnergyGuard..."
 	},
 	"nav": {
 		"dashboard": "Дашборд",

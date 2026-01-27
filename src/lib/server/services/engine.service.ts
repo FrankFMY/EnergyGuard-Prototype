@@ -57,7 +57,7 @@ export async function getAllEngines(): Promise<Engine[]> {
 export async function getLatestTelemetry(): Promise<Map<string, TelemetryRow>> {
 	// Try cache first (2 second TTL for near real-time data)
 	// Use separate cache key for telemetry data
-	const cacheKey = 'kastor:telemetry:latest';
+	const cacheKey = 'energyguard:telemetry:latest';
 	const cached = await cache.get<Record<string, TelemetryRow>>(cacheKey);
 	if (cached) {
 		// Convert cached object back to Map

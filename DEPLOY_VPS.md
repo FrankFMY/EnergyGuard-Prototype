@@ -21,8 +21,8 @@ curl -fsSL https://get.docker.com | sh
 systemctl enable --now docker
 
 # 3. Клонируем и запускаем
-git clone https://github.com/FrankFMY/kastor-iot.git
-cd kastor-iot
+git clone https://github.com/FrankFMY/energyguard-iot.git
+cd energyguard-iot
 chmod +x scripts/deploy.sh
 ./scripts/deploy.sh demo
 ```
@@ -36,7 +36,7 @@ chmod +x scripts/deploy.sh
 | Сервис         | URL             | Логин       | Пароль            |
 | -------------- | --------------- | ----------- | ----------------- |
 | Приложение     | http://IP:3000  | Регистрация | -                 |
-| EMQX Dashboard | http://IP:18083 | admin       | kastor_admin_demo |
+| EMQX Dashboard | http://IP:18083 | admin       | energyguard_admin_demo |
 
 ---
 
@@ -47,10 +47,10 @@ chmod +x scripts/deploy.sh
 docker ps
 
 # Логи
-docker logs -f kastor-app
+docker logs -f energyguard-app
 
 # Перезапуск
-docker restart kastor-app
+docker restart energyguard-app
 
 # Остановить
 docker compose -f docker-compose.production.yaml down
@@ -67,7 +67,7 @@ git pull && docker compose -f docker-compose.production.yaml --profile demo up -
 
 ```
 Тип: A
-Имя: kastor (или @)
+Имя: energyguard (или @)
 Значение: IP_ВАШЕГО_VPS
 TTL: 300
 ```
@@ -76,8 +76,8 @@ TTL: 300
 
 ```bash
 nano .env
-# TRUSTED_ORIGINS=https://kastor.totsoft.net
-docker restart kastor-app
+# TRUSTED_ORIGINS=https://energyguard.totsoft.net
+docker restart energyguard-app
 ```
 
 ---

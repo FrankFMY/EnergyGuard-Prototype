@@ -12,7 +12,7 @@ let updateInterval: ReturnType<typeof setInterval> | null = null;
 let isUpdating = false;
 
 const UPDATE_INTERVAL = 10000; // 10 seconds (increased from 5 for demo stability)
-const CACHE_KEY = 'kastor:sse:broadcast:data';
+const CACHE_KEY = 'energyguard:sse:broadcast:data';
 
 /**
  * Get cached dashboard data or fetch fresh

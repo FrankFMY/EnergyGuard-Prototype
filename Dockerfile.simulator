@@ -1,4 +1,4 @@
-# KASTOR IoT Simulator
+# EnergyGuard IoT Simulator
 # Генерирует демо-данные телеметрии для 6 двигателей
 
 FROM oven/bun:1-alpine

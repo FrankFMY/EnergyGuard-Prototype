@@ -1,5 +1,5 @@
 /**
- * Database seed script for KASTOR IoT demo data
+ * Database seed script for EnergyGuard IoT demo data
  * Run: bun run scripts/seed.ts
  */
 
@@ -10,7 +10,7 @@ import * as schema from '../src/lib/server/db/schema.js';
 import { hash } from '@node-rs/argon2';
 
 const DATABASE_URL =
-	process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/kastor';
+	process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/energyguard';
 
 const client = postgres(DATABASE_URL);
 const db = drizzle(client, { schema });
@@ -31,28 +31,28 @@ async function seed() {
 		{
 			id: 'user-admin',
 			name: 'Иван Петров',
-			email: 'admin@kastor.io',
+			email: 'admin@energyguard.io',
 			emailVerified: true,
 			role: 'admin' as const
 		},
 		{
 			id: 'user-operator',
 			name: 'Мария Сидорова',
-			email: 'operator@kastor.io',
+			email: 'operator@energyguard.io',
 			emailVerified: true,
 			role: 'operator' as const
 		},
 		{
 			id: 'user-technician',
 			name: 'Алексей Козлов',
-			email: 'technician@kastor.io',
+			email: 'technician@energyguard.io',
 			emailVerified: true,
 			role: 'technician' as const
 		},
 		{
 			id: 'user-viewer',
 			name: 'Елена Волкова',
-			email: 'viewer@kastor.io',
+			email: 'viewer@energyguard.io',
 			emailVerified: true,
 			role: 'viewer' as const
 		}
@@ -701,10 +701,10 @@ async function seed() {
 
 	console.log('\n✅ Database seed completed successfully!');
 	console.log('\n📋 Demo credentials:');
-	console.log('   Admin: admin@kastor.io / demo1234');
-	console.log('   Operator: operator@kastor.io / demo1234');
-	console.log('   Technician: technician@kastor.io / demo1234');
-	console.log('   Viewer: viewer@kastor.io / demo1234');
+	console.log('   Admin: admin@energyguard.io / demo1234');
+	console.log('   Operator: operator@energyguard.io / demo1234');
+	console.log('   Technician: technician@energyguard.io / demo1234');
+	console.log('   Viewer: viewer@energyguard.io / demo1234');
 
 	await client.end();
 	process.exit(0);

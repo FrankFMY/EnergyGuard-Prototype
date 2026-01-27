@@ -1,4 +1,4 @@
-# KASTOR IoT
+# EnergyGuard IoT
 
 [![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)](https://svelte.dev/)
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-2-FF3E00?logo=svelte&logoColor=white)](https://kit.svelte.dev/)
@@ -18,16 +18,16 @@ Real-time monitoring and analytics platform for gas-powered engines (Weichai 16V
 
 ```bash
 # Клонируем и запускаем
-git clone https://github.com/FrankFMY/kastor-IoT.git
-cd kastor-IoT
+git clone https://github.com/FrankFMY/energyguard-IoT.git
+cd energyguard-IoT
 make demo
 ```
 
 ### Вариант 2: Через скрипт
 
 ```bash
-git clone https://github.com/FrankFMY/kastor-IoT.git
-cd kastor-IoT
+git clone https://github.com/FrankFMY/energyguard-IoT.git
+cd energyguard-IoT
 chmod +x scripts/deploy.sh
 ./scripts/deploy.sh demo
 ```
@@ -35,8 +35,8 @@ chmod +x scripts/deploy.sh
 ### Вариант 3: Напрямую через Docker Compose
 
 ```bash
-git clone https://github.com/FrankFMY/kastor-IoT.git
-cd kastor-IoT
+git clone https://github.com/FrankFMY/energyguard-IoT.git
+cd energyguard-IoT
 cp .env.demo .env
 docker compose -f docker-compose.production.yaml --profile demo up -d --build
 ```
@@ -46,7 +46,7 @@ docker compose -f docker-compose.production.yaml --profile demo up -d --build
 | Сервис             | URL                    | Логин   | Пароль              |
 | ------------------ | ---------------------- | ------- | ------------------- |
 | **Веб-приложение** | http://localhost:3000  | `admin` | `admin`             |
-| **EMQX Dashboard** | http://localhost:18083 | `admin` | `kastor_admin_demo` |
+| **EMQX Dashboard** | http://localhost:18083 | `admin` | `energyguard_admin_demo` |
 
 > **Требования:** Docker и Docker Compose. Установка Docker: `curl -fsSL https://get.docker.com | sh`
 
@@ -71,12 +71,12 @@ systemctl start docker
 apt update && apt install -y git
 ```
 
-### Шаг 2: Разворачиваем KASTOR
+### Шаг 2: Разворачиваем EnergyGuard
 
 ```bash
 # Клонируем репозиторий
-git clone https://github.com/FrankFMY/kastor-IoT.git
-cd kastor-IoT
+git clone https://github.com/FrankFMY/energyguard-IoT.git
+cd energyguard-IoT
 
 # Запускаем ДЕМО
 make demo
@@ -123,8 +123,8 @@ make clean       # Удалить всё (включая данные!)
 
 ```bash
 # Clone repository
-git clone https://github.com/FrankFMY/kastor-IoT.git
-cd kastor-IoT
+git clone https://github.com/FrankFMY/energyguard-IoT.git
+cd energyguard-IoT
 
 # Install dependencies
 bun install
@@ -189,11 +189,11 @@ Create `.env` file based on `.env.example`:
 
 ```env
 # Database
-DATABASE_URL=postgres://user:password@localhost:5432/kastor
+DATABASE_URL=postgres://user:password@localhost:5432/energyguard
 
 # MQTT Broker
 MQTT_URL=mqtt://localhost:1883
-MQTT_USERNAME=kastor_app
+MQTT_USERNAME=energyguard_app
 MQTT_PASSWORD=your_mqtt_password
 
 # Redis (optional - falls back to in-memory cache)
@@ -393,10 +393,10 @@ bun run db:stop
 
 ```bash
 # Build application image
-docker build -t kastor-iot .
+docker build -t energyguard-iot .
 
 # Run with environment file
-docker run -p 3000:3000 --env-file .env.production kastor-iot
+docker run -p 3000:3000 --env-file .env.production energyguard-iot
 ```
 
 The Dockerfile includes:

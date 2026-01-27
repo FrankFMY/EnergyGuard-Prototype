@@ -131,7 +131,7 @@
 				>
 					<Zap class="h-5 w-5 fill-current" />
 				</div>
-				<span class="text-lg font-bold text-white">KASTOR</span>
+				<span class="text-lg font-bold text-white">EnergyGuard</span>
 			</a>
 			<button
 				onclick={close}
