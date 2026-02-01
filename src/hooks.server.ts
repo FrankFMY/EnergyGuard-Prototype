@@ -68,16 +68,6 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
 	return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
 }
 
-// Clean up old rate limit entries periodically
-setInterval(() => {
-	const now = Date.now();
-	for (const [ip, record] of rateLimitStore.entries()) {
-		if (now > record.resetTime) {
-			rateLimitStore.delete(ip);
-		}
-	}
-}, 60 * 1000);
-
 // Periodic cleanup of old data (runs every hour)
 async function cleanupOldData() {
 	try {
@@ -99,12 +89,6 @@ async function cleanupOldData() {
 		console.error('[EnergyGuard] Error during data cleanup:', e);
 	}
 }
-
-// Run cleanup every hour
-setInterval(cleanupOldData, 60 * 60 * 1000);
-
-// Run initial cleanup after 1 minute of startup
-setTimeout(cleanupOldData, 60 * 1000);
 
 export async function seedEngines() {
 	const engineList = [
@@ -476,5 +460,69 @@ const authHandler: Handle = async ({ event, resolve }) => {
 const betterAuthHandler: Handle = ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth, building });
 };
+
+// Store interval IDs for cleanup
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+let rateLimitCleanupId: NodeJS.Timeout | null = null;
+let intervalsInitialized = false;
+
+// Initialize intervals only once
+if (!building && !intervalsInitialized) {
+	intervalsInitialized = true;
+	cleanupIntervalId = setInterval(cleanupOldData, 60 * 60 * 1000);
+	rateLimitCleanupId = setInterval(() => {
+		const now = Date.now();
+		for (const [ip, record] of rateLimitStore.entries()) {
+			if (now > record.resetTime) {
+				rateLimitStore.delete(ip);
+			}
+		}
+	}, 60 * 1000);
+
+	// Run initial cleanup after 1 minute of startup
+	setTimeout(cleanupOldData, 60 * 1000);
+}
+
+// Graceful shutdown handler
+function gracefulShutdown() {
+	console.log('[EnergyGuard] Initiating graceful shutdown...');
+
+	// Close MQTT client
+	if (client && client.connected) {
+		console.log('[EnergyGuard] Closing MQTT connection...');
+		client.end(true, () => {
+			console.log('[EnergyGuard] MQTT connection closed');
+		});
+	}
+
+	// Clear intervals
+	if (cleanupIntervalId) {
+		clearInterval(cleanupIntervalId);
+		cleanupIntervalId = null;
+	}
+	if (rateLimitCleanupId) {
+		clearInterval(rateLimitCleanupId);
+		rateLimitCleanupId = null;
+	}
+
+	// Clear maps
+	rateLimitStore.clear();
+	recentAlerts.clear();
+
+	console.log('[EnergyGuard] Graceful shutdown complete');
+}
+
+// Register shutdown handlers (only in non-build environment)
+if (!building) {
+	process.on('SIGINT', () => {
+		gracefulShutdown();
+		process.exit(0);
+	});
+
+	process.on('SIGTERM', () => {
+		gracefulShutdown();
+		process.exit(0);
+	});
+}
 
 export const handle = sequence(rateLimitHandler, betterAuthHandler, authHandler, mqttHandler);
