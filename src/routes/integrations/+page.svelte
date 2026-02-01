@@ -337,8 +337,7 @@
 									onclick={() => toggleConnection(integration)}
 								>
 									<Pause class="h-3 w-3" />
-									{#if !$isLoading}{$_('integrations.disconnect') ||
-											'Disconnect'}{:else}Отключить{/if}
+									{#if !$isLoading}{$_('integrations.disconnect')}{:else}Отключить{/if}
 								</Button>
 							{:else}
 								<Button size="sm" class="gap-1" onclick={() => toggleConnection(integration)}>

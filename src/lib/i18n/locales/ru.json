@@ -788,6 +788,7 @@
 		"secAgo": "сек назад",
 		"settings": "Настройки",
 		"connect": "Подключить",
+		"disconnect": "Отключить",
 		"devices": "устройств",
 		"dataPointsLabel": "точек данных",
 		"documentation": "Документация",

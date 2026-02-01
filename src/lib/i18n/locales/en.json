@@ -788,6 +788,7 @@
 		"secAgo": "sec ago",
 		"settings": "Settings",
 		"connect": "Connect",
+		"disconnect": "Disconnect",
 		"devices": "devices",
 		"dataPointsLabel": "data points",
 		"documentation": "Documentation",
