@@ -285,7 +285,7 @@
 
 				<div class="grid grid-cols-1 items-center gap-6 md:grid-cols-2">
 					<!-- Chart -->
-					<div class="h-64 w-full" bind:this={pieChartEl}></div>
+					<div class="h-48 w-full sm:h-64" bind:this={pieChartEl}></div>
 
 					<!-- Legend -->
 					<div class="space-y-3">
@@ -371,7 +371,7 @@
 				{$_('economics.monthlyTrend')}
 			</h3>
 
-			<div class="h-80 w-full" bind:this={barChartEl}></div>
+			<div class="h-56 w-full sm:h-80" bind:this={barChartEl}></div>
 		</Card>
 	{/if}
 </div>

@@ -135,6 +135,9 @@
 		"partsUnavailable": "Parts Unavailable",
 		"engine": "Engine",
 		"model": "Model",
+		"noData": "No Maintenance Data",
+		"noDataDesc": "Data will appear after loading engine information from the database.",
+		"noPartsData": "No spare parts data",
 		"urgency": {
 			"low": "Low",
 			"medium": "Medium",
@@ -341,7 +344,9 @@
 			"confirmDelete": "Are you sure you want to delete this engine?",
 			"engineId": "Engine ID",
 			"model": "Model",
-			"nominalPower": "Nominal Power (kW)"
+			"nominalPower": "Nominal Power (kW)",
+			"noEngines": "No Engines",
+			"noEnginesDesc": "Add engines to the database or check the database connection."
 		},
 		"users": {
 			"addUser": "Add User",
@@ -403,6 +408,7 @@
 		"generation": "Generation",
 		"planned": "Planned",
 		"actual": "Actual",
+		"target": "Target",
 		"specificConsumption": "Specific Consumption",
 		"m3PerKwh": "m³/kWh",
 		"planCompletion": "Plan Completion",
@@ -479,13 +485,42 @@
 		"generate": "Generate Report",
 		"download": "Download",
 		"preview": "Preview",
+		"email": "Email",
 		"types": {
 			"daily": "Daily",
 			"weekly": "Weekly",
 			"monthly": "Monthly",
+			"annual": "Annual",
 			"custom": "Custom Period"
 		},
-		"noReports": "No reports found"
+		"noReports": "No reports found",
+		"report": "Report",
+		"generated": "Generated",
+		"format": "Format",
+		"size": "Size",
+		"actions": "Actions",
+		"availableReports": "Available Reports",
+		"recentReports": "Recent Reports",
+		"automatedReports": "Automated Reports",
+		"automatedDesc": "Configure automatic report generation and delivery. Daily reports are sent at 06:00, weekly reports on Monday, and monthly reports on the 1st of each month.",
+		"reportTypes": {
+			"daily": {
+				"title": "Daily Operational Summary",
+				"description": "Power generation, efficiency metrics, and event logs for the last 24 hours."
+			},
+			"monthly_eco": {
+				"title": "Monthly Economic Analysis",
+				"description": "Detailed cost breakdown, profitability analysis, and budget forecast."
+			},
+			"maintenance": {
+				"title": "Maintenance Log",
+				"description": "Complete history of maintenance activities, parts replacement, and downtime."
+			},
+			"efficiency": {
+				"title": "Efficiency Trend Report",
+				"description": "OEE metrics, performance trends, and optimization recommendations."
+			}
+		}
 	},
 	"calendar": {
 		"title": "Maintenance Calendar",
@@ -730,7 +765,18 @@
 		"engineeringModel": "Engineering Model",
 		"engineeringModelDesc": "This simulation uses a polynomial regression model based on Jenbacher J420 technical data. It accounts for methane number variations and their direct effect on thermodynamic efficiency.",
 		"financialImpact": "Financial Impact",
-		"financialImpactDesc": "Losses are calculated in real-time based on the current market tariff and the deficit between nominal and actual power output. This highlights the business risk of using low-quality fuel."
+		"financialImpactDesc": "Losses are calculated in real-time based on the current market tariff and the deficit between nominal and actual power output. This highlights the business risk of using low-quality fuel.",
+		"pureMethane": "Pure Methane",
+		"lowQuality": "Low Quality",
+		"tempCritical": "CRIT",
+		"tempWarning": "WARN",
+		"alertLoss": "Loss {loss}/hour. Reason: low gas quality. Recommendation: check filters.",
+		"alertOptimal": "Optimal operation. Fuel quality within normal range.",
+		"scenarios": {
+			"reference": "Reference",
+			"contamination": "Contamination",
+			"emergency": "Emergency"
+		}
 	},
 	"integrations": {
 		"title": "Integrations",

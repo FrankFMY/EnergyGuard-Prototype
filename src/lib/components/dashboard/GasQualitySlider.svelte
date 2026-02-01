@@ -81,9 +81,9 @@
 		});
 
 		// Trigger simulator audit event
-		if (gasQuality === 1.0) triggerScenarioEvent('Эталон', 'info');
-		else if (gasQuality === 0.85) triggerScenarioEvent('Загрязнение', 'warning');
-		else if (gasQuality === 0.72) triggerScenarioEvent('Авария', 'error');
+		if (gasQuality === 1.0) triggerScenarioEvent($_('demo.scenarios.reference'), 'info');
+		else if (gasQuality === 0.85) triggerScenarioEvent($_('demo.scenarios.contamination'), 'warning');
+		else if (gasQuality === 0.72) triggerScenarioEvent($_('demo.scenarios.emergency'), 'error');
 	});
 
 	const getTempColor = (t: number) => {
@@ -101,9 +101,9 @@
 	const getAlertText = (gq: number, loss: number) => {
 		if (gq < 0.9) {
 			const formattedLoss = currencyState.format(loss);
-			return `Убыток ${formattedLoss}/час. Причина: низкое качество газа. Рекомендация: проверка фильтров.`;
+			return $_('demo.alertLoss', { values: { loss: formattedLoss } });
 		}
-		return 'Оптимальная работа. Качество топлива в пределах нормы.';
+		return $_('demo.alertOptimal');
 	};
 </script>
 
@@ -114,7 +114,7 @@
 			{$_('demo.gasQualitySim')}
 		</h3>
 		<Badge variant={gasQuality > 0.9 ? 'success' : gasQuality > 0.8 ? 'warning' : 'danger'}>
-			{gasQuality === 1.0 ? 'Чистый Метан' : 'Низкое качество'}
+			{gasQuality === 1.0 ? $_('demo.pureMethane') : $_('demo.lowQuality')}
 		</Badge>
 	</div>
 
@@ -148,40 +148,40 @@
 			<button
 				type="button"
 				class={cn(
-					'rounded-lg border border-slate-700 py-2 text-[10px] font-medium transition-all duration-200 hover:bg-slate-800 active:scale-95 sm:py-2.5 sm:text-xs',
+					'rounded-lg border border-slate-700 min-h-[44px] py-2 text-[10px] font-medium transition-all duration-200 hover:bg-slate-800 active:scale-95 sm:min-h-0 sm:py-2.5 sm:text-xs',
 					gasQuality === 1.0
 						? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-lg shadow-cyan-500/10'
 						: 'text-slate-400'
 				)}
 				onclick={() => (gasQuality = 1.0)}
 			>
-				<span class="hidden sm:inline">Эталон</span>
+				<span class="hidden sm:inline">{$_('demo.scenarios.reference')}</span>
 				<span class="sm:hidden">100%</span>
 			</button>
 			<button
 				type="button"
 				class={cn(
-					'rounded-lg border border-slate-700 py-2 text-[10px] font-medium transition-all duration-200 hover:bg-slate-800 active:scale-95 sm:py-2.5 sm:text-xs',
+					'rounded-lg border border-slate-700 min-h-[44px] py-2 text-[10px] font-medium transition-all duration-200 hover:bg-slate-800 active:scale-95 sm:min-h-0 sm:py-2.5 sm:text-xs',
 					gasQuality === 0.85
 						? 'border-amber-500 bg-amber-500/10 text-amber-400 shadow-lg shadow-amber-500/10'
 						: 'text-slate-400'
 				)}
 				onclick={() => (gasQuality = 0.85)}
 			>
-				<span class="hidden sm:inline">Загрязнение</span>
+				<span class="hidden sm:inline">{$_('demo.scenarios.contamination')}</span>
 				<span class="sm:hidden">85%</span>
 			</button>
 			<button
 				type="button"
 				class={cn(
-					'rounded-lg border border-slate-700 py-2 text-[10px] font-medium transition-all duration-200 hover:bg-slate-800 active:scale-95 sm:py-2.5 sm:text-xs',
+					'rounded-lg border border-slate-700 min-h-[44px] py-2 text-[10px] font-medium transition-all duration-200 hover:bg-slate-800 active:scale-95 sm:min-h-0 sm:py-2.5 sm:text-xs',
 					gasQuality === 0.72
 						? 'border-rose-500 bg-rose-500/10 text-rose-400 shadow-lg shadow-rose-500/10'
 						: 'text-slate-400'
 				)}
 				onclick={() => (gasQuality = 0.72)}
 			>
-				<span class="hidden sm:inline">Авария</span>
+				<span class="hidden sm:inline">{$_('demo.scenarios.emergency')}</span>
 				<span class="sm:hidden">72%</span>
 			</button>
 		</div>
@@ -226,9 +226,9 @@
 				<div class="mt-2">
 					<Badge variant={getTempBadgeVariant(temperature)} size="sm">
 						{temperature > ENGINE_CONSTANTS.CRITICAL_TEMP_THRESHOLD
-							? 'КРИТ'
+							? $_('demo.tempCritical')
 							: temperature > ENGINE_CONSTANTS.WARNING_TEMP_THRESHOLD
-								? 'ПРЕД'
+								? $_('demo.tempWarning')
 								: 'OK'}
 					</Badge>
 				</div>
@@ -260,7 +260,7 @@
 				<div class="text-right">
 					<div class="text-[10px] text-slate-500 sm:text-xs">{$_('demo.powerDeficit')}</div>
 					<div class="font-mono text-xs text-rose-400 tabular-nums sm:text-sm">
-						-{powerLoss.toFixed(0)} кВт
+						-{powerLoss.toFixed(0)} {$_('units.kw')}
 					</div>
 				</div>
 			</div>

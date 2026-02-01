@@ -52,7 +52,7 @@
 	let userForm = $state({
 		name: '',
 		email: '',
-		role: 'Оператор',
+		role: 'operator',
 		active: true
 	});
 
@@ -75,10 +75,10 @@
 	} | null>(null);
 
 	let users = $state([
-		{ id: '1', name: 'Иван Петров', role: 'Администратор', email: 'ivan@energyguard.io', active: true },
-		{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@energyguard.io', active: true },
-		{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@energyguard.io', active: true },
-		{ id: '4', name: 'Елена Волкова', role: 'Наблюдатель', email: 'elena@energyguard.io', active: false }
+		{ id: '1', name: 'Ivan Petrov', role: 'admin', email: 'ivan@energyguard.io', active: true },
+		{ id: '2', name: 'Maria Sidorova', role: 'operator', email: 'maria@energyguard.io', active: true },
+		{ id: '3', name: 'Alexey Kozlov', role: 'technician', email: 'alexey@energyguard.io', active: true },
+		{ id: '4', name: 'Elena Volkova', role: 'viewer', email: 'elena@energyguard.io', active: false }
 	]);
 
 	let connections = $state([
@@ -244,10 +244,10 @@
 
 	function getRoleBadge(role: string) {
 		const map: Record<string, 'danger' | 'warning' | 'info' | 'secondary'> = {
-			Администратор: 'danger',
-			Оператор: 'warning',
-			Техник: 'info',
-			Наблюдатель: 'secondary'
+			admin: 'danger',
+			operator: 'warning',
+			technician: 'info',
+			viewer: 'secondary'
 		};
 		return map[role] || 'secondary';
 	}
@@ -262,17 +262,17 @@
 		users = [
 			{
 				id: '1',
-				name: 'Иван Петров',
-				role: 'Администратор',
+				name: 'Ivan Petrov',
+				role: 'admin',
 				email: 'ivan@energyguard.io',
 				active: true
 			},
-			{ id: '2', name: 'Мария Сидорова', role: 'Оператор', email: 'maria@energyguard.io', active: true },
-			{ id: '3', name: 'Алексей Козлов', role: 'Техник', email: 'alexey@energyguard.io', active: true },
+			{ id: '2', name: 'Maria Sidorova', role: 'operator', email: 'maria@energyguard.io', active: true },
+			{ id: '3', name: 'Alexey Kozlov', role: 'technician', email: 'alexey@energyguard.io', active: true },
 			{
 				id: '4',
-				name: 'Елена Волкова',
-				role: 'Наблюдатель',
+				name: 'Elena Volkova',
+				role: 'viewer',
 				email: 'elena@energyguard.io',
 				active: false
 			}
@@ -390,13 +390,13 @@
 				<!-- Empty State -->
 				<Card class="p-8 text-center">
 					<Cpu class="mx-auto mb-4 h-12 w-12 text-slate-500" />
-					<h3 class="mb-2 text-lg font-semibold text-white">Нет двигателей</h3>
+					<h3 class="mb-2 text-lg font-semibold text-white">{$_('admin.engines.noEngines')}</h3>
 					<p class="mb-4 text-slate-400">
-						Добавьте двигатели в базу данных или проверьте подключение к базе данных.
+						{$_('admin.engines.noEnginesDesc')}
 					</p>
 					<Button onclick={openAddEngine} class="gap-2">
 						<Plus class="h-4 w-4" />
-						Добавить двигатель
+						{$_('admin.engines.addEngine')}
 					</Button>
 				</Card>
 			{:else}
@@ -478,21 +478,21 @@
 							</div>
 						</div>
 						<div class="flex shrink-0 gap-1">
-							<Button variant="ghost" size="sm" onclick={() => openEditUser(user)}>
-								<Pencil class="h-4 w-4" />
+							<Button variant="ghost" size="sm" class="min-h-[44px] min-w-[44px] p-2" onclick={() => openEditUser(user)}>
+								<Pencil class="h-5 w-5" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
-								class="text-rose-400 hover:text-rose-300"
+								class="min-h-[44px] min-w-[44px] p-2 text-rose-400 hover:text-rose-300"
 								onclick={() => confirmDelete('user', user.id, user.name)}
 							>
-								<Trash2 class="h-4 w-4" />
+								<Trash2 class="h-5 w-5" />
 							</Button>
 						</div>
 					</div>
 					<div class="mt-3 flex flex-wrap items-center gap-2">
-						<Badge variant={getRoleBadge(user.role)}>{user.role}</Badge>
+						<Badge variant={getRoleBadge(user.role)}>{$_('admin.users.roles.' + user.role)}</Badge>
 						{#if user.active}
 							<Badge variant="success">{$_('admin.users.status.active')}</Badge>
 						{:else}
@@ -543,7 +543,7 @@
 									</div>
 								</td>
 								<td class="px-4 py-4"
-									><Badge variant={getRoleBadge(user.role)}>{user.role}</Badge></td
+									><Badge variant={getRoleBadge(user.role)}>{$_('admin.users.roles.' + user.role)}</Badge></td
 								>
 								<td class="px-4 py-4">
 									{#if user.active}
@@ -750,7 +750,7 @@
 				id="user-name"
 				type="text"
 				bind:value={userForm.name}
-				placeholder="Иван Иванов"
+				placeholder={$_('register.namePlaceholder')}
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				required
 			/>
@@ -779,10 +779,10 @@
 				bind:value={userForm.role}
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 			>
-				<option value="Администратор">{$_('admin.users.roles.admin')}</option>
-				<option value="Оператор">{$_('admin.users.roles.operator')}</option>
-				<option value="Техник">{$_('admin.users.roles.technician')}</option>
-				<option value="Наблюдатель">{$_('admin.users.roles.viewer')}</option>
+				<option value="admin">{$_('admin.users.roles.admin')}</option>
+				<option value="operator">{$_('admin.users.roles.operator')}</option>
+				<option value="technician">{$_('admin.users.roles.technician')}</option>
+				<option value="viewer">{$_('admin.users.roles.viewer')}</option>
 			</select>
 		</div>
 

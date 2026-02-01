@@ -491,7 +491,7 @@
 				<TrendingUp class="h-5 w-5 text-cyan-400" />
 				{$_('analytics.profitWaterfall')}
 			</h3>
-			<div class="h-72 w-full" bind:this={waterfallChartEl}></div>
+			<div class="h-56 w-full sm:h-72" bind:this={waterfallChartEl}></div>
 		</Card>
 
 		<!-- ROI Gauge -->

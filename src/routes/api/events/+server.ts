@@ -1,9 +1,13 @@
 import { json, error } from '@sveltejs/kit';
 import { db } from '$lib/server/db/index.js';
 import { events } from '$lib/server/db/schema.js';
-import { subscribe, getCurrentData } from '$lib/server/services/sse-broadcast.service.js';
+import { subscribe, getCurrentData, canAcceptConnection } from '$lib/server/services/sse-broadcast.service.js';
 
 export async function GET() {
+	// Check if we can accept new connections
+	if (!canAcceptConnection()) {
+		throw error(503, 'Too many concurrent connections. Please try again later.');
+	}
 	// Track intervals for cleanup
 	let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
 	let unsubscribe: (() => void) | null = null;
@@ -46,7 +50,7 @@ export async function GET() {
 			}
 
 			// Subscribe to shared data updates (all clients get same data from cache)
-			unsubscribe = subscribe((data) => {
+			const sub = subscribe((data) => {
 				if (isClosed) return;
 				sendEvent('diff', {
 					type: 'diff',
@@ -55,6 +59,14 @@ export async function GET() {
 					hash: Math.random().toString(36).substring(7)
 				});
 			});
+
+			// Handle subscription failure (max connections reached)
+			if (sub === null) {
+				sendEvent('error', { message: 'Server at capacity. Please try again later.' });
+				cleanup();
+				return;
+			}
+			unsubscribe = sub;
 
 			// Keep-alive heartbeat
 			heartbeatInterval = setInterval(() => {

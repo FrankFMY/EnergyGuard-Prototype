@@ -122,8 +122,8 @@
 			</div>
 
 			<div class="mt-2 flex justify-between text-xs text-slate-500">
-				<span>Факт: {specificConsumption.toFixed(3)}</span>
-				<span>Норма: {targetConsumption.toFixed(3)}</span>
+				<span>{$_('oee.actual')}: {specificConsumption.toFixed(3)}</span>
+				<span>{$_('oee.target')}: {targetConsumption.toFixed(3)}</span>
 			</div>
 		</div>
 
@@ -132,7 +132,7 @@
 			<div class="grid grid-cols-2 gap-4 text-center">
 				<div>
 					<div class="text-2xl font-bold text-white">{efficiency.toFixed(1)}%</div>
-					<div class="text-xs text-slate-500">Выполнение плана</div>
+					<div class="text-xs text-slate-500">{$_('oee.planCompletion')}</div>
 				</div>
 				<div>
 					<div

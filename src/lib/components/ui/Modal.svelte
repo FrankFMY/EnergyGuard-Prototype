@@ -12,11 +12,12 @@
 
 	const { open, title, onclose, size = 'md', children }: Props = $props();
 
+	// Responsive sizes: mobile-first, then scale up at sm breakpoint
 	const sizes = {
-		sm: 'max-w-sm',
-		md: 'max-w-md',
-		lg: 'max-w-lg',
-		xl: 'max-w-xl'
+		sm: 'max-w-[calc(100vw-2rem)] sm:max-w-sm',
+		md: 'max-w-[calc(100vw-2rem)] sm:max-w-md',
+		lg: 'max-w-[calc(100vw-2rem)] sm:max-w-lg',
+		xl: 'max-w-[calc(100vw-2rem)] sm:max-w-xl'
 	};
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -47,17 +48,17 @@
 	>
 		<div
 			class={cn(
-				'pointer-events-auto w-full rounded-xl border border-white/10 bg-slate-900 shadow-2xl',
+				'pointer-events-auto flex w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex-col rounded-xl border border-white/10 bg-slate-900 shadow-2xl',
 				sizes[size]
 			)}
 		>
 			<!-- Header -->
-			<div class="flex items-center justify-between border-b border-white/5 px-6 py-4">
-				<h2 id="modal-title" class="text-lg font-semibold text-white">{title}</h2>
+			<div class="flex shrink-0 items-center justify-between border-b border-white/5 px-4 py-3 sm:px-6 sm:py-4">
+				<h2 id="modal-title" class="text-base font-semibold text-white sm:text-lg">{title}</h2>
 				<button
 					type="button"
 					onclick={onclose}
-					class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+					class="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
 					aria-label="Close modal"
 				>
 					<X class="h-5 w-5" />
@@ -65,7 +66,7 @@
 			</div>
 
 			<!-- Content -->
-			<div class="p-6">
+			<div class="overflow-y-auto p-4 sm:p-6">
 				{@render children()}
 			</div>
 		</div>

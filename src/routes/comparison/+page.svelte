@@ -236,7 +236,7 @@
 		<Card class="p-8 text-center">
 			<div class="flex flex-col items-center gap-4">
 				<div class="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-500"></div>
-				<p class="text-slate-400">Загрузка данных...</p>
+				<p class="text-slate-400">{$_('common.loading')}</p>
 			</div>
 		</Card>
 	{:else if loadingError}
@@ -249,7 +249,7 @@
 					onclick={loadData}
 					class="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-600"
 				>
-					Повторить
+					{$_('common.retry')}
 				</button>
 			</div>
 		</Card>

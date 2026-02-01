@@ -243,8 +243,8 @@
 						<div class="flex-1">
 							<div class="mb-2 flex flex-wrap items-center gap-2">
 								<h3 class="font-semibold text-white">{wo.title}</h3>
-								<Badge variant={getStatusBadge(wo.status)}>{wo.status.replace('_', ' ')}</Badge>
-								<Badge variant={getPriorityBadge(wo.priority)}>{wo.priority}</Badge>
+								<Badge variant={getStatusBadge(wo.status)}>{$_('workOrders.status.' + wo.status)}</Badge>
+								<Badge variant={getPriorityBadge(wo.priority)}>{$_('workOrders.priority.' + wo.priority)}</Badge>
 								{#if isOverdue(wo.due_date, wo.status)}
 									<Badge variant="danger">
 										<AlertTriangle class="h-3 w-3" />
@@ -342,7 +342,7 @@
 			e.preventDefault();
 			handleCreateWorkOrder();
 		}}
-		class="max-h-[70vh] space-y-4 overflow-y-auto px-1"
+		class="max-h-[60vh] sm:max-h-[70vh] space-y-4 overflow-y-auto px-1"
 	>
 		<div>
 			<label for="wo-title" class="mb-1 block text-sm font-medium text-slate-300"

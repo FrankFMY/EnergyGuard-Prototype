@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _, isLoading } from 'svelte-i18n';
+	import { _, isLoading, locale } from 'svelte-i18n';
 	import { Card, Modal, Button, Badge } from '$lib/components/ui/index.js';
 	import { toastStore } from '$lib/state/toast.svelte.js';
 	import { cn } from '$lib/utils.js';
@@ -29,6 +29,12 @@
 		assignee?: string;
 		priority?: 'low' | 'medium' | 'high';
 		estimatedDuration?: string;
+	}
+
+	// Helper to get localized text based on current locale
+	function getLocalizedText(ru: string, en?: string): string {
+		if (!en) return ru;
+		return $locale?.startsWith('en') ? en : ru;
 	}
 
 	// Mock scheduled events - use current year
@@ -340,24 +346,7 @@
 					<ChevronLeft class="h-5 w-5" />
 				</button>
 				<h2 class="text-lg font-semibold text-white">
-					{#if !$isLoading}
-						{$_(`calendar.months.${currentMonth}`)}
-					{:else}
-						{[
-							'Январь',
-							'Февраль',
-							'Март',
-							'Апрель',
-							'Май',
-							'Июнь',
-							'Июль',
-							'Август',
-							'Сентябрь',
-							'Октябрь',
-							'Ноябрь',
-							'Декабрь'
-						][currentMonth]}
-					{/if}
+					{$_(`calendar.months.${currentMonth}`)}
 					{displayYear}
 				</h2>
 				<button
@@ -427,10 +416,10 @@
 										class="w-full truncate rounded px-1 py-0.5 text-left text-[10px] text-white transition hover:opacity-80 sm:px-1.5 sm:text-xs {getEventColor(
 											event.type
 										)}"
-										title={event.title}
+										title={getLocalizedText(event.title, event.titleEn)}
 										onclick={() => openEventModal(event)}
 									>
-										<span class="hidden sm:inline">{event.title}</span>
+										<span class="hidden sm:inline">{getLocalizedText(event.title, event.titleEn)}</span>
 										<span class="sm:hidden">{event.engine_id.toUpperCase()}</span>
 									</button>
 								{/each}
@@ -494,10 +483,10 @@
 						>
 							<div class="mb-1 flex items-center gap-2">
 								<div class="h-2 w-2 rounded-full {getEventColor(event.type)}"></div>
-								<span class="text-sm font-medium text-white">{event.title}</span>
+								<span class="text-sm font-medium text-white">{getLocalizedText(event.title, event.titleEn)}</span>
 							</div>
 							<div class="text-xs text-slate-500">
-								{event.date.toLocaleDateString('ru-RU', {
+								{event.date.toLocaleDateString($locale?.startsWith('en') ? 'en-US' : 'ru-RU', {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'
@@ -506,7 +495,7 @@
 						</button>
 					{:else}
 						<p class="text-sm text-slate-500">
-							{#if !$isLoading}{$_('calendar.noEvents')}{:else}Нет предстоящих событий{/if}
+							{$_('calendar.noEvents')}
 						</p>
 					{/each}
 				</div>

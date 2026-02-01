@@ -17,6 +17,14 @@ services:
     container_name: energyguard-db
     restart: always
     network_mode: host
+    # Resource limits to prevent OOM
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
     environment:
       POSTGRES_USER: ${DB_USER:-energyguard}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-energyguard_secure_password_2026}
@@ -39,6 +47,14 @@ services:
     container_name: energyguard-emqx
     restart: always
     network_mode: host
+    # Resource limits to prevent OOM
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
     environment:
       EMQX_ALLOW_ANONYMOUS: 'true'
       EMQX_LISTENERS__TCP__DEFAULT__BIND: '0.0.0.0:1883'
@@ -64,6 +80,14 @@ services:
     container_name: energyguard-app
     restart: always
     network_mode: host
+    # Resource limits to prevent OOM
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -84,8 +108,8 @@ services:
       test:
         ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/api/health']
       interval: 30s
-      timeout: 10s
-      start_period: 60s
+      timeout: 15s
+      start_period: 120s
       retries: 5
     depends_on:
       db:
@@ -103,6 +127,14 @@ services:
     container_name: energyguard-simulator
     restart: unless-stopped
     network_mode: host
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
     environment:
       MQTT_URL: mqtt://127.0.0.1:1883
       MQTT_USERNAME: ${MQTT_USERNAME:-energyguard_app}

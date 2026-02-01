@@ -104,9 +104,9 @@
 			<!-- Empty State -->
 			<Card class="p-8 text-center">
 				<Wrench class="mx-auto mb-4 h-12 w-12 text-slate-500" />
-				<h3 class="mb-2 text-lg font-semibold text-white">Нет данных о техобслуживании</h3>
+				<h3 class="mb-2 text-lg font-semibold text-white">{$_('maintenance.noData')}</h3>
 				<p class="text-slate-400">
-					Данные появятся после загрузки информации о двигателях из базы данных.
+					{$_('maintenance.noDataDesc')}
 				</p>
 			</Card>
 		{:else}
@@ -293,7 +293,7 @@
 				<div class="space-y-2 sm:space-y-3">
 					{#if spareParts.length === 0}
 						<div class="rounded-lg bg-slate-800/50 px-3 py-2.5 text-sm text-slate-400">
-							Нет данных о запчастях
+							{$_('maintenance.noPartsData')}
 						</div>
 					{:else}
 						{#each spareParts as part (part.name)}

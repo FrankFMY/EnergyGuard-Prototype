@@ -595,7 +595,13 @@ async function seed() {
 
 	// 8. Create cost records for economics
 	console.log('💰 Creating cost records...');
-	const months = ['2024-07', '2024-08', '2024-09', '2024-10', '2024-11', '2024-12'];
+	// Generate last 6 months dynamically based on current date
+	const currentDate = new Date();
+	const months: string[] = [];
+	for (let i = 5; i >= 0; i--) {
+		const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+		months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+	}
 	const costRecordsData: Array<{
 		category: string;
 		amount: number;

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { _, locale } from 'svelte-i18n';
 	import { Card, Button, Badge } from '$lib/components/ui/index.js';
 	import { toastStore } from '$lib/state/toast.svelte.js';
 	import { cn } from '$lib/utils.js';
@@ -15,9 +15,9 @@
 	const reports = [
 		{
 			id: 'daily',
-			title: 'Daily Operational Summary',
-			description: 'Power generation, efficiency metrics, and event logs for the last 24 hours.',
-			type: 'Daily',
+			titleKey: 'reports.reportTypes.daily.title',
+			descriptionKey: 'reports.reportTypes.daily.description',
+			typeKey: 'reports.types.daily',
 			format: 'PDF',
 			icon: FileText,
 			color: 'text-cyan-400',
@@ -25,9 +25,9 @@
 		},
 		{
 			id: 'monthly_eco',
-			title: 'Monthly Economic Analysis',
-			description: 'Detailed cost breakdown, profitability analysis, and budget forecast.',
-			type: 'Monthly',
+			titleKey: 'reports.reportTypes.monthly_eco.title',
+			descriptionKey: 'reports.reportTypes.monthly_eco.description',
+			typeKey: 'reports.types.monthly',
 			format: 'PDF',
 			icon: BarChart3,
 			color: 'text-emerald-400',
@@ -35,9 +35,9 @@
 		},
 		{
 			id: 'maintenance',
-			title: 'Maintenance Log 2024',
-			description: 'Complete history of maintenance activities, parts replacement, and downtime.',
-			type: 'Annual',
+			titleKey: 'reports.reportTypes.maintenance.title',
+			descriptionKey: 'reports.reportTypes.maintenance.description',
+			typeKey: 'reports.types.annual',
 			format: 'CSV',
 			icon: Calendar,
 			color: 'text-amber-400',
@@ -45,9 +45,9 @@
 		},
 		{
 			id: 'efficiency',
-			title: 'Efficiency Trend Report',
-			description: 'OEE metrics, performance trends, and optimization recommendations.',
-			type: 'Weekly',
+			titleKey: 'reports.reportTypes.efficiency.title',
+			descriptionKey: 'reports.reportTypes.efficiency.description',
+			typeKey: 'reports.types.weekly',
 			format: 'PDF',
 			icon: TrendingUp,
 			color: 'text-purple-400',
@@ -59,7 +59,7 @@
 	const recentReports = $state([
 		{
 			id: '1',
-			title: 'Daily Operational Summary',
+			titleKey: 'reports.reportTypes.daily.title',
 			date: new Date(Date.now() - 2 * 60 * 60 * 1000),
 			format: 'PDF',
 			size: '2.4 MB',
@@ -67,7 +67,7 @@
 		},
 		{
 			id: '2',
-			title: 'Monthly Economic Analysis',
+			titleKey: 'reports.reportTypes.monthly_eco.title',
 			date: new Date(Date.now() - 24 * 60 * 60 * 1000),
 			format: 'PDF',
 			size: '5.1 MB',
@@ -75,7 +75,7 @@
 		},
 		{
 			id: '3',
-			title: 'Maintenance Log 2024',
+			titleKey: 'reports.reportTypes.maintenance.title',
 			date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
 			format: 'CSV',
 			size: '1.2 MB',
@@ -83,7 +83,7 @@
 		},
 		{
 			id: '4',
-			title: 'Efficiency Trend Report',
+			titleKey: 'reports.reportTypes.efficiency.title',
 			date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
 			format: 'PDF',
 			size: '3.8 MB',
@@ -94,29 +94,23 @@
 	let generating: string | null = $state(null);
 	let sendingEmail: string | null = $state(null);
 
-	function generateReport(reportId: string) {
-		const report = reports.find((r) => r.id === reportId);
-		if (!report) return;
-
+	function generateReport(reportId: string, reportTitleKey: string) {
 		generating = reportId;
 
 		// Mock generation
 		setTimeout(() => {
 			generating = null;
-			toastStore.success('Report Downloaded', `${report.title} has been downloaded successfully.`);
+			toastStore.success($_('reports.download'), $_('common.success'));
 		}, 2000);
 	}
 
 	function sendReportByEmail(reportId: string) {
-		const report = reports.find((r) => r.id === reportId);
-		if (!report) return;
-
 		sendingEmail = reportId;
 
 		// Mock email sending
 		setTimeout(() => {
 			sendingEmail = null;
-			toastStore.success('Report Sent', `${report.title} has been sent to your email address.`);
+			toastStore.success($_('reports.email'), $_('common.success'));
 		}, 1500);
 	}
 
@@ -125,13 +119,14 @@
 		const diff = now.getTime() - date.getTime();
 		const hours = Math.floor(diff / (1000 * 60 * 60));
 		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+		const isRu = $locale?.startsWith('ru');
 
-		if (hours < 1) return 'Just now';
-		if (hours < 24) return `${hours}h ago`;
-		if (days === 1) return 'Yesterday';
-		if (days < 7) return `${days} days ago`;
+		if (hours < 1) return isRu ? 'Только что' : 'Just now';
+		if (hours < 24) return isRu ? `${hours}ч назад` : `${hours}h ago`;
+		if (days === 1) return isRu ? 'Вчера' : 'Yesterday';
+		if (days < 7) return isRu ? `${days} дн. назад` : `${days} days ago`;
 
-		return date.toLocaleDateString('en-US', {
+		return date.toLocaleDateString(isRu ? 'ru-RU' : 'en-US', {
 			month: 'short',
 			day: 'numeric',
 			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
@@ -144,14 +139,14 @@
 	<div>
 		<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 			<FileText class="h-7 w-7 text-cyan-400" />
-			{$_('nav.reports') || 'Reports'}
+			{$_('reports.title')}
 		</h1>
-		<p class="mt-1 text-sm text-slate-400">Generate and download system reports.</p>
+		<p class="mt-1 text-sm text-slate-400">{$_('reports.subtitle')}</p>
 	</div>
 
 	<!-- Report Templates -->
 	<div>
-		<h2 class="mb-4 text-lg font-semibold text-white">Generate Report</h2>
+		<h2 class="mb-4 text-lg font-semibold text-white">{$_('reports.generate')}</h2>
 		<div class="animate-stagger-grid grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 			{#each reports as report (report.id)}
 				{@const Icon = report.icon}
@@ -171,28 +166,28 @@
 							</div>
 							<Badge variant="secondary" class="font-mono text-xs">{report.format}</Badge>
 						</div>
-						<h3 class="mb-1.5 text-base font-semibold text-white">{report.title}</h3>
-						<p class="mb-3 line-clamp-2 text-xs text-slate-400">{report.description}</p>
-						<Badge variant="secondary" class="text-[10px]">{report.type}</Badge>
+						<h3 class="mb-1.5 text-base font-semibold text-white">{$_(report.titleKey)}</h3>
+						<p class="mb-3 line-clamp-2 text-xs text-slate-400">{$_(report.descriptionKey)}</p>
+						<Badge variant="secondary" class="text-[10px]">{$_(report.typeKey)}</Badge>
 					</div>
 					<div class="mt-4 flex gap-2">
 						<Button
 							variant="outline"
 							size="sm"
 							class="group/btn flex-1 gap-1.5 border-slate-700 bg-transparent hover:bg-white/5 hover:text-white"
-							onclick={() => generateReport(report.id)}
+							onclick={() => generateReport(report.id, report.titleKey)}
 							disabled={generating === report.id || sendingEmail === report.id}
 						>
 							{#if generating === report.id}
 								<div
 									class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
 								></div>
-								<span class="text-xs">Generating...</span>
+								<span class="text-xs">{$_('common.loading')}</span>
 							{:else}
 								<Download
 									class="h-3.5 w-3.5 transition-transform group-hover/btn:translate-y-0.5"
 								/>
-								<span class="text-xs">Download</span>
+								<span class="text-xs">{$_('reports.download')}</span>
 							{/if}
 						</Button>
 						<Button
@@ -201,7 +196,7 @@
 							class="gap-1 px-2"
 							onclick={() => sendReportByEmail(report.id)}
 							disabled={generating === report.id || sendingEmail === report.id}
-							title="Send to email"
+							title={$_('reports.email')}
 						>
 							{#if sendingEmail === report.id}
 								<div
@@ -221,7 +216,7 @@
 	<div>
 		<h2 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 			<Clock class="h-5 w-5 text-cyan-400" />
-			Recent Reports
+			{$_('reports.recentReports')}
 		</h2>
 		<Card class="overflow-hidden p-0">
 			<!-- Mobile Card View -->
@@ -233,7 +228,7 @@
 								<FileText class="h-5 w-5 text-slate-400" />
 							</div>
 							<div>
-								<div class="text-sm font-medium text-white">{report.title}</div>
+								<div class="text-sm font-medium text-white">{$_(report.titleKey)}</div>
 								<div class="flex items-center gap-2 text-xs text-slate-500">
 									<span>{formatDate(report.date)}</span>
 									<span>•</span>
@@ -242,11 +237,11 @@
 							</div>
 						</div>
 						<div class="flex gap-1">
-							<Button variant="ghost" size="sm" class="h-8 w-8 p-0" title="Preview">
-								<Eye class="h-4 w-4" />
+							<Button variant="ghost" size="sm" class="h-11 w-11 p-0" title="Preview">
+								<Eye class="h-5 w-5" />
 							</Button>
-							<Button variant="ghost" size="sm" class="h-8 w-8 p-0" title="Download">
-								<Download class="h-4 w-4" />
+							<Button variant="ghost" size="sm" class="h-11 w-11 p-0" title="Download">
+								<Download class="h-5 w-5" />
 							</Button>
 						</div>
 					</div>
@@ -259,17 +254,17 @@
 					<thead class="border-b border-white/5 bg-slate-900/50">
 						<tr>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
-								>Report</th
+								>{$_('reports.report')}</th
 							>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
-								>Generated</th
+								>{$_('reports.generated')}</th
 							>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
-								>Format</th
+								>{$_('reports.format')}</th
 							>
-							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Size</th>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">{$_('reports.size')}</th>
 							<th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase"
-								>Actions</th
+								>{$_('reports.actions')}</th
 							>
 						</tr>
 					</thead>
@@ -281,7 +276,7 @@
 										<div class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800">
 											<FileText class="h-4 w-4 text-slate-400" />
 										</div>
-										<span class="font-medium text-white">{report.title}</span>
+										<span class="font-medium text-white">{$_(report.titleKey)}</span>
 									</div>
 								</td>
 								<td class="px-4 py-3 text-sm text-slate-400">{formatDate(report.date)}</td>
@@ -293,15 +288,15 @@
 									<div class="flex justify-end gap-1">
 										<Button variant="ghost" size="sm" class="gap-1 text-xs">
 											<Eye class="h-3 w-3" />
-											Preview
+											{$_('reports.preview')}
 										</Button>
 										<Button variant="ghost" size="sm" class="gap-1 text-xs">
 											<Download class="h-3 w-3" />
-											Download
+											{$_('reports.download')}
 										</Button>
 										<Button variant="ghost" size="sm" class="gap-1 text-xs">
 											<Mail class="h-3 w-3" />
-											Email
+											{$_('reports.email')}
 										</Button>
 									</div>
 								</td>
@@ -318,10 +313,9 @@
 		<div class="flex gap-4">
 			<Calendar class="h-5 w-5 shrink-0 text-cyan-400" />
 			<div class="text-sm text-slate-300">
-				<p class="mb-1 font-medium">Automated Reports</p>
+				<p class="mb-1 font-medium">{$_('reports.automatedReports')}</p>
 				<p class="text-slate-400">
-					Configure automatic report generation and delivery. Daily reports are sent at 06:00,
-					weekly reports on Monday, and monthly reports on the 1st of each month.
+					{$_('reports.automatedDesc')}
 				</p>
 			</div>
 		</div>
