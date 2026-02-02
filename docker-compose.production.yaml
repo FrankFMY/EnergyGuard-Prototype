@@ -13,7 +13,7 @@ services:
   # База данных автоматически инициализируется при первом запуске
   # ═══════════════════════════════════════════════════════════════
   db:
-    image: timescale/timescaledb:latest-pg17
+    image: timescale/timescaledb:2.24.0-pg17
     container_name: energyguard-db
     restart: always
     network_mode: host
