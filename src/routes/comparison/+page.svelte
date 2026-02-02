@@ -25,36 +25,72 @@
 
 	let loadingError = $state<string | null>(null);
 	let isDataLoading = $state(false);
+	let usingFallback = $state(false);
+
+	// Fallback данные для презентации - если БД недоступна
+	const FALLBACK_ENGINES: EngineWithMetrics[] = [
+		{ id: 'gpu-1', model: 'Jenbacher J620', status: 'ok', total_hours: 12450, planned_power_kw: 1200, power_kw: 1180, temp: 485, gas_consumption: 280, vibration: 4.2, gas_pressure: 2.8, profit_rate: 2840, efficiency: 87 },
+		{ id: 'gpu-2', model: 'Jenbacher J620', status: 'ok', total_hours: 11200, planned_power_kw: 1200, power_kw: 1150, temp: 478, gas_consumption: 275, vibration: 3.8, gas_pressure: 2.7, profit_rate: 2720, efficiency: 85 },
+		{ id: 'gpu-3', model: 'Caterpillar G3520', status: 'warning', total_hours: 15800, planned_power_kw: 1200, power_kw: 1050, temp: 512, gas_consumption: 295, vibration: 6.5, gas_pressure: 2.5, profit_rate: 2180, efficiency: 78 },
+		{ id: 'gpu-4', model: 'Caterpillar G3520', status: 'ok', total_hours: 9600, planned_power_kw: 1200, power_kw: 1220, temp: 468, gas_consumption: 270, vibration: 3.5, gas_pressure: 2.9, profit_rate: 3050, efficiency: 91 },
+		{ id: 'gpu-5', model: 'MWM TCG 2020', status: 'ok', total_hours: 8400, planned_power_kw: 1200, power_kw: 1190, temp: 475, gas_consumption: 268, vibration: 4.0, gas_pressure: 2.8, profit_rate: 2920, efficiency: 89 },
+		{ id: 'gpu-6', model: 'MWM TCG 2020', status: 'error', total_hours: 18200, planned_power_kw: 1200, power_kw: 0, temp: 45, gas_consumption: 0, vibration: 0.1, gas_pressure: 0, profit_rate: 0, efficiency: 0 }
+	];
+
+	/**
+	 * Fetch с таймаутом и retry логикой
+	 */
+	async function fetchWithRetry(url: string, retries = 3, timeout = 20000): Promise<Response> {
+		let lastError: Error | null = null;
+
+		for (let attempt = 1; attempt <= retries; attempt++) {
+			try {
+				const controller = new AbortController();
+				const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+				const res = await fetch(url, { signal: controller.signal });
+				clearTimeout(timeoutId);
+
+				if (res.ok) return res;
+
+				// Если сервер ответил ошибкой, не делаем retry
+				throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+			} catch (e) {
+				lastError = e instanceof Error ? e : new Error('Unknown error');
+
+				// Не делаем retry для HTTP ошибок (только для таймаутов/сети)
+				if (lastError.message.startsWith('HTTP')) throw lastError;
+
+				// Экспоненциальная задержка: 1s, 2s, 4s
+				if (attempt < retries) {
+					const delay = Math.pow(2, attempt - 1) * 1000;
+					console.log(`[Comparison] Attempt ${attempt} failed, retrying in ${delay}ms...`);
+					await new Promise(r => setTimeout(r, delay));
+				}
+			}
+		}
+
+		throw lastError || new Error('All retry attempts failed');
+	}
 
 	async function loadData() {
 		isDataLoading = true;
 		loadingError = null;
+		usingFallback = false;
+
 		try {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-			const res = await fetch(`${base}/api/status`, {
-				signal: controller.signal
-			});
-
-			clearTimeout(timeoutId);
-
-			if (res.ok) {
-				const data = await res.json();
-				engines = data.engines;
-			} else {
-				loadingError = `Failed to load: ${res.status} ${res.statusText}`;
-			}
+			const res = await fetchWithRetry(`${base}/api/status`);
+			const data = await res.json();
+			engines = data.engines;
 		} catch (e) {
-			if (e instanceof Error && e.name === 'AbortError') {
-				loadingError = 'Request timeout - server is slow to respond';
-			} else {
-				loadingError = e instanceof Error ? e.message : 'Failed to load data';
-			}
-			console.error('Failed to load data', e);
+			console.error('[Comparison] Failed to load data after retries:', e);
+
+			// Используем fallback данные для презентации
+			engines = FALLBACK_ENGINES;
+			usingFallback = true;
+			// Не показываем ошибку пользователю - данные есть (fallback)
 		} finally {
 			isDataLoading = false;
-			// Ждем следующий тик рендеринга, чтобы chartContainer был готов в DOM
 			await tick();
 			updateChart();
 		}
@@ -200,6 +236,13 @@
 			{#if !$isLoading}{$_('comparison.subtitle')}{:else}Сравнение метрик производительности{/if}
 		</p>
 	</div>
+
+	<!-- Fallback Warning (subtle, for demo/presentation) -->
+	{#if usingFallback}
+		<div class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
+			⚡ Демо-режим: показаны примерные данные
+		</div>
+	{/if}
 
 	<!-- Engine Selection -->
 	{#if !isDataLoading && !loadingError}

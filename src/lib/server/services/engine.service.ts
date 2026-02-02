@@ -51,32 +51,40 @@ export async function getAllEngines(): Promise<Engine[]> {
 
 /**
  * Get latest telemetry for all engines
- * OPTIMIZED: Uses efficient query with index scan for better performance on large tables
+ * OPTIMIZED: Uses LATERAL JOIN for O(n) performance instead of O(n*m) with DISTINCT ON
  * CACHED: Results are cached for 2 seconds to reduce database load
+ *
+ * Why LATERAL JOIN is faster:
+ * - DISTINCT ON scans entire telemetry table and sorts
+ * - LATERAL JOIN does index lookup per engine (uses idx_telemetry_engine_time)
+ * - For 6 engines with millions of telemetry rows: LATERAL = 6 index lookups vs full table scan
  */
 export async function getLatestTelemetry(): Promise<Map<string, TelemetryRow>> {
 	// Try cache first (2 second TTL for near real-time data)
-	// Use separate cache key for telemetry data
 	const cacheKey = 'energyguard:telemetry:latest';
 	const cached = await cache.get<Record<string, TelemetryRow>>(cacheKey);
 	if (cached) {
-		// Convert cached object back to Map
 		return new Map(Object.entries(cached));
 	}
 
-	// Optimized query: Get latest telemetry per engine using efficient index scan
-	// Uses the idx_telemetry_engine_time_desc index for fast lookups
-	// For TimescaleDB hypertables, this is much faster than scanning entire table
+	// LATERAL JOIN: For each engine, get latest telemetry row using index
+	// This is O(engines) instead of O(telemetry_rows) - much faster!
 	const result = await db.execute<TelemetryRow>(sql`
-		SELECT DISTINCT ON (engine_id)
-			engine_id,
-			power_kw,
-			temp_exhaust,
-			gas_consumption,
-			vibration,
-			gas_pressure
-		FROM ${telemetry}
-		ORDER BY engine_id, time DESC
+		SELECT
+			e.id as engine_id,
+			COALESCE(t.power_kw, 0) as power_kw,
+			COALESCE(t.temp_exhaust, 0) as temp_exhaust,
+			COALESCE(t.gas_consumption, 0) as gas_consumption,
+			COALESCE(t.vibration, 0) as vibration,
+			COALESCE(t.gas_pressure, 0) as gas_pressure
+		FROM ${engines} e
+		LEFT JOIN LATERAL (
+			SELECT power_kw, temp_exhaust, gas_consumption, vibration, gas_pressure
+			FROM ${telemetry}
+			WHERE engine_id = e.id
+			ORDER BY time DESC
+			LIMIT 1
+		) t ON true
 	`);
 
 	const telemetryMap = new Map<string, TelemetryRow>();

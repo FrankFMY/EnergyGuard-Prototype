@@ -2,7 +2,7 @@
 	import './layout.css';
 	import '$lib/i18n/index.js';
 	import { base } from '$app/paths';
-	import { page } from '$app/stores';
+	import { page, navigating } from '$app/stores';
 	import { _, isLoading, locale } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import Zap from 'lucide-svelte/icons/zap';
@@ -143,6 +143,15 @@
 		</div>
 	</div>
 {:else}
+	<!-- Navigation Loading Indicator -->
+	{#if $navigating}
+		<!-- Top progress bar -->
+		<div class="fixed top-0 left-0 right-0 z-[100] h-1 overflow-hidden bg-slate-800/50">
+			<div class="h-full w-1/3 animate-[shimmer_1s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+		</div>
+		<!-- Subtle overlay to indicate loading -->
+		<div class="fixed inset-0 z-[99] bg-slate-950/30 backdrop-blur-[1px] transition-opacity duration-200"></div>
+	{/if}
 	<div
 		class={cn(
 			'min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30',
@@ -165,6 +174,7 @@
 					<!-- Logo -->
 					<a
 						href="{base}/"
+						data-sveltekit-preload-data="hover"
 						class="group flex shrink-0 items-center gap-2.5 text-xl font-bold tracking-tight"
 					>
 						<div
@@ -189,6 +199,7 @@
 							{@const active = isActive(item.href)}
 							<a
 								href={item.href}
+								data-sveltekit-preload-data="hover"
 								class={cn(
 									'relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
 									active
@@ -241,6 +252,7 @@
 											<a
 												href={item.href}
 												onclick={closeDropdowns}
+												data-sveltekit-preload-data="hover"
 												class={cn(
 													'flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
 													active
