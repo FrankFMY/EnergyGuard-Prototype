@@ -16,7 +16,6 @@
 	import TrendingDown from 'lucide-svelte/icons/trending-down';
 	import Banknote from 'lucide-svelte/icons/banknote';
 	import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
-	import { base } from '$app/paths';
 	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 
 	interface Props {
@@ -42,26 +41,6 @@
 
 	// State for the slider
 	let gasQuality = $state(1.0);
-	let lastScenario = $state<string | null>(null);
-
-	async function triggerScenarioEvent(name: string, level: 'info' | 'warning' | 'error') {
-		if (lastScenario === name) return;
-		lastScenario = name;
-
-		try {
-			await fetch(`${base}/api/events`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					message: `SIMULATOR: Режим "${name}" активирован пользователем.`,
-					level,
-					engine_id: engineId
-				})
-			});
-		} catch (e) {
-			console.error('Failed to log simulator event', e);
-		}
-	}
 
 	// Reactive calculations
 	const deratedPower = $derived(calculatePowerDerating(gasQuality, nominalPower));
@@ -79,11 +58,6 @@
 			deratedPower,
 			efficiency
 		});
-
-		// Trigger simulator audit event
-		if (gasQuality === 1.0) triggerScenarioEvent($_('demo.scenarios.reference'), 'info');
-		else if (gasQuality === 0.85) triggerScenarioEvent($_('demo.scenarios.contamination'), 'warning');
-		else if (gasQuality === 0.72) triggerScenarioEvent($_('demo.scenarios.emergency'), 'error');
 	});
 
 	const getTempColor = (t: number) => {
